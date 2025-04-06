@@ -19,3 +19,11 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+input[type='text'] { font-size: 14px; }
+
+.inline-icon {
+  width: 1em; /* Matches text size */
+  height: 1em;
+  vertical-align: middle; /* Aligns it to the text baseline */
+  margin: 0 0.5em; /* Adds spacing */
+}

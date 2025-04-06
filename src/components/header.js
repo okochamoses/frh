@@ -13,13 +13,7 @@ export function Header() {
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
-
-            if (currentScrollY > lastScrollY) {
-                setIsVisible(false); // Hide when scrolling down
-            } else {
-                setIsVisible(true); // Show when scrolling up
-            }
-
+            setIsVisible(currentScrollY < lastScrollY); // Hide when scrolling down
             setLastScrollY(currentScrollY);
         };
 
@@ -36,7 +30,7 @@ export function Header() {
             className={`fixed top-0 w-full h-20 flex justify-between items-center p-4 z-50 backdrop-blur-sm bg-white transition-transform duration-300 ${
                 isVisible ? "translate-y-0" : "-translate-y-full"
             }`}>
-            <Link href={"#"} onClick={handleMenuClick}><span className="">Menu</span></Link>
+            {/*<Link href={"#"} onClick={handleMenuClick}><span className="">Menu</span></Link>*/}
             <Image src={"./logo.svg"} alt={"FRH"} width={45} height={45}
             className="absolute left-1/2 -translate-x-1/2"/>
             {/*<div className="py-3 px-6 bg-[#BD2E2E] rounded-3xl">*/}
