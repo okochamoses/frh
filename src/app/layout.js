@@ -1,7 +1,13 @@
-import {Geist, Geist_Mono, Figtree, Merriweather} from "next/font/google";
+"use client"
+
+import {Figtree, Merriweather} from "next/font/google";
 import "./globals.css";
-import {Header} from "@/components/header";
+// import {Header} from "@/components/header";
 import localFont from 'next/font/local'
+import Footer from "@/components/footer";
+import {LayoutGroup} from "framer-motion";
+import MotionProvider from "@/components/motion-provider";
+import {Header} from "@/components/header";
 
 export const Bagelan = localFont({
     src: './Bagelan.otf',
@@ -27,8 +33,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${figtree.variable} antialiased`}
       >
-        <Header />
-        {children}
+        <MotionProvider>
+          <Header />
+          {children}
+          <Footer />
+        </MotionProvider>
       </body>
     </html>
   );

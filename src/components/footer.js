@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaArrowRight, FaEnvelope, FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 import {merriweather} from "@/app/layout";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -32,12 +33,10 @@ export default function Footer() {
         </div>
 
         <div className="w-full max-w-screen-xl grid md:grid-cols-4 grid-cols-2 md:gap-12 gap-x-12 bg-black p-10 md:rounded-full rounded-lg text-white">
-
-          <a className="flex py-2 justify-center items-center border-b-[1px] border-black"><FaInstagram size={20} className="pr-1" /> Instagram</a>
-          <a className="flex py-2 justify-center items-center border-b-[1px] border-black"><FaFacebook size={20} className="pr-1" /> Facebook</a>
-          <a className="flex py-2 justify-center items-center border-b-[1px] border-black"><FaWhatsapp size={20} className="pr-1" /> Whatsapp</a>
-          <a className="flex py-2 justify-center items-center border-b-[1px] border-black"><FaTiktok size={20} className="pr-1" /> TikTok</a>
-
+          <Link href="https://www.instagram.com/frh_naturals/" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaInstagram size={20} className="pr-1" /> Instagram</Link>
+          <Link href="https://www.facebook.com/people/FRH-Flourish-Roots-Hair-Co/61570171119138/#" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaFacebook size={20} className="pr-1" /> Facebook</Link>
+          <Link href="https://wa.me/2348161672820" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaWhatsapp size={20} className="pr-1" /> Whatsapp</Link>
+          <Link href="/moses" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaTiktok size={20} className="pr-1" /> TikTok</Link>
         </div>
 
 

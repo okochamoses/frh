@@ -5,11 +5,43 @@ import Image from "next/image";
 import ServiceCard from "@/components/serviceCard";
 import Marquee from "react-fast-marquee";
 import Button from "@/components/button";
-import Footer from "@/components/footer";
 import About from "@/components/about";
+import axios from "axios";
+
+const Checkmark = ({text, style, className}) => {
+  return (
+      <div className="flex justify-center align-middle">
+        <span>{text}</span>
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="20px"
+            width="20px"
+            fill="#ffffff"
+            viewBox="0 0 24 24"
+            id="check-mark-circle"
+            className={`icon line ${className || ''}`} // Spread existing className and allow overrides
+            style={style} // Allow inline style overrides
+        >
+          <path
+              id="primary"
+              d="M12,21h0a9,9,0,0,1-9-9H3a9,9,0,0,1,9-9h0a9,9,0,0,1,9,9h0A9,9,0,0,1,12,21ZM8,11.5l3,3,5-5"
+              style={{
+                fill: 'none',
+                stroke: 'rgb(255, 255, 255)',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                strokeWidth: '1.5',
+              }}
+          />
+        </svg>
+      </div>
+  );
+};
 
 export default function Home() {
     const [url, setUrl] = useState("./hero-bg.png");
+    const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         const updateBackground = () => {
@@ -30,6 +62,28 @@ export default function Home() {
 
         return () => window.removeEventListener("resize", updateBackground);
     }, []);
+
+    const handleForm = async (e) => {
+      if(submitted) return;
+      setLoading(true)
+      e.preventDefault();
+      const form = e.target;
+      const name = e.target.name.value;
+      const email = e.target.email.value;
+      e.target.elements.name.disabled = true;
+      e.target.elements.email.disabled = true;
+
+      try {
+        const res = await axios.post("http://localhost:8000", {name, email});
+        // console.log("Form submitted successfully:", res.data);
+        form.reset();
+      } catch (error) {
+        // console.error("Error submitting form:", error);
+
+      }
+      setLoading(false)
+      setSubmitted(true)
+    };
     return (
         <>
             <div
@@ -67,9 +121,9 @@ export default function Home() {
                 {/*</span>*/}
             </section>
 
-          <section className="grid grid-cols-1 sm:grid-cols-3 w-full h-full">
-            <ServiceCard image="/coaching.png" title="One on One Coaching" />
-            <ServiceCard image="/starter.png" title="Curated Starter Kit" />
+          <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
+            <ServiceCard image="/coaching.png" title="Consultation Services" />
+            {/*<ServiceCard image="/starter.png" title="Curated Starter Kit" />*/}
             <ServiceCard image="/salon.png" title="Salon Services" />
           </section>
 
@@ -85,10 +139,10 @@ export default function Home() {
                 Want to learn about hair care and hair growth? Join our newsletter to get updates on the latest
               </span>
 
-              <form action="" className="py-10">
-                <input className="w-full my-2 py-4 px-4 appearance-none focus:outline-none" type="text" placeholder="ENTER YOUR NAME"/>
-                <input className="w-full my-2 py-4 px-4 appearance-none focus:outline-none mb-5 text-sm" type="text" placeholder="ENTER YOUR EMAIL"/>
-                <Button wFull dark text="SUBSCRIBE"/>
+              <form className="py-10" onSubmit={handleForm}>
+                <input name="name" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none" type="text" placeholder="ENTER YOUR NAME"/>
+                <input name="email" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none mb-5 text-sm" type="text" placeholder="ENTER YOUR EMAIL"/>
+                <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
               </form>
             </div>
             <div className="h-lvh" style={{backgroundImage: "url('/comb.png')", backgroundSize: "cover"}}></div>
@@ -112,7 +166,6 @@ export default function Home() {
               <p className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>- TESTIMONIALS</p>
             </Marquee>
           </section>
-          <Footer />
         </>
     );
 }

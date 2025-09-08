@@ -27,7 +27,7 @@ export function Header() {
 
     return <>
         <div
-            className={`fixed top-0 w-full h-20 flex justify-between items-center p-4 z-50 backdrop-blur-sm bg-white transition-transform duration-300 ${
+            className={`fixed top-0 w-full h-20 flex justify-between items-center p-4 z-50 backdrop-blur-sm transition-transform duration-300 ${
                 isVisible ? "translate-y-0" : "-translate-y-full"
             }`}>
             {/*<Link href={"#"} onClick={handleMenuClick}><span className="">Menu</span></Link>*/}
