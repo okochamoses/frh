@@ -2,7 +2,6 @@
 
 import React from 'react';
 import {Bagelan, merriweather} from "@/app/layout";
-import {motion} from "framer-motion"
 import Button from "@/components/button";
 import Marquee from "react-fast-marquee";
 import Link from "next/link";

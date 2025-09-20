@@ -7,6 +7,7 @@ import Marquee from "react-fast-marquee";
 import Button from "@/components/button";
 import About from "@/components/about";
 import axios from "axios";
+import Link from "next/link";
 
 const Checkmark = ({text, style, className}) => {
   return (
@@ -95,7 +96,7 @@ export default function Home() {
                     <h1 className={`${Bagelan.className} text-6xl md:text-9xl`}>FLOURISH ROOTS HAIR</h1>
                     <p className="m:w-2/3 w-full my-6">Holistic haircare designed to nurture your natural beauty</p>
 
-                    <button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button>
+                  <Link href={"/salon"}><button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button></Link>
                 </div>
             </div>
 
