@@ -2,11 +2,8 @@
 
 import {Figtree, Merriweather} from "next/font/google";
 import "./globals.css";
-// import {Header} from "@/components/header";
 import localFont from 'next/font/local'
 import Footer from "@/components/footer";
-import {LayoutGroup} from "framer-motion";
-import MotionProvider from "@/components/motion-provider";
 import {Header} from "@/components/header";
 
 export const Bagelan = localFont({
@@ -33,11 +30,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${figtree.variable} antialiased`}
       >
-        <MotionProvider>
-          <Header />
-          {children}
-          <Footer />
-        </MotionProvider>
+        <Header />
+        {children}
+        <Footer />
       </body>
     </html>
   );
