@@ -7,8 +7,8 @@ const newsletterService = new NewsletterService(
 
 export async function POST(req) {
   try {
-    const { email } = await req.json();
-    const result = await newsletterService.subscribe(email);
+    const { email, name } = await req.json();
+    const result = await newsletterService.subscribe(email, name);
     return Response.json({ message: "Subscribed successfully", data: result }, { status: 200 });
   } catch (err) {
     console.error("Newsletter API Error:", err);

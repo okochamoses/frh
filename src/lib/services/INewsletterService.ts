@@ -1,3 +1,5 @@
+import {Newsletter} from "../models/Newsletter";
+
 /**
  * Newsletter Service Interface
  * Defines the contract for newsletter-related operations
@@ -11,11 +13,12 @@ class INewsletterService {
 
   /**
    * Subscribe a user to the newsletter
+   * @param name Name of the subscriber
    * @param {string} email - The email address to subscribe
    * @returns {Promise<Object>} The created subscription record
    * @throws {Error} If email is invalid or already subscribed
    */
-  async subscribe(email) {
+  async subscribe(email: string, name?: string, ) {
     throw new Error('subscribe method must be implemented');
   }
 
@@ -25,7 +28,7 @@ class INewsletterService {
    * @returns {Promise<Object>} Success message with confirmation
    * @throws {Error} If email is not found
    */
-  async unsubscribe(email) {
+  async unsubscribe(email: string): Promise<{}> {
     throw new Error('unsubscribe method must be implemented');
   }
 
@@ -33,7 +36,7 @@ class INewsletterService {
    * Get all newsletter subscribers
    * @returns {Promise<Array>} Array of all subscriber records
    */
-  async getAllSubscribers() {
+  async getAllSubscribers(): Promise<[Newsletter]> {
     throw new Error('getAllSubscribers method must be implemented');
   }
 
@@ -42,35 +45,8 @@ class INewsletterService {
    * Get active subscribers only
    * @returns {Promise<Array>} Array of active subscriber records
    */
-  async getActiveSubscribers() {
+  async getActiveSubscribers(): Promise<[Newsletter]> {
     throw new Error('getActiveSubscribers method must be implemented');
-  }
-
-  /**
-   * Update subscriber status
-   * @param {string} email - The email address to update
-   * @param {string} status - New status (active, inactive, unsubscribed)
-   * @returns {Promise<Object>} Updated subscriber record
-   */
-  async updateSubscriberStatus(email, status) {
-    throw new Error('updateSubscriberStatus method must be implemented');
-  }
-
-  /**
-   * Get total subscriber count
-   * @returns {Promise<number>} Total number of subscribers
-   */
-  async getSubscriberCount() {
-    throw new Error('getSubscriberCount method must be implemented');
-  }
-
-  /**
-   * Check if an email is already subscribed
-   * @param {string} email - The email address to check
-   * @returns {Promise<boolean>} True if email exists, false otherwise
-   */
-  async isSubscribed(email) {
-    throw new Error('isSubscribed method must be implemented');
   }
 }
 

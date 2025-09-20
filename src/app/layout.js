@@ -3,8 +3,8 @@
 import {Figtree, Merriweather} from "next/font/google";
 import "./globals.css";
 import localFont from 'next/font/local'
-import Footer from "@/components/footer";
-import {Header} from "@/components/header";
+import Footer from "../components/footer";
+import {Header} from "../components/header";
 
 export const Bagelan = localFont({
     src: './Bagelan.otf',

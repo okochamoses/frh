@@ -2,10 +2,10 @@
 import {useEffect, useState} from "react";
 import {Bagelan, merriweather} from "@/app/layout";
 import Image from "next/image";
-import ServiceCard from "@/components/serviceCard";
+import ServiceCard from "../components/serviceCard";
 import Marquee from "react-fast-marquee";
-import Button from "@/components/button";
-import About from "@/components/about";
+import Button from "../components/button";
+import About from "../components/about";
 import axios from "axios";
 import Link from "next/link";
 
@@ -75,11 +75,11 @@ export default function Home() {
       e.target.elements.email.disabled = true;
 
       try {
-        const res = await axios.post("http://localhost:8000", {name, email});
-        // console.log("Form submitted successfully:", res.data);
+        const res = await axios.post("http://localhost:3000/api/newsletter", {name, email});
+        console.log(res)
         form.reset();
       } catch (error) {
-        // console.error("Error submitting form:", error);
+        console.error("Error submitting form:", error);
 
       }
       setLoading(false)

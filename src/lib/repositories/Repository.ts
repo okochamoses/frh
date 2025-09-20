@@ -1,10 +1,21 @@
 import { google } from "googleapis";
+import {randomUUID} from "crypto";
 
-class Repository {
+class Repository<Model> {
   // Static map to store instances for each subclass
-  static instances = new Map();
+  static instances: Map<string, any> = new Map();
+  private readonly sheetName: string;
+  private readonly spreadsheetId: any;
+  private readonly hasHeaders: boolean;
+  private readonly headerRow: number;
+  private _headers: null;
+  private _sheetsClient: null;
 
-  constructor(sheetName, options = {}) {
+  constructor(sheetName, options = {
+    spreadsheetId: undefined,
+    hasHeaders: undefined,
+    headerRow: 1
+  }) {
     this.sheetName = sheetName;
     this.spreadsheetId = options.spreadsheetId || process.env.GOOGLE_SHEET_ID;
     this.hasHeaders = options.hasHeaders !== false;
@@ -135,7 +146,7 @@ class Repository {
 
   // CORE CRUD OPERATIONS
 
-  async findAll(options = {}) {
+  async findAll(options = {}): Promise<[Model]> {
     const sheets = await this.getSheetsClient();
     const startRow = this.hasHeaders ? this.headerRow + 1 : 1;
     const range = options.range || `${this.sheetName}!A${startRow}:Z`;
@@ -207,13 +218,16 @@ class Repository {
     return results;
   }
 
-  async create(data) {
+  async create(data: Model) {
     const sheets = await this.getSheetsClient();
     let values;
 
+    console.log(data)
+
     if (this.hasHeaders) {
       const headers = await this.getHeaders();
-      values = [this.objectToRow(data, headers)];
+      const defaults = {id: randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()};
+      values = [this.objectToRow({...data, ...defaults}, headers)];
     } else {
       values = [Array.isArray(data) ? data : Object.values(data)];
     }
