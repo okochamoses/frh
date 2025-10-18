@@ -55,7 +55,7 @@ class AuthService {
     } else {
       // Existing user → update last login
       user.lastLoginAt = new Date();
-      // await this.userRepo.update(user.id, user); // fix later
+      // await this.userRepo.update(user.id, user); // TODO: fix later
     }
 
     // Issue JWT
@@ -80,6 +80,14 @@ class AuthService {
   /** 🧠 Compare hashed password */
   async verifyPassword(password: string, hash: string): Promise<boolean> {
     return await bcrypt.compare(password, hash);
+  }
+
+  async localSignIn(email, password){
+    const user = await this.userRepo.findOne({ email, provider: 'local' });
+    const isPasswordValid = await this.verifyPassword(password, user.password);
+    if(!isPasswordValid) throw new Error("Email and password combination is wrong")
+    const token = this.generateToken(user);
+    return { user, token };
   }
 
   /** 🧑‍💻 Create a new user */

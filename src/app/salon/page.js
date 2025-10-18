@@ -32,8 +32,8 @@ import {FaFacebook} from "react-icons/fa6";
 import { GoogleLogin } from '@react-oauth/google';
 import axios from "axios";
 import {Label} from "@/components/ui/label";
-import {BookingProvider, useBooking} from "@/app/salon/BookingContext";
-import {useAuth} from "@/app/AuthContext";
+import {BookingProvider, useBooking} from "@/app/contexts/BookingContext";
+import {useAuth} from "@/app/contexts/AuthContext";
 import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(utc);

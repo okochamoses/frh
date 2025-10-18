@@ -6,7 +6,7 @@ import localFont from 'next/font/local'
 import Footer from "../components/footer";
 import {Header} from "@/components/header";
 import {GoogleOAuthProvider} from "@react-oauth/google";
-import {AuthProvider} from "@/app/AuthContext";
+import {AuthProvider} from "@/app/contexts/AuthContext";
 
 export const Bagelan = localFont({
     src: './Bagelan.otf',

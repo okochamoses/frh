@@ -54,9 +54,17 @@ export async function POST(req) {
 
     // Handle google signin
     const { provider, idToken } = body;
-    if (provider !== 'google') throw new Error("Provider not implemented")
-    const result = await authService.googleSignIn(idToken);
-    return Response.json({ message: "Subscribed successfully", data: result }, { status: 200 });
+    if (provider === 'google') {
+      const result = await authService.googleSignIn(idToken);
+      return Response.json({message: "Login Successful", data: result},
+          {status: 200});
+    } else {
+      const {email, password} = body;
+      const result = await authService.localSignIn(email, password);
+      return Response.json({message: "Login Successful", data: result},
+          {status: 200});
+    }
+    console.log(body)
   } catch (err) {
     console.error("Newsletter API Error:", err);
     return Response.json({ error: err.message }, { status: 500 });

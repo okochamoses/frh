@@ -2,7 +2,7 @@ import {createContext, useContext, useEffect, useState} from "react";
 import services from "@/app/salon/services.json";
 import dayjs from "dayjs";
 import axios from "axios";
-import {useAuth} from "@/app/AuthContext";
+import {useAuth} from "@/app/contexts/AuthContext";
 
 const BookingContext = createContext();
 const OFF_DAYS = 'Monday';
