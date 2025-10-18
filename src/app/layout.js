@@ -4,7 +4,9 @@ import {Figtree, Merriweather} from "next/font/google";
 import "./globals.css";
 import localFont from 'next/font/local'
 import Footer from "../components/footer";
-import {Header} from "../components/header";
+import {Header} from "@/components/header";
+import {GoogleOAuthProvider} from "@react-oauth/google";
+import {AuthProvider} from "@/app/AuthContext";
 
 export const Bagelan = localFont({
     src: './Bagelan.otf',
@@ -30,9 +32,13 @@ export default function RootLayout({ children }) {
       <body
         className={`${figtree.variable} antialiased`}
       >
-        <Header />
-        {children}
-        <Footer />
+        <GoogleOAuthProvider clientId={"423725763850-g9h03ff01rrmu7akn9ks5hl0a13nmajs.apps.googleusercontent.com"}>
+          <AuthProvider>
+          <Header />
+          {children}
+          <Footer />
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

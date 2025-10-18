@@ -16,7 +16,6 @@ import {
   faAngleLeft, faAngleRight, faCalendar, faCalendarAlt, faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import {CiCalendar, CiClock2} from "react-icons/ci";
-import {IoMdClose} from "react-icons/io";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -29,22 +28,26 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {FcGoogle} from "react-icons/fc";
 import {FaFacebook} from "react-icons/fa6";
+import { GoogleLogin } from '@react-oauth/google';
+import axios from "axios";
+import {Label} from "@/components/ui/label";
+import {BookingProvider, useBooking} from "@/app/salon/BookingContext";
+import {useAuth} from "@/app/AuthContext";
+import utc from 'dayjs/plugin/utc';
 
-const SalonServices = () => {
-  const bookingSteps = {
-    BOOK_TIME: "book-time",
-    SELECT_SERVICE: "select-service",
-  }
+dayjs.extend(utc);
 
+const SalonServicesPage = () => {
   const [selectedServices, setSelectedServices] = useState([]);
   const [categorizedServices, setCategorizedServices] = useState({featured: []})
-  const [journey, setJourney] = useState(bookingSteps.SELECT_SERVICE) // select-service, book-time
-  const [time, setTime] = useState();
   const [day, setDay] = useState(dayjs().startOf("day"));
   const [availableDays, setAvailableDays] = useState([]);
+  const [isPhoneRequired, setIsPhoneRequired] = useState(false);
+  const [chooseService, setChooseService] = useState()
+
+  const { displayAuthModal, loading, token, user, isValidToken } = useAuth();
+  const { bookingLoader, bookingTime, bookService } = useBooking();
 
   const categorizeServices = () => {
     const categorizedServices = {featured: []};
@@ -84,39 +87,37 @@ const SalonServices = () => {
     );
   }
 
-  const handleDaySelect = (day) => {
-    setDay(day);
-    // need to rerender the times and block out booked sessions
-  }
-
-  const handleTimeSelect = (time) => {
-    setTime(time);
-  }
-
-  const handleSubmit = () => {
-    if(journey === "select-service") {
-      setJourney(bookingSteps.BOOK_TIME)
+  const handleSubmit = async () => {
+    console.log(isValidToken())
+    if (isValidToken()) {
+      // handle the full submission
+      const res = await bookService(bookingTime, selectedServices);
     }
-    if (journey === bookingSteps.SELECT_SERVICE) {
-      // do something
+    if (!chooseService) {
+      setChooseService(true);
+      return;
+    }
+    if(chooseService && !isValidToken()) displayAuthModal();
+    if (!chooseService && bookingTime?.isSame(bookingTime?.startOf("day"))) {
+      console.log("Error, please book time")
     }
   }
+
   const totalTime = () => selectedServices.reduce((acc, curr) => acc + curr?.duration, 0);
 
   return (
-      <>
-        <section className="px-6 flex flex-col pt-24">
+      <section className="px-6 flex flex-col pt-24">
           <section className="max-w-[1600px] md:px-10 lg:px-40 m-auto">
 
             <div className="grid grid-cols-3 gap-8">
 
               {/*Select booking time*/}
-              <div className={`${journey === bookingSteps.BOOK_TIME ? "block":"hidden"} col-span-3 md:col-span-2`}>
+              <div className={`${chooseService ? "block":"hidden"} col-span-3 md:col-span-2`}>
                 <h2 className={`${merriweather.className} text-4xl font-bold md:text-left text-center`}>Select Time</h2>
-                <Booking availableDays={availableDays} chosenDay={day} chosenTime={time} handleDaySelect={handleDaySelect} handleTimeSelect={handleTimeSelect}/>
+                <Booking />
               </div>
 
-              <div className={`${journey === bookingSteps.SELECT_SERVICE ? "block":"hidden"} col-span-3 md:col-span-2`}>
+              <div className={`${!chooseService ? "block":"hidden"} col-span-3 md:col-span-2`}>
                 <h2 className={`${merriweather.className} text-4xl font-bold md:text-left text-center`}>Services</h2>
                 {
                   Object.keys(categorizedServices).map((cs, index) =>
@@ -133,10 +134,10 @@ const SalonServices = () => {
 
                 <hr className="my-6"/>
                 {
-                  time ? (
+                  bookingTime ? (
                       <div className="pb-5 text-gray-500 text-sm">
-                        <p className="flex items-center gap-2"><CiCalendar />{time.format("dddd, D MMMM")}</p>
-                        <p className="flex items-center gap-2"><CiClock2 />{time.format("HH:mm")}-{time.add(totalTime(), "minutes").format("HH:mm")} ({convertToHour(totalTime())} duration)</p>
+                        <p className="flex items-center gap-2"><CiCalendar />{bookingTime.format("dddd, D MMMM")}</p>
+                        <p className="flex items-center gap-2"><CiClock2 />{bookingTime.format("HH:mm")}-{bookingTime.add(totalTime(), "minutes").format("HH:mm")} ({convertToHour(totalTime())} duration)</p>
                       </div>
                   ) : undefined
                 }
@@ -151,18 +152,8 @@ const SalonServices = () => {
                   <span>Total</span>
                   <span>₦{selectedServices.reduce((acc, curr) => acc + curr.price, 0).toLocaleString('en-US')}</span>
                 </div>
-                {
-                  journey === bookingSteps.BOOK_TIME ?
-                      <Modal />
-                      :
-                      <button
-                          className={`font-bold text-white w-full p-3 rounded-lg ${selectedServices.length
-                          !== 0 ? "bg-black" : "bg-gray-300"}`}
-                          disabled={selectedServices.length === 0}
-                          onClick={handleSubmit}
-                      >Continue
-                      </button>
-                }
+                  <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={bookingLoader}>Continue</Button>
+                  <AddPhoneNumber isOpen={token && !user?.mobileNumber && chooseService} setIsPhoneRequired={setIsPhoneRequired} />
               </div>
             </div>
             {/*Mobile bar for selections*/}
@@ -171,14 +162,7 @@ const SalonServices = () => {
                 <p>₦{selectedServices.reduce((acc, curr) => acc + curr.price, 0).toLocaleString('en-US')}</p>
                 <p>{selectedServices.length ? selectedServices.length : "No"} services • {convertToHour(selectedServices.reduce((acc, curr) => acc + curr.duration, 0))}</p>
               </div>
-              {
-                journey === bookingSteps.BOOK_TIME ?
-                    <Modal />
-                    :
-                    <button className={`mt-3 font-bold text-white w-32 p-3 rounded-lg ${selectedServices.length !== 0 ? "bg-black" : "bg-gray-300"}`} disabled={selectedServices.length === 0} onClick={handleSubmit}>
-                      Continue
-                    </button>
-              }
+              <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={bookingLoader}>Continue</Button>
             </div>
           </section>
 
@@ -188,7 +172,6 @@ const SalonServices = () => {
                 className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>SALON SERVICES •&nbsp;</span>
           </Marquee>
         </section>
-      </>
   );
 }
 
@@ -228,7 +211,9 @@ const convertToHour = (minutes) => {
   return (hour > 0 ? `${hour}h` : '') + (hour === 0 || remainingMins === 0 ? '' : ', ') + (remainingMins > 0 ? `${remainingMins}m`: '')
 }
 
-const Booking = ({availableDays, chosenDay, chosenTime, handleDaySelect, handleTimeSelect}) => {
+const Booking = () => {
+  const { availableDays, availableTimes, bookingTime, updateBookingTime } = useBooking();
+
   return (
       <div>
         <div className="flex justify-between items-center py-5">
@@ -276,10 +261,10 @@ const Booking = ({availableDays, chosenDay, chosenTime, handleDaySelect, handleT
                         className="flex-col justify-center items-center"
                     >
                       <div
-                          className={`${merriweather.className} flex justify-center items-center h-16 w-16 border rounded-full text-3xl font-bold ${isOffDay ? "line-through text-gray-300" : ""} ${chosenDay.isSame(day) ? "bg-blue-600 text-white" : "bg-white text-black"}  cursor-pointer`}
-                          onClick={() => handleDaySelect(day)}
+                          className={`${merriweather.className} flex justify-center items-center h-16 w-16 border rounded-full text-3xl font-bold ${isOffDay ? "line-through text-gray-300" : ""} ${bookingTime?.format('DD/MM/YYYY') === day.format('DD/MM/YYYY') ? "bg-blue-600 text-white" : "bg-white text-black"}  cursor-pointer`}
+                          onClick={() => updateBookingTime(day)}
                       >
-                        <span>{day.format("DD")}</span>
+                        <span>{day?.format("DD")}</span>
                       </div>
                       <p className={"text-center"}>{day.format("ddd")}</p>
                     </SwiperSlide>
@@ -290,99 +275,90 @@ const Booking = ({availableDays, chosenDay, chosenTime, handleDaySelect, handleT
 
         <div>
           {
-            Array.from({ length: 30 }, (_, i) => dayjs().hour(9).minute(0).second(0).millisecond(0)).map((t, index) => {
-              const time = t.add(index * 15, "minutes");
-              return (
-                  <div
-                      className={`border p-5 rounded-lg my-2 hover:bg-gray-200 ${chosenTime?.isSame(time) ? "border-2 border-blue-600 bg-gray-100" : "border-gray-200"}`}
-                      key={index}
-                      onClick={() => handleTimeSelect(time)}
-                  >
-                    {time.format("hh:mm A")}
-                  </div>
-              )
-            })
+            (bookingTime ? availableTimes[bookingTime.format("DD/MM/YYYY")] : availableTimes[dayjs().format("DD/MM/YYYY")])?.map((time, index) => (
+              <div
+                  key={index}
+                  className={`border p-5 rounded-lg my-2 hover:bg-gray-200 ${
+                      bookingTime?.isSame(time)
+                          ? "border-2 border-blue-600 bg-gray-100"
+                          : "border-gray-200"
+                  }`}
+                  onClick={() => updateBookingTime(time)}
+              >
+                {time.format("HH:mm")}
+              </div>
+            ))
           }
         </div>
       </div>
   )
 }
 
-const Modal = () => (
-  <Dialog>
-    <form>
-      <DialogTrigger asChild>
-        <button
-            className={`font-bold text-white w-full p-3 rounded-lg bg-black`}
-        >Continue
-        </button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className={"text-3xl"}>Log in or Sign up</DialogTitle>
-          <DialogDescription className={"text-sm"}>
-            Make changes to your profile here. Click save when you&apos;re
-            done.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4">
-          <div className="grid"><Button className={"my-1"} variant="outline"><FcGoogle /> Login with Google</Button></div>
-          <div className="grid"><Button className={"my-1"} variant="outline"><FaFacebook className={"text-blue-600"} /> Login with Facebook</Button></div>
+const AddPhoneNumber = () => {
+  const { token, user, setUser } = useAuth();
+  const [error, setError] = useState("");
+  const [phone, setPhone] = useState("");
+  const [phoneProvided, setPhoneProvided] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-          <hr className={"m-4"} />
+  const isOpen = token && !user?.mobileNumber && !phoneProvided;
+  if (!isOpen) return null;
 
-          <div className="grid gap-3">
-            <Input className={"py-5"} id="email" name="email" type="email" placeholder="Email" />
+  const validate = () => {
+    if (!/^(?:\+234|0)/.test(phone)) {
+      setError("Number must start with +234 or 0");
+      return false;
+    }
+    setError("");
+    return true;
+  }
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setIsLoading(true)
+    const {data, status} = await axios.patch('/api/user', {id: user.id, mobileNumber: phone});
+    if(status !== 200) return; // log a something went wrong error
+    setUser(data)
+    setPhoneProvided(true);
+    setIsLoading(false);
+  }
+
+  const onChange = (e) => {
+    const phone = e.target.value.trim();
+    // Allow only + at start and digits
+    if (/^\+?[0-9]*$/.test(phone)) {
+      setPhone(phone);
+    }
+  };
+
+  return (
+      <Dialog open={isOpen} onOpenChange={() => setPhoneProvided(true)}>
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className={"text-2xl"}>Add Phone</DialogTitle>
+            <DialogDescription>
+              Enter your phone number to confirm your appointment
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <div className="grid flex-1 gap-2">
+              <Label htmlFor="link">
+                Mobile Number
+              </Label>
+              <Input className="h-12" id="link" value={phone} onChange={onChange} />
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button className="w-full" type="submit">Save changes</Button>
-        </DialogFooter>
-      </DialogContent>
-    </form>
-  </Dialog>
-)
+          <DialogFooter className="sm:justify-start">
+              <Button className="w-full" type="submit" onClick={handleSubmit}>Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+  );
+};
 
-// const Modal = ({toggle}) => {
-//   const [isOpen, setIsOpen] = useState(false);
-//
-//   return (
-//       <div className="relative">
-//         {/* Open Button */}
-//         <button
-//             className="px-4 py-2 bg-blue-600 text-white rounded"
-//             onClick={() => setIsOpen(true)}
-//         >
-//           Open Modal
-//         </button>
-//
-//         {isOpen && (
-//             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-//               <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 relative">
-//                 <h2 className="text-3xl font-bold my-3">Log in or Sign Up</h2>
-//                 <p className="mb-4">Log in or sign up to complete your booking</p>
-//                 <button className={"w-full border rounded-lg p-3 my-2"}>Continue with Facebook</button>
-//                 <button className={"w-full border rounded-lg p-3 my-2"}>Continue with Google</button>
-//
-//                 <hr className={"my-6"} />
-//
-//                 <input className={"w-full border rounded-lg p-3 my-2"} />
-//
-//                 <button className={"w-full border rounded-lg p-3 my-2 font-bold text-white bg-black"} onClick={() => setIsOpen(false)}>Continue</button>
-//
-//                 {/* Close Icon */}
-//                 <button
-//                     className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-//                     onClick={() => setIsOpen(false)}
-//                 >
-//                   <IoMdClose />
-//                 </button>
-//               </div>
-//             </div>
-//         )}
-//       </div>
-//   );
-// }
 
+
+const SalonServices = () => <BookingProvider><SalonServicesPage /></BookingProvider>
 
 export default SalonServices;

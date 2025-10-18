@@ -176,7 +176,12 @@ class Repository<Model> {
     return results.length > 0 ? results[0] : null;
   }
 
-  async find(colName, value, options = {}) {
+  async findOne(data: {}, options = {}) {
+    const results = await this.find(Object.keys(data)[0], Object.values(data)[0]);
+    return results.length > 0 ? results[0] : null;
+  }
+
+  async find(colName, value, options = {}): Promise<Model> {
     const all = await this.findAll();
     const results = [];
 
