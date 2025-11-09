@@ -1,42 +1,96 @@
 "use client"
 
-import {useEffect, useState} from "react";
-import Image from "next/image";
-import Link from "next/link";
-import {Menu} from "@/components/menu";
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Menu as MenuIcon, X } from "lucide-react"
+import { Menu } from "@/components/menu"
 
 export function Header() {
-    const [isVisible, setIsVisible] = useState(true);
-    const [showMenu, setShowMenu] = useState(false);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const [isVisible, setIsVisible] = useState(true)
+    const [showMenu, setShowMenu] = useState(false)
+    const [lastScrollY, setLastScrollY] = useState(0)
 
     useEffect(() => {
         const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-            setIsVisible(currentScrollY < lastScrollY); // Hide when scrolling down
-            setLastScrollY(currentScrollY);
-        };
+            const currentScrollY = window.scrollY
+            setIsVisible(currentScrollY < lastScrollY)
+            setLastScrollY(currentScrollY)
+        }
 
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [lastScrollY]);
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [lastScrollY])
 
-    const handleMenuClick = () => {
-        setShowMenu(!showMenu)
-    }
+    const handleMenuClick = () => setShowMenu(!showMenu)
 
-    return <>
-        <div
-            className={`fixed top-0 w-full h-20 flex justify-between items-center p-4 z-50 backdrop-blur-sm transition-transform duration-300 ${
-                isVisible ? "translate-y-0" : "-translate-y-full"
-            }`}>
-            {/*<Link href={"#"} onClick={handleMenuClick}><span className="">Menu</span></Link>*/}
-            <Image src={"./logo.svg"} alt={"FRH"} width={45} height={45}
-            className="absolute left-1/2 -translate-x-1/2"/>
-            {/*<div className="py-3 px-6 bg-[#BD2E2E] rounded-3xl">*/}
-            {/*    <span className=" text-white">Book a session</span>*/}
-            {/*</div>*/}
-        </div>
-        <Menu showMenu={showMenu} handleMenuClick={handleMenuClick} />
-    </>;
+    return (
+        <>
+            <header
+                className={`fixed top-0 w-full h-20 flex items-center justify-between px-6 z-50 backdrop-blur-sm bg-white/10 transition-transform duration-300 ${
+                    isVisible ? "translate-y-0" : "-translate-y-full"
+                }`}
+            >
+                {/* Left: Logo */}
+                <Link href="/" className="flex items-center space-x-2">
+                    <Image src="/logo.svg" alt="FRH" width={45} height={45} priority />
+                </Link>
+
+                {/* Right: Desktop Navigation */}
+                <nav className="hidden md:flex items-center space-x-8 text-gray-700 font-medium text-sm">
+                    <Link
+                        href="/"
+                        className="hover:text-gray-900 transition-colors"
+                    >
+                        • HOME
+                    </Link>
+                    <Link
+                        href="/salon-services"
+                        className="hover:text-gray-900 transition-colors"
+                    >
+                        • SALON SERVICES
+                    </Link>
+                    <Link
+                        href="/consultations"
+                        className="hover:text-gray-900 transition-colors"
+                    >
+                        • CONSULTATIONS
+                    </Link>
+                </nav>
+
+                {/* Right: Mobile Hamburger */}
+                <button
+                    onClick={handleMenuClick}
+                    className="md:hidden flex items-center justify-center focus:outline-none"
+                    aria-label="Toggle Menu"
+                >
+                    {showMenu ? (
+                        <X className="h-7 w-7 text-gray-800" />
+                    ) : (
+                        <MenuIcon className="h-7 w-7 text-gray-800" />
+                    )}
+                </button>
+            </header>
+
+            {/* Slide-in Mobile Menu */}
+            <Menu showMenu={showMenu} handleMenuClick={handleMenuClick}>
+                <div className="flex flex-col space-y-4 text-lg font-medium text-gray-800 p-6">
+                    <Link
+                        href="/services"
+                        onClick={handleMenuClick}
+                        className="hover:text-[#BD2E2E] transition-colors"
+                    >
+                        Salon Services
+                    </Link>
+                    <Link
+                        href="/consultation-services"
+                        onClick={handleMenuClick}
+                        className="hover:text-[#BD2E2E] transition-colors"
+                    >
+                        Consultation Services
+                    </Link>
+                </div>
+            </Menu>
+        </>
+    )
 }

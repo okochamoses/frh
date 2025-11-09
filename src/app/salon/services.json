@@ -14,7 +14,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,875,308",
-    "SKU": ""
+    "SKU": "",
+    "imageUrl": "https://i.pinimg.com/736x/b6/20/40/b62040a3139316de9af251bc3991f494.jpg"
   },
   {
     "title": "All Twists",
@@ -31,7 +32,9 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,275,327",
-    "SKU": ""
+    "SKU": "",
+    "imageUrl": "https://i.pinimg.com/736x/b6/20/40/b62040a3139316de9af251bc3991f494.jpg",
+    "header": true
   },
   {
     "title": "Twists with any combo (twists with weaves or styling)",
@@ -48,7 +51,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,275,310",
-    "SKU": ""
+    "SKU": "",
+    "imageUrl": "https://i1.wp.com/www.hadviser.com/wp-content/uploads/2023/12/1-asymmetric-short-strand-twist-CrNpVN-Ihk1.jpeg?resize=1440%2C1440&ssl=1"
   },
   {
     "title": "Flat twists (All back)",
@@ -65,7 +69,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,275,287",
-    "SKU": ""
+    "SKU": "",
+    "imageUrl": "https://www.coilsandglory.com/wp-content/uploads/2022/10/1.-Large-Flat-Twists-With-Curved-Part.jpg"
   },
   {
     "title": "Finger Coils",
@@ -82,7 +87,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,275,238",
-    "SKU": ""
+    "SKU": "",
+    "imageUrl": "https://i.pinimg.com/564x/4d/6c/c3/4d6cc30ebe7fbd0557adf2ad5a25da52.jpg"
   },
   {
     "title": "Mini twists",
@@ -99,7 +105,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,275,008",
-    "SKU": ""
+    "SKU": "",
+    "imageUrl": "https://mylivara.com/wp-content/uploads/2023/05/Untitled-design-67.png"
   },
   {
     "title": "Micro Twists",

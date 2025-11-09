@@ -23,7 +23,7 @@ export const merriweather = Merriweather({
 
 const metadata = {
   title: "Flourish Roots Hair",
-  description: "Promoting Healthier Natural Hair",
+  description: "Promoting Healthier Hair",
 };
 
 export default function RootLayout({ children }) {
