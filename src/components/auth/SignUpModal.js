@@ -51,7 +51,7 @@ const SignUpModal = () => {
     try {
       const response = await authApi.signUp(formData);
 
-      if (response.status === 200 && response.data?.data?.token) {
+      if (response.status === 201 && response.data?.data?.token) {
         const { token, user } = response.data.data;
         storage.setToken(token);
         setIsOpen(false);

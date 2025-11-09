@@ -3,17 +3,20 @@ import jwt from 'jsonwebtoken';
 import {LoginTicket, OAuth2Client, TokenPayload} from 'google-auth-library';
 import UserRepository from "../../repositories/sheetsImpl/UserRepository";
 import {User, UserFactory} from "../../models/User";
+import MailService from "@/lib/mail/MailService";
 
 class AuthService {
   private userRepo: UserRepository;
   private googleClient: OAuth2Client;
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: string;
+  private mailService: MailService;
   constructor() {
     this.userRepo = new UserRepository();
     this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+    this.mailService = MailService
   }
 
   async googleSignIn(idToken: string): Promise<{ user: User; token: string }> {
@@ -119,6 +122,14 @@ class AuthService {
     });
 
     const savedUser = await this.userRepo.create(newUser);
+    // send welcome email
+    MailService.sendWelcomeEmail({
+      to: savedUser.email,
+      toName: `${savedUser.firstName} ${savedUser.lastName}`,
+      firstName: savedUser.firstName,
+      verificationLink: 'https://fakelink.com',
+    })
+
     const token = this.generateToken(savedUser);
     delete savedUser.password;
     return { user: savedUser, token };

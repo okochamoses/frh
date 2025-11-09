@@ -64,9 +64,8 @@ export async function POST(req) {
       return Response.json({message: "Login Successful", data: result},
           {status: 200});
     }
-    console.log(body)
   } catch (err) {
-    console.error("Newsletter API Error:", err);
+    console.error("Auth API Error:", err);
     return Response.json({ error: err.message }, { status: 500 });
   }
 }

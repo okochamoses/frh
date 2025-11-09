@@ -35,6 +35,7 @@ import {Label} from "@/components/ui/label";
 import {BookingProvider, useBooking} from "@/app/contexts/BookingContext";
 import {useAuth} from "@/app/contexts/AuthContext";
 import utc from 'dayjs/plugin/utc';
+import {useRouter} from "next/router";
 
 dayjs.extend(utc);
 
@@ -48,6 +49,7 @@ const SalonServicesPage = () => {
 
   const { displayAuthModal, loading, token, user, isValidToken } = useAuth();
   const { bookingLoader, bookingTime, bookService } = useBooking();
+  const router = useRouter()
 
   const categorizeServices = () => {
     const categorizedServices = {featured: []};
@@ -90,8 +92,19 @@ const SalonServicesPage = () => {
   const handleSubmit = async () => {
     console.log(isValidToken())
     if (isValidToken()) {
+      console.log(1)
+      if (!chooseService) {
+        setChooseService(true);
+        console.log(2)
+        return;
+      }
+      console.log(3)
       // handle the full submission
       const res = await bookService(bookingTime, selectedServices);
+      if (res.status) {
+        // show the booking confirmation
+        router.push('/bookingConfirmation')
+      }
     }
     if (!chooseService) {
       setChooseService(true);

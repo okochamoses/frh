@@ -75,9 +75,9 @@ export const BookingProvider = ({ children }) => {
     const res = await axios.post('/api/booking', request);
     if (res.status !== 200) {
       // display error to user
-      return {success: true, }
     } else {
       // display successful booking message with booking details
+      return {success: true}
     }
     setBookingLoader(false);
   }
