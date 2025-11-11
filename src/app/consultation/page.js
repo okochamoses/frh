@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { motion } from "framer-motion"
+import Link from "next/link";
 
 const productsList = [
   {
     image: "/coaching.png",
+    link: "https://paystack.com/buy/1-on-1-hair-coaching-ygkkif",
     title: "‍💻 1-on-1 Hair Coaching",
     description:
         "Personalized support designed for your unique texture, lifestyle, and goals. Get expert guidance, product recommendations, and coaching that meets you where you are — from beginner to advanced.",
@@ -21,6 +23,7 @@ const productsList = [
   },
   {
     image: "/scalp-issues.png",
+    link: "https://paystack.com/buy/scalp-care-consultation",
     title: "🧖🏾‍ Scalp Care Consultation",
     description:
         "Is your scalp itchy, flaky, or holding you back from growth? We’ll do a scalp analysis and build a treatment plan to restore balance, reduce buildup, and bring life back to your roots.",
@@ -30,7 +33,8 @@ const productsList = [
     ],
   },
   {
-    image: "/image 7.png",
+    image: "/product.png",
+    link: "https://paystack.com/buy/build-your-routine-session",
     title: "‍🗂️ Build-Your-Routine Session",
     description:
         "Overwhelmed by information overload? Let’s simplify. We’ll build your complete weekly and monthly hair regimen — from wash day to protective styling — customized to your schedule, hair goals, and budget.",
@@ -41,6 +45,7 @@ const productsList = [
   },
   {
     image: "/long-hair.png",
+    link: "https://paystack.com/buy/intensive-hair-growth-program",
     title: "🌿 Intensive Hair Growth Program (3 Months)",
     description:
         "This is for the woman who wants transformation — inside and out. Includes weekly hair coaching + in-salon treatments, protective styles, growth tracking, and full support for 90 days.",
@@ -70,7 +75,7 @@ export default function Consultation() {
           >
             🌿 Ready to Flourish From the Root Up?
           </h3>
-          <p className="text-muted-foreground py-3">
+          <p className="text-muted-foreground pt-16 py-3">
             You’ve tried it all — oils, YouTube routines, and product after
             product… but your hair still isn’t thriving. You’re not alone — and
             that’s exactly why I’m here.
@@ -122,15 +127,16 @@ export default function Consultation() {
                           <li key={i}>{item}</li>
                       ))}
                     </ul>
-                    <Button
-                        onClick={() => handleBook(product.title)}
-                        className="w-full sm:w-auto text-base"
-                    >
-                      Book Consultation
-                    </Button>
+                    {/*<Button*/}
+                    {/*    onClick={() => handleBook(product.title)}*/}
+                    {/*    className="w-full sm:w-auto text-base"*/}
+                    {/*>*/}
+                    {/*  Book Consultation*/}
+                    {/*</Button>*/}
+                    <Link href={product.link}><Button dark>Book a session</Button></Link>
                   </CardContent>
                 </Card>
-                <Separator className="my-8" />
+                {/*<Separator className="my-8" />*/}
               </motion.div>
           ))}
         </section>

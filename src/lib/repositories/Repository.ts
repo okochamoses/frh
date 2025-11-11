@@ -11,7 +11,7 @@ class Repository<Model> {
   private _headers: null;
   private _sheetsClient: null;
 
-  constructor(sheetName, options = {
+  constructor(sheetName: string, options = {
     spreadsheetId: undefined,
     hasHeaders: undefined,
     headerRow: 1
@@ -36,14 +36,16 @@ class Repository<Model> {
   }
 
   // Static method that works for any inheriting class
-  static getInstance(...args) {
+  static getInstance<T extends typeof Repository>(this: T, sheetName: string, options?: any): InstanceType<T> {
     const className = this.name;
 
+    const args = [sheetName, options] as const; // Create a tuple for the constructor
+
     if (!Repository.instances.has(className)) {
-      Repository.instances.set(className, new this(...args));
+      Repository.instances.set(className, new (this as any)(...args));
     }
 
-    return Repository.instances.get(className);
+    return Repository.instances.get(className) as InstanceType<T>;
   }
 
   // Method to reset instance (useful for testing)

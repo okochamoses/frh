@@ -13,13 +13,15 @@ export const Bagelan = localFont({
     display: 'swap',
 })
 
-export const figtree = Figtree({
+export const figtree = localFont({
+  src: './figtree.ttf',
+  display: 'swap',
 })
 
-export const merriweather = Merriweather({
-  subsets: ["latin"],
-    weight: ["300", "400", "700", "900"]
-});
+export const merriweather = localFont({
+  src: './merriweather.otf',
+  display: 'swap',
+})
 
 const metadata = {
   title: "Flourish Roots Hair",

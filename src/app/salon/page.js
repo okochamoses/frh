@@ -35,7 +35,7 @@ import {Label} from "@/components/ui/label";
 import {BookingProvider, useBooking} from "@/app/contexts/BookingContext";
 import {useAuth} from "@/app/contexts/AuthContext";
 import utc from 'dayjs/plugin/utc';
-import {useRouter} from "next/router";
+import { useRouter } from 'next/navigation';
 
 dayjs.extend(utc);
 
