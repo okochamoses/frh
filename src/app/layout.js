@@ -1,12 +1,6 @@
-"use client"
-
-import {Figtree, Merriweather} from "next/font/google";
 import "./globals.css";
 import localFont from 'next/font/local'
-import Footer from "../components/footer";
-import {Header} from "@/components/header";
-import {GoogleOAuthProvider} from "@react-oauth/google";
-import {AuthProvider} from "@/app/contexts/AuthContext";
+import Root from "@/app/structure";
 
 export const Bagelan = localFont({
     src: './Bagelan.otf',
@@ -31,16 +25,18 @@ const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+    <head>
+      <title>Flourish Roots Hair</title>
+      <meta name="description" content="Promoting Healthier Hair" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link rel="icon" href="/favicon.ico" />
+    </head>
       <body
         className={`${figtree.variable} antialiased`}
       >
-        <GoogleOAuthProvider clientId={"423725763850-g9h03ff01rrmu7akn9ks5hl0a13nmajs.apps.googleusercontent.com"}>
-          <AuthProvider>
-          <Header />
+        <Root>
           {children}
-          <Footer />
-          </AuthProvider>
-        </GoogleOAuthProvider>
+        </Root>
       </body>
     </html>
   );

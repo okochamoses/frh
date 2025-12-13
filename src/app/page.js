@@ -73,14 +73,25 @@ export default function Home() {
       const email = e.target.email.value;
       e.target.elements.name.disabled = true;
       e.target.elements.email.disabled = true;
+      let isResponseReceived = false;
+      let timeoutId;
 
       try {
-        const res = await axios.post("http://localhost:3000/api/newsletter", {name, email});
-        console.log(res)
+        timeoutId = setTimeout(() => {
+        // Only hide the loader if the response hasn't arrived yet
+        if (!isResponseReceived) {
+          e.target.elements.name.disabled = false;
+          e.target.elements.email.disabled = false;
+        }
+      }, 1000);
+        const res = await axios.post("/api/newsletter", {name, email});
+        isResponseReceived = true;
+        clearTimeout(timeoutId);
+        e.target.elements.name.disabled = false;
+        e.target.elements.email.disabled = false;
         form.reset();
       } catch (error) {
         console.error("Error submitting form:", error);
-
       }
       setLoading(false)
       setSubmitted(true)
@@ -94,9 +105,9 @@ export default function Home() {
             >
                 <div className="flex items-center flex-col m:w-1/4 w-2/3 text-center text-white">
                     <h1 className={`${Bagelan.className} text-6xl md:text-9xl`}>FLOURISH ROOTS HAIR</h1>
-                    <p className="m:w-2/3 w-full my-6">Holistic haircare designed to nurture your natural beauty</p>
+                    <p className={`${merriweather.className} m:w-2/3 w-full my-6 text-xl font-medium`}>PROMOTING HEALTHIER HAIR</p>
 
-                  <Link href={"/salon"}><button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button></Link>
+                  <Link href={"/services"}><button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button></Link>
                 </div>
             </div>
 
@@ -106,7 +117,7 @@ export default function Home() {
               <span className="text-center leading-10 text-3xl md:text-6xl py-5">
                 Discover personalized solutions, expert guidance, and curated essentials to help your hair flourish from root to tip.
               </span>
-                {/*<span className="text-center leading-10 text-3xl md:text-6xl py-5">*/}
+                {/*<spCoan className="text-center leading-10 text-3xl md:text-6xl py-5">*/}
                 {/*  <span className="relative">Discover personalized</span>*/}
                 {/*  <span className="absolute">*/}
                 {/*    <Image className="inline-icon" src={"/inline-img-1.png"} alt={"FRH"} width={120} height={45} />*/}
@@ -123,15 +134,15 @@ export default function Home() {
             </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
-            <ServiceCard image="/coaching.png" title="Consultation Services" />
+            <ServiceCard image="/coaching.png" url={"/consultation"} title="Consultation Services" />
             {/*<ServiceCard image="/starter.png" title="Curated Starter Kit" />*/}
-            <ServiceCard image="/salon.png" title="Salon Services" />
+            <ServiceCard image="/salon.jpeg" url={"/services"} title="Salon Services" />
           </section>
 
           <About />
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full md:h-lvh">
-            <div className="flex flex-col items-center justify-center text-center bg-red-300 md:px-24 px-5 h-full">
+            <div className="flex sm:col-span-2 md:col-span-1 flex-col items-center justify-center text-center bg-[#DDA15E] md:px-24 px-5 h-full">
               <Image className="py-5" src="/logo.svg" alt="" height={50} width={50} />
               <span className={`${merriweather.className} text-3xl uppercase py-5`}>
                 Keep up to date with the hair care tips
@@ -146,7 +157,7 @@ export default function Home() {
                 <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
               </form>
             </div>
-            <div className="h-lvh" style={{backgroundImage: "url('/comb.png')", backgroundSize: "cover"}}></div>
+            <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/comb.png')", backgroundSize: "cover"}}></div>
           </section>
 
           <section className="flex flex-col items-center justify-between h-svh">
@@ -156,12 +167,10 @@ export default function Home() {
             <div className="w-full flex text-center flex-col items-center justify-center">
               <h3 className={`${merriweather.className} sm:w-2/3 md:w-5/6 sm:text-7xl text-4xl sm:px-10 px-2 py-5`}>Testimonials</h3>
               <p className="sm:w-1/2 p-5">
-                Flourish Roots Hair Co. is a holistic haircare brand. We are dedicated to empowering your hair
-                journey by providing the knowledge, tools, and support needed to help you embrace and nurture
-                your natural beauty.
+                Literally one of the best natural hair salons I’ve visited in Lagos, the service is top notch! They handled my hair with such care, I had zero complaints. My hair felt so good and healthy after, I’m definitely making you guys my go to hair salon.
               </p>
               <Image src={"/logo.svg"} alt={""} height={50} width={50} />
-              <span className="italic text-xs py-2">Jane Doe</span>
+              <span className="italic text-xs py-2">Adaugo Ugochukwu</span>
             </div>
             <Marquee className="pt-8" speed={30} direction="right" style={{overflowY: "hidden"}}>
               <p className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>- TESTIMONIALS</p>

@@ -12,7 +12,7 @@ import Link from "next/link";
 const productsList = [
   {
     image: "/coaching.png",
-    link: "https://paystack.com/buy/1-on-1-hair-coaching-ygkkif",
+    link: "https://paystack.com/buy/1-on-1-hair-coaching-cqtffb",
     title: "‍💻 1-on-1 Hair Coaching",
     description:
         "Personalized support designed for your unique texture, lifestyle, and goals. Get expert guidance, product recommendations, and coaching that meets you where you are — from beginner to advanced.",
@@ -23,7 +23,7 @@ const productsList = [
   },
   {
     image: "/scalp-issues.png",
-    link: "https://paystack.com/buy/scalp-care-consultation",
+    link: "https://paystack.com/buy/scalp-care-consultation-ewdznz",
     title: "🧖🏾‍ Scalp Care Consultation",
     description:
         "Is your scalp itchy, flaky, or holding you back from growth? We’ll do a scalp analysis and build a treatment plan to restore balance, reduce buildup, and bring life back to your roots.",
@@ -34,7 +34,7 @@ const productsList = [
   },
   {
     image: "/product.png",
-    link: "https://paystack.com/buy/build-your-routine-session",
+    link: "https://paystack.com/buy/build-your-routine-session-vpzhbk",
     title: "‍🗂️ Build-Your-Routine Session",
     description:
         "Overwhelmed by information overload? Let’s simplify. We’ll build your complete weekly and monthly hair regimen — from wash day to protective styling — customized to your schedule, hair goals, and budget.",
@@ -45,7 +45,7 @@ const productsList = [
   },
   {
     image: "/long-hair.png",
-    link: "https://paystack.com/buy/intensive-hair-growth-program",
+    link: "https://paystack.com/buy/intensive-hair-growth-program-fdbjqq",
     title: "🌿 Intensive Hair Growth Program (3 Months)",
     description:
         "This is for the woman who wants transformation — inside and out. Includes weekly hair coaching + in-salon treatments, protective styles, growth tracking, and full support for 90 days.",

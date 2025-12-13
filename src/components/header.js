@@ -45,13 +45,13 @@ export function Header() {
                         • HOME
                     </Link>
                     <Link
-                        href="/salon-services"
+                        href="/services"
                         className="hover:text-gray-900 transition-colors"
                     >
                         • SALON SERVICES
                     </Link>
                     <Link
-                        href="/consultations"
+                        href="/consultation"
                         className="hover:text-gray-900 transition-colors"
                     >
                         • CONSULTATIONS
@@ -83,7 +83,7 @@ export function Header() {
                         Salon Services
                     </Link>
                     <Link
-                        href="/consultation-services"
+                        href="/consultation"
                         onClick={handleMenuClick}
                         className="hover:text-[#BD2E2E] transition-colors"
                     >

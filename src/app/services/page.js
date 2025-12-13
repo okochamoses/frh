@@ -51,13 +51,22 @@ const SalonServicesOnly = () => {
 
   return (
       <section className="px-6 flex flex-col pt-24 pb-56">
-        <section className="max-w-[1600px] md:px-10 lg:px-40 m-auto">
+        <section className="w-full md:px-10 lg:px-40 m-auto sticky top-0 pt-10 bg-white z-10">
           {/* Header */}
           <h2
               className={`${merriweather.className} text-4xl font-bold md:text-left text-center mb-6`}
           >
             Salon Services
           </h2>
+
+          Limit after sole check: CorpLimitFetchResponseDto
+          (cifLimit=50000000, userLimit=50000000, cifMonthlyLimit=1550000000, userMonthlyLimit=1550000000)
+
+          Received consumed limit details :
+          ConsumedLimitResponse(
+
+          cifConsumedLimit=ConsumedLimit(value=23962414, amount=49188700, monthlyAmount=120694250.55),
+          userConsumedLimit=ConsumedLimit(value=36791113, amount=null, monthlyAmount=33869312.62))
 
           {/* Search Bar */}
           <div className="w-full mb-10 flex justify-center">
@@ -69,7 +78,9 @@ const SalonServicesOnly = () => {
                 className="max-w-lg w-full h-12 text-lg"
             />
           </div>
+        </section>
 
+        <section className="max-w-[1600px] md:px-10 lg:px-40 m-auto">
           {/* FEATURED SECTION */}
           {displayFeatured && featuredServices.length > 0 && (
               <div className="mb-16">

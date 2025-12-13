@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from "react";
 import { FaArrowRight, FaEnvelope, FaFacebook, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 import {merriweather} from "@/app/layout";
@@ -20,23 +22,25 @@ export default function Footer() {
         <div className="w-full max-w-screen-xl grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 md:gap-12 pt-6 text-sm ">
           <div className="">
             <h6 className={`${merriweather.className} text-lg max-w-72`}>Phone / Whatsapp</h6>
+            <span className="flex py-2 items-center">+234-81-1021-5014</span>
             <span className="flex py-2 items-center">+234-81-6167-2820</span>
           </div>
           <div className="">
             <h6 className={`${merriweather.className} text-lg max-w-72`}>Email</h6>
-            <span className="flex py-2 items-center">info@flourishrootshair.com</span>
+            <span className="flex py-2 items-center">flourishnaturalsinfo@gmail.com
+            </span>
           </div>
           <div className="mb-12">
             <h6 className={`${merriweather.className} text-lg max-w-72`}>Address</h6>
-            <a className="flex py-2 items-center">Shop 33, Destiny Plaza, Ago Palace Way, beside market square supermarket</a>
+            <a className="flex py-2 items-center">Shop 303, Destiny Plaza, Ago Palace Way, beside market square supermarket</a>
           </div>
         </div>
 
         <div className="w-full max-w-screen-xl grid md:grid-cols-4 grid-cols-2 md:gap-12 gap-x-12 bg-black p-10 md:rounded-full rounded-lg text-white">
           <Link href="https://www.instagram.com/frh_naturals/" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaInstagram size={20} className="pr-1" /> Instagram</Link>
           <Link href="https://www.facebook.com/people/FRH-Flourish-Roots-Hair-Co/61570171119138/#" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaFacebook size={20} className="pr-1" /> Facebook</Link>
-          <Link href="https://wa.me/2348161672820" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaWhatsapp size={20} className="pr-1" /> Whatsapp</Link>
-          <Link href="/moses" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaTiktok size={20} className="pr-1" /> TikTok</Link>
+          <Link href="https://wa.me/2348110215014" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaWhatsapp size={20} className="pr-1" /> Whatsapp</Link>
+          <Link href="https://www.tiktok.com/@frhnaturals" className="flex py-2 justify-center items-center border-b-[1px] border-black hover:text-yellow-500"><FaTiktok size={20} className="pr-1" /> TikTok</Link>
         </div>
 
 
