@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Image from "next/image";
 import services from "../salon/services.json"; // adjust path if needed
 import { merriweather } from "@/app/layout";
 import {
@@ -58,15 +57,6 @@ const SalonServicesOnly = () => {
           >
             Salon Services
           </h2>
-
-          Limit after sole check: CorpLimitFetchResponseDto
-          (cifLimit=50000000, userLimit=50000000, cifMonthlyLimit=1550000000, userMonthlyLimit=1550000000)
-
-          Received consumed limit details :
-          ConsumedLimitResponse(
-
-          cifConsumedLimit=ConsumedLimit(value=23962414, amount=49188700, monthlyAmount=120694250.55),
-          userConsumedLimit=ConsumedLimit(value=36791113, amount=null, monthlyAmount=33869312.62))
 
           {/* Search Bar */}
           <div className="w-full mb-10 flex justify-center">
@@ -129,11 +119,10 @@ const SalonServicesOnly = () => {
             </DialogHeader>
             {selectedImage && (
                 <div className="relative w-full h-[500px]">
-                  <Image
+                  <img
                       src={selectedImage}
                       alt="Service preview"
-                      fill
-                      className="object-cover rounded-xl"
+                      className="w-full h-full object-cover rounded-xl"
                   />
                 </div>
             )}
@@ -150,11 +139,10 @@ const ServiceCard = ({ service, onClickImage }) => (
           className="relative w-full h-96 mb-4 cursor-pointer"
           onClick={onClickImage}
       >
-        <Image
+        <img
             src={service?.imageUrl || "/placeholder.png"}
             alt={service.title}
-            fill
-            className="object-cover rounded-xl"
+            className="w-full h-full object-cover rounded-xl"
         />
       </div>
       <h3 className="text-lg font-semibold">{service.title}</h3>

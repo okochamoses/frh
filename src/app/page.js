@@ -107,7 +107,7 @@ export default function Home() {
                     <h1 className={`${Bagelan.className} text-6xl md:text-9xl`}>FLOURISH ROOTS HAIR</h1>
                     <p className={`${merriweather.className} m:w-2/3 w-full my-6 text-xl font-medium`}>PROMOTING HEALTHIER HAIR</p>
 
-                  <Link href={"/services"}><button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button></Link>
+                  <a href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796" target="_blank" rel="noopener noreferrer"><button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button></a>
                 </div>
             </div>
 
@@ -134,9 +134,9 @@ export default function Home() {
             </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
-            <ServiceCard image="/coaching.png" url={"/consultation"} title="Consultation Services" />
+            <ServiceCard image="/coaching.png" url={"/consultation"} title="Help coaching services" />
             {/*<ServiceCard image="/starter.png" title="Curated Starter Kit" />*/}
-            <ServiceCard image="/salon.jpeg" url={"/services"} title="Salon Services" />
+            <ServiceCard image="/salon.jpeg" title="Salon Services" />
           </section>
 
           <About />

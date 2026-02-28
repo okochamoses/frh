@@ -8,7 +8,7 @@ export function Menu({ showMenu, handleMenuClick }) {
   const menuItems = [
     { name: "Home", href: "/" },
     { name: "Salon Services", href: "/services" },
-    { name: "Consultations", href: "/consultation" },
+    { name: "Help coaching services", href: "/consultation" },
   ];
 
   return (

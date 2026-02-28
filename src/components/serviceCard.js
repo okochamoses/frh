@@ -10,7 +10,12 @@ const variants = {
   hover: { scale: 1.05 },
 };
 
-export default function ServiceCard({ image, title }) {
+const FRESHA_BOOKING_URL = "https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796";
+
+export default function ServiceCard({ image, title, url }) {
+  const href = url || FRESHA_BOOKING_URL;
+  const isExternal = href.startsWith("http");
+
   return (
       <motion.div
           className="w-full relative flex flex-col items-center justify-end h-[80vh] overflow-hidden group"
@@ -34,9 +39,15 @@ export default function ServiceCard({ image, title }) {
           >
             {title}
           </motion.span>
-          <Link target="_blank" href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796">
-            <Button text="Get Started" />
-          </Link>
+          {isExternal ? (
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              <Button text="Get Started" />
+            </a>
+          ) : (
+            <Link href={href}>
+              <Button text="Get Started" />
+            </Link>
+          )}
         </div>
       </motion.div>
   );

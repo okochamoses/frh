@@ -94,7 +94,7 @@ export default function Consultation() {
         <span
             className={`${Bagelan.className} text-[4em] md:text-[10em] text-gray-100 whitespace-nowrap`}
         >
-          CONSULTATIONS •&nbsp;
+          HELP COACHING •&nbsp;
         </span>
         </Marquee>
 
@@ -133,7 +133,7 @@ export default function Consultation() {
                     {/*>*/}
                     {/*  Book Consultation*/}
                     {/*</Button>*/}
-                    <Link href={product.link}><Button dark>Book a session</Button></Link>
+                    <Link href={product.link} target="_blank" rel="noopener noreferrer"><Button dark>Book a session</Button></Link>
                   </CardContent>
                 </Card>
                 {/*<Separator className="my-8" />*/}
@@ -145,7 +145,7 @@ export default function Consultation() {
         <span
             className={`${Bagelan.className} text-[4em] md:text-[10em] text-gray-100 whitespace-nowrap`}
         >
-          CONSULTATIONS •&nbsp;
+          HELP COACHING •&nbsp;
         </span>
         </Marquee>
       </div>

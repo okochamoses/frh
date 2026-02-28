@@ -27,7 +27,7 @@ export function Header() {
     return (
         <>
             <header
-                className={`fixed top-0 w-full h-20 flex items-center justify-between px-6 z-50 backdrop-blur-sm bg-white/10 transition-transform duration-300 ${
+                className={`fixed top-0 w-full h-20 flex items-center justify-between px-6 z-50 backdrop-blur-sm bg-slate-500/40 transition-transform duration-300 ${
                     isVisible ? "translate-y-0" : "-translate-y-full"
                 }`}
             >
@@ -37,25 +37,39 @@ export function Header() {
                 </Link>
 
                 {/* Right: Desktop Navigation */}
-                <nav className="hidden md:flex items-center space-x-8 text-gray-700 font-medium text-sm">
+                <nav className="hidden md:flex items-center space-x-8 text-gray-100 font-medium text-sm">
                     <Link
                         href="/"
-                        className="hover:text-gray-900 transition-colors"
+                        className="hover:text-white transition-colors"
                     >
                         • HOME
                     </Link>
                     <Link
                         href="/services"
-                        className="hover:text-gray-900 transition-colors"
+                        className="hover:text-white transition-colors"
                     >
                         • SALON SERVICES
                     </Link>
                     <Link
-                        href="/consultation"
-                        className="hover:text-gray-900 transition-colors"
+                        href="/#about"
+                        className="hover:text-white transition-colors"
                     >
-                        • CONSULTATIONS
+                        • ABOUT
                     </Link>
+                    <Link
+                        href="/consultation"
+                        className="hover:text-white transition-colors"
+                    >
+                        • HELP COACHING
+                    </Link>
+                    <a
+                        href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#BD2E2E] text-white px-4 py-2 rounded-md hover:bg-[#a02626] transition-colors"
+                    >
+                        Book A Session
+                    </a>
                 </nav>
 
                 {/* Right: Mobile Hamburger */}
@@ -83,12 +97,28 @@ export function Header() {
                         Salon Services
                     </Link>
                     <Link
+                        href="/#about"
+                        onClick={handleMenuClick}
+                        className="hover:text-[#BD2E2E] transition-colors"
+                    >
+                        About Me
+                    </Link>
+                    <Link
                         href="/consultation"
                         onClick={handleMenuClick}
                         className="hover:text-[#BD2E2E] transition-colors"
                     >
-                        Consultation Services
+                        Help coaching services
                     </Link>
+                    <a
+                        href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleMenuClick}
+                        className="bg-white text-[#BD2E2E] px-5 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors"
+                    >
+                        Book A Session
+                    </a>
                 </div>
             </Menu>
         </>

@@ -21,6 +21,12 @@ export default function Footer() {
 
         <div className="w-full max-w-screen-xl grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 md:gap-12 pt-6 text-sm ">
           <div className="">
+            <h6 className={`${merriweather.className} text-lg max-w-72`}>Quick links</h6>
+            <Link href="/#about" className="flex py-2 items-center hover:underline">About Me</Link>
+            <Link href="/services" className="flex py-2 items-center hover:underline">Salon Services</Link>
+            <Link href="/consultation" className="flex py-2 items-center hover:underline">Help coaching</Link>
+          </div>
+          <div className="">
             <h6 className={`${merriweather.className} text-lg max-w-72`}>Phone / Whatsapp</h6>
             <span className="flex py-2 items-center">+234-81-1021-5014</span>
             <span className="flex py-2 items-center">+234-81-6167-2820</span>

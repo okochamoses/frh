@@ -58,20 +58,23 @@ const About = () => {
 
 
   return (
-      <section id='about-container' className="flex flex-col items-center justify-between h-svh">
+      <section id="about" className="flex flex-col items-center justify-between min-h-svh py-16 md:py-24 bg-[#faf9f7]">
         <Marquee className="pt-8" speed={30} style={{overflowY: "hidden"}}>
-          <span className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>FLOURISH ROOTS HAIR</span>
+          <span className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-200 whitespace-nowrap`}>ABOUT ME</span>
         </Marquee>
-        <div className="w-full flex text-center flex-col items-center justify-center">
-          <h3 className={`${merriweather.className} sm:w-2/3 md:w-5/6 sm:text-7xl text-4xl sm:px-10 px-2 py-5`}>Promoting Healthier Natural Hair</h3>
-          <p className="sm:w-1/2 p-5">
-            Flourish Roots Hair Co. is a holistic haircare brand. We are dedicated to empowering your hair
-            journey by providing the knowledge, tools, and support needed to help you embrace and nurture
-            your natural beauty.
+        <div className="w-full flex text-center flex-col items-center justify-center px-4 flex-1">
+          <span className={`${merriweather.className} text-sm uppercase tracking-widest text-[#BD2E2E] font-medium mb-2`}>Founder & Hair Coach</span>
+          <h2 className={`${merriweather.className} sm:w-2/3 md:w-4/5 sm:text-5xl text-3xl sm:px-10 px-2 py-4 font-bold text-gray-900`}>About Me</h2>
+          <img src="/ceo.png" alt="Mariam Okocha Ijeoma - Founder & Hair Coach" className="w-48 h-48 md:w-64 md:h-64 rounded-full object-cover my-6 shadow-lg flex-shrink-0" />
+          <p className="sm:w-2/3 max-w-2xl p-5 text-lg text-gray-700 leading-relaxed">
+            I&apos;m <strong>Mariam Okocha Ijeoma</strong> — certified hair coach, salon owner, and the founder of Flourish Roots Hair Co. I&apos;ve lived through the frustration of hair loss, dryness, and postpartum shedding, and I built this brand to help 4C queens like you finally understand, love, and grow their hair.
+          </p>
+          <p className="sm:w-2/3 max-w-2xl px-5 pb-5 text-gray-600 leading-relaxed">
+            With a focus on personalized care and expert guidance, I provide the knowledge, tools, and support you need to embrace your natural beauty — from scalp health and simple routines to curated essentials that help your hair flourish from root to tip.
           </p>
         </div>
         <Marquee className="pt-8" speed={30} direction="right" style={{overflowY: "hidden"}}>
-          <p className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>- FLOURISH ROOTS HAIR</p>
+          <p className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-200 whitespace-nowrap`}>- ABOUT ME</p>
         </Marquee>
       </section>
   )
