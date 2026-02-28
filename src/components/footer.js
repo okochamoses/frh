@@ -24,7 +24,7 @@ export default function Footer() {
             <h6 className={`${merriweather.className} text-lg max-w-72`}>Quick links</h6>
             <Link href="/#about" className="flex py-2 items-center hover:underline">About Me</Link>
             <Link href="/services" className="flex py-2 items-center hover:underline">Salon Services</Link>
-            <Link href="/consultation" className="flex py-2 items-center hover:underline">Help coaching</Link>
+            <Link href="/consultation" className="flex py-2 items-center hover:underline">Hair coaching</Link>
           </div>
           <div className="">
             <h6 className={`${merriweather.className} text-lg max-w-72`}>Phone / Whatsapp</h6>

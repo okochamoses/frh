@@ -45,7 +45,7 @@ const productsList = [
   },
   {
     image: "/long-hair.png",
-    link: "https://paystack.com/buy/intensive-hair-growth-program-fdbjqq",
+    link: "https://paystack.com/buy/intensive-hair-growth-program-3-months-fdbjqq",
     title: "🌿 Intensive Hair Growth Program (3 Months)",
     description:
         "This is for the woman who wants transformation — inside and out. Includes weekly hair coaching + in-salon treatments, protective styles, growth tracking, and full support for 90 days.",
@@ -94,7 +94,7 @@ export default function Consultation() {
         <span
             className={`${Bagelan.className} text-[4em] md:text-[10em] text-gray-100 whitespace-nowrap`}
         >
-          HELP COACHING •&nbsp;
+          HAIR COACHING •&nbsp;
         </span>
         </Marquee>
 
@@ -145,7 +145,7 @@ export default function Consultation() {
         <span
             className={`${Bagelan.className} text-[4em] md:text-[10em] text-gray-100 whitespace-nowrap`}
         >
-          HELP COACHING •&nbsp;
+          HAIR COACHING •&nbsp;
         </span>
         </Marquee>
       </div>

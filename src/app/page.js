@@ -139,7 +139,7 @@ export default function Home() {
             </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
-            <ServiceCard image="/coaching.png" url={"/consultation"} title="Help coaching services" />
+            <ServiceCard image="/coaching.png" url={"/consultation"} title="Hair coaching services" />
             {/*<ServiceCard image="/starter.png" title="Curated Starter Kit" />*/}
             <ServiceCard image="/salon.jpeg" title="Salon Services" />
           </section>

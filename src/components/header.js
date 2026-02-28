@@ -60,7 +60,7 @@ export function Header() {
                         href="/consultation"
                         className="hover:text-white transition-colors"
                     >
-                        • HELP COACHING
+                        • HAIR COACHING
                     </Link>
                     <a
                         href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
@@ -108,7 +108,7 @@ export function Header() {
                         onClick={handleMenuClick}
                         className="hover:text-[#BD2E2E] transition-colors"
                     >
-                        Help coaching services
+                        Hair coaching services
                     </Link>
                     <a
                         href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
