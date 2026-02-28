@@ -6,8 +6,8 @@ import ServiceCard from "../components/serviceCard";
 import Marquee from "react-fast-marquee";
 import Button from "../components/button";
 import About from "../components/about";
-import axios from "axios";
 import Link from "next/link";
+import { subscribe } from "@/lib/firebase/newsletterService";
 
 const Checkmark = ({text, style, className}) => {
   return (
@@ -43,6 +43,7 @@ export default function Home() {
     const [url, setUrl] = useState("./hero-bg.png");
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const updateBackground = () => {
@@ -65,36 +66,40 @@ export default function Home() {
     }, []);
 
     const handleForm = async (e) => {
-      if(submitted) return;
-      setLoading(true)
+      if (submitted) return;
+      setLoading(true);
+      setError(null);
       e.preventDefault();
       const form = e.target;
-      const name = e.target.name.value;
-      const email = e.target.email.value;
+      const name = e.target.name.value?.trim() || "";
+      const email = e.target.email.value?.trim() || "";
+
+      if (!email) {
+        setError("Please enter your email address.");
+        setLoading(false);
+        return;
+      }
+      if (!email.includes("@")) {
+        setError("Please enter a valid email address.");
+        setLoading(false);
+        return;
+      }
+
       e.target.elements.name.disabled = true;
       e.target.elements.email.disabled = true;
-      let isResponseReceived = false;
-      let timeoutId;
 
       try {
-        timeoutId = setTimeout(() => {
-        // Only hide the loader if the response hasn't arrived yet
-        if (!isResponseReceived) {
-          e.target.elements.name.disabled = false;
-          e.target.elements.email.disabled = false;
-        }
-      }, 1000);
-        const res = await axios.post("/api/newsletter", {name, email});
-        isResponseReceived = true;
-        clearTimeout(timeoutId);
+        await subscribe(email, name);
+        form.reset();
+        setSubmitted(true);
+      } catch (err) {
+        console.error("Error submitting form:", err);
+        setError(err.message || "Something went wrong. Please try again.");
+      } finally {
         e.target.elements.name.disabled = false;
         e.target.elements.email.disabled = false;
-        form.reset();
-      } catch (error) {
-        console.error("Error submitting form:", error);
+        setLoading(false);
       }
-      setLoading(false)
-      setSubmitted(true)
     };
     return (
         <>
@@ -153,8 +158,9 @@ export default function Home() {
 
               <form className="py-10" onSubmit={handleForm}>
                 <input name="name" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none" type="text" placeholder="ENTER YOUR NAME"/>
-                <input name="email" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none mb-5 text-sm" type="text" placeholder="ENTER YOUR EMAIL"/>
-                <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
+                <input name="email" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none mb-5 text-sm" type="email" placeholder="ENTER YOUR EMAIL"/>
+                {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+                <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted ? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
               </form>
             </div>
             <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/comb.png')", backgroundSize: "cover"}}></div>
