@@ -1,13 +1,15 @@
 'use client'
-import {useEffect, useState} from "react";
-import {Bagelan, merriweather} from "@/app/layout";
+import { Suspense, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { Bagelan, merriweather } from "@/app/layout";
 import Image from "next/image";
 import ServiceCard from "../components/serviceCard";
 import Marquee from "react-fast-marquee";
 import Button from "../components/button";
-import About from "../components/about";
 import Link from "next/link";
 import { subscribe } from "@/lib/firebase/newsletterService";
+
+const About = dynamic(() => import("../components/about"), { ssr: true });
 
 const Checkmark = ({text, style, className}) => {
   return (
@@ -40,7 +42,7 @@ const Checkmark = ({text, style, className}) => {
 };
 
 export default function Home() {
-    const [url, setUrl] = useState("./hero-bg.png");
+    const [url, setUrl] = useState("/hero-bg.webp");
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
@@ -48,14 +50,14 @@ export default function Home() {
     useEffect(() => {
         const updateBackground = () => {
             if(window.innerWidth > window.innerHeight) {
-                setUrl("./hero-bg.png");
+                setUrl("/hero-bg.webp");
             }
             else if (window.innerWidth < 768) {
-                setUrl("./hero-bg-phone.png"); // Image for small screens
+                setUrl("/hero-bg-phone.webp"); // Image for small screens
             } else if (window.innerWidth < 1024) {
-                setUrl("./hero-bg.png"); // Image for medium screens
+                setUrl("/hero-bg.webp"); // Image for medium screens
             } else {
-                setUrl("./hero-bg.png"); // Default image for large screens
+                setUrl("/hero-bg.webp"); // Default image for large screens
             }
         };
 
@@ -139,12 +141,14 @@ export default function Home() {
             </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
-            <ServiceCard image="/coaching.png" url={"/consultation"} title="Hair coaching services" />
-            {/*<ServiceCard image="/starter.png" title="Curated Starter Kit" />*/}
-            <ServiceCard image="/salon.jpeg" title="Salon Services" />
+            <ServiceCard image="/coaching.webp" url={"/consultation"} title="Hair coaching services" />
+            {/*<ServiceCard image="/starter.webp" title="Curated Starter Kit" />*/}
+            <ServiceCard image="/salon.webp" title="Salon Services" />
           </section>
 
-          <About />
+          <Suspense fallback={<section id="about" className="min-h-svh py-16 md:py-24 bg-[#faf9f7]" />}>
+            <About />
+          </Suspense>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full md:h-lvh">
             <div className="flex sm:col-span-2 md:col-span-1 flex-col items-center justify-center text-center bg-[#DDA15E] md:px-24 px-5 h-full">
@@ -163,7 +167,7 @@ export default function Home() {
                 <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted ? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
               </form>
             </div>
-            <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/comb.png')", backgroundSize: "cover"}}></div>
+            <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/comb.webp')", backgroundSize: "cover"}}></div>
           </section>
 
           <section className="flex flex-col items-center justify-between h-svh">

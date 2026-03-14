@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import services from "../salon/services.json"; // adjust path if needed
 import { merriweather } from "@/app/layout";
 import {
@@ -139,9 +140,11 @@ const ServiceCard = ({ service, onClickImage }) => (
           className="relative w-full h-96 mb-4 cursor-pointer"
           onClick={onClickImage}
       >
-        <img
+        <Image
             src={service?.imageUrl || "/placeholder.png"}
             alt={service.title}
+            width={400}
+            height={384}
             className="w-full h-full object-cover rounded-xl"
         />
       </div>

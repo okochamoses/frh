@@ -11,7 +11,7 @@ import Link from "next/link";
 
 const productsList = [
   {
-    image: "/coaching.png",
+    image: "/coaching.webp",
     link: "https://paystack.com/buy/1-on-1-hair-coaching-cqtffb",
     title: "‍💻 1-on-1 Hair Coaching",
     description:
@@ -22,7 +22,7 @@ const productsList = [
     ],
   },
   {
-    image: "/scalp-issues.png",
+    image: "/scalp-issues.webp",
     link: "https://paystack.com/buy/scalp-care-consultation-ewdznz",
     title: "🧖🏾‍ Scalp Care Consultation",
     description:
@@ -33,7 +33,7 @@ const productsList = [
     ],
   },
   {
-    image: "/product.png",
+    image: "/product.webp",
     link: "https://paystack.com/buy/build-your-routine-session-vpzhbk",
     title: "‍🗂️ Build-Your-Routine Session",
     description:
@@ -44,7 +44,7 @@ const productsList = [
     ],
   },
   {
-    image: "/long-hair.png",
+    image: "/long-hair.webp",
     link: "https://paystack.com/buy/intensive-hair-growth-program-3-months-fdbjqq",
     title: "🌿 Intensive Hair Growth Program (3 Months)",
     description:
@@ -111,7 +111,7 @@ export default function Consultation() {
                 <Card className="grid sm:grid-cols-2 gap-6 items-center overflow-hidden rounded-2xl shadow-md hover:shadow-lg transition-all">
                   <div
                       className="h-[300px] sm:h-full bg-cover bg-center"
-                      style={{ backgroundImage: `url(${product.image ?? "/placholder.png"})` }}
+                      style={{ backgroundImage: `url(${product.image ?? "/placeholder.png"})` }}
                   />
                   <CardContent className="p-8">
                     <h3

@@ -1,8 +1,6 @@
 import Marquee from "react-fast-marquee";
-import {gsap} from "gsap";
-import {Bagelan, merriweather} from "@/app/layout";
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import {useEffect, useRef} from "react";
+import { Bagelan, merriweather } from "@/app/layout";
+import Image from "next/image";
 
 // Register the ScrollTrigger plugin if you haven't already
 // gsap.registerPlugin(ScrollTrigger);
@@ -65,7 +63,7 @@ const About = () => {
         <div className="w-full flex text-center flex-col items-center justify-center px-4 flex-1">
           <span className={`${merriweather.className} text-sm uppercase tracking-widest text-[#BD2E2E] font-medium mb-2`}>Founder & Hair Coach</span>
           <h2 className={`${merriweather.className} sm:w-2/3 md:w-4/5 sm:text-5xl text-3xl sm:px-10 px-2 py-4 font-bold text-gray-900`}>About Me</h2>
-          <img src="/ceo.png" alt="Mariam Okocha Ijeoma - Founder & Hair Coach" className="w-48 h-48 md:w-64 md:h-64 rounded-full object-cover my-6 shadow-lg flex-shrink-0" />
+          <Image src="/ceo.webp" alt="Mariam Okocha Ijeoma - Founder & Hair Coach" width={256} height={256} className="w-48 h-48 md:w-64 md:h-64 rounded-full object-cover my-6 shadow-lg flex-shrink-0" sizes="(max-width: 768px) 192px, 256px" />
           <p className="sm:w-2/3 max-w-2xl p-5 text-lg text-gray-700 leading-relaxed">
             I&apos;m <strong>Mariam Okocha Ijeoma</strong> — certified hair coach, salon owner, and the founder of Flourish Roots Hair Co. I&apos;ve lived through the frustration of hair loss, dryness, and postpartum shedding, and I built this brand to help 4C queens like you finally understand, love, and grow their hair.
           </p>
