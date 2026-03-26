@@ -11,6 +11,8 @@ const LeadMagnetModal = dynamic(
   { ssr: false }
 );
 
+const LEAD_MAGNET_DISABLED = process.env.NEXT_PUBLIC_DISABLE_LEAD_MAGNET !== "false";
+
 function LeadMagnetGate({ children }) {
   const { isOpen, close, markSubscribed } = useLeadMagnet();
   return (
@@ -24,11 +26,19 @@ function LeadMagnetGate({ children }) {
 export default function Root({ children }) {
   return (
     <AuthProvider>
-      <LeadMagnetGate>
-        <Header />
-        {children}
-        <Footer />
-      </LeadMagnetGate>
+      {LEAD_MAGNET_DISABLED ? (
+        <>
+          <Header />
+          {children}
+          <Footer />
+        </>
+      ) : (
+        <LeadMagnetGate>
+          <Header />
+          {children}
+          <Footer />
+        </LeadMagnetGate>
+      )}
     </AuthProvider>
   );
 }
