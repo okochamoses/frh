@@ -13,47 +13,47 @@ const productsList = [
   {
     image: "/coaching.webp",
     link: "https://paystack.com/buy/1-on-1-hair-coaching-cqtffb",
-    title: "‍💻 1-on-1 Hair Coaching",
+    title: "‍1-on-1 Hair Coaching",
     description:
-        "Personalized support designed for your unique texture, lifestyle, and goals. Get expert guidance, product recommendations, and coaching that meets you where you are — from beginner to advanced.",
+        "Personalized support designed for your unique texture, lifestyle, and goals. Get expert guidance, product recommendations, and coaching that meets you where you are, from beginner to advanced.",
     items: [
-      "✅ Perfect for: Women ready to stop guessing and start growing.",
-      "📍 Virtual or in-person sessions available.",
+      "Perfect for: Women ready to stop guessing and start growing.",
+      "Virtual or in-person sessions available.",
     ],
   },
   {
     image: "/scalp-issues.webp",
     link: "https://paystack.com/buy/scalp-care-consultation-ewdznz",
-    title: "🧖🏾‍ Scalp Care Consultation",
+    title: "Scalp Care Consultation",
     description:
         "Is your scalp itchy, flaky, or holding you back from growth? We’ll do a scalp analysis and build a treatment plan to restore balance, reduce buildup, and bring life back to your roots.",
     items: [
-      "✅ Includes tailored product suggestions and an optional treatment session.",
-      "📍 Available virtually or with an in-salon care boost.",
+      "Includes tailored product suggestions and an optional treatment session.",
+      "Available virtually or with an in-salon care boost.",
     ],
   },
   {
     image: "/product.webp",
     link: "https://paystack.com/buy/build-your-routine-session-vpzhbk",
-    title: "‍🗂️ Build-Your-Routine Session",
+    title: "Build-Your-Routine Session",
     description:
-        "Overwhelmed by information overload? Let’s simplify. We’ll build your complete weekly and monthly hair regimen — from wash day to protective styling — customized to your schedule, hair goals, and budget.",
+        "Overwhelmed by information overload? Let’s simplify. We’ll build your complete weekly and monthly hair regimen, from wash day to protective styling, customized to your schedule, hair goals, and budget.",
     items: [
-      "✅ Includes product layering guidance + printable routine checklist.",
-      "📍 Ideal for busy mums, students, or professionals.",
+      "Includes product layering guidance + printable routine checklist.",
+      "Ideal for busy mums, students, or professionals.",
     ],
   },
   {
     image: "/long-hair.webp",
     link: "https://paystack.com/buy/intensive-hair-growth-program-3-months-fdbjqq",
-    title: "🌿 Intensive Hair Growth Program (3 Months)",
+    title: "Intensive Hair Growth Program (3 Months)",
     description:
-        "This is for the woman who wants transformation — inside and out. Includes weekly hair coaching + in-salon treatments, protective styles, growth tracking, and full support for 90 days.",
+        "This is for the woman who wants transformation, inside and out. Includes weekly hair coaching + in-salon treatments, protective styles, growth tracking, and full support for 90 days.",
     items: [
-      "✅️ Hair + scalp assessment",
-      "⚠️️ Monthly protective styles",
-      "💆🏽‍♀️ In-salon deep treatments",
-      "📋 Coaching, progress tracking & access to exclusive resources",
+      "Hair + scalp assessment",
+      "Monthly protective styles",
+      "In-salon deep treatments",
+      "Coaching, progress tracking & access to exclusive resources",
     ],
   },
 ]
@@ -73,11 +73,11 @@ export default function Consultation() {
           <h3
               className={`${merriweather.className} text-4xl sm:text-6xl py-4 font-bold`}
           >
-            🌿 Ready to Flourish From the Root Up?
+            Ready to Flourish From the Root Up?
           </h3>
           <p className="text-muted-foreground pt-16 py-3">
-            You’ve tried it all — oils, YouTube routines, and product after
-            product… but your hair still isn’t thriving. You’re not alone — and
+            You’ve tried it all, oils, YouTube routines, and product after
+            product… but your hair still isn’t thriving. You’re not alone and
             that’s exactly why I’m here.
           </p>
           <p className="text-muted-foreground">
