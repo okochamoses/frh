@@ -37,7 +37,6 @@ export const authApi = {
       password: formData.password,
     };
 
-    const response = await axios.post("/api/auth", requestData);
-    return response;
+    return await axios.post("/api/auth", requestData);
   },
 };
