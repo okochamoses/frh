@@ -141,7 +141,7 @@ export default function Home() {
             </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
-            <ServiceCard image="/coaching.webp" url={"/consultation"} title="Hair coaching services" />
+            <ServiceCard image="/hair-coaching.jpeg" url={"/consultation"} title="Hair coaching services" />
             {/*<ServiceCard image="/starter.webp" title="Curated Starter Kit" />*/}
             <ServiceCard image="/salon.webp" title="Salon Services" />
           </section>
@@ -167,7 +167,7 @@ export default function Home() {
                 <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted ? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
               </form>
             </div>
-            <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/comb.webp')", backgroundSize: "cover"}}></div>
+            <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/newsletter.webp')", backgroundSize: "cover"}}></div>
           </section>
 
           <section className="flex flex-col items-center justify-between h-svh">
