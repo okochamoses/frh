@@ -2,10 +2,12 @@
 import { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Bagelan, merriweather } from "@/app/layout";
-import Image from "next/image";
 import ServiceCard from "../components/serviceCard";
 import Marquee from "react-fast-marquee";
 import Button from "../components/button";
+import Testimonials from "../components/Testimonials";
+import HowItWorks from "../components/HowItWorks";
+import ParallaxImage from "../components/ParallaxImage";
 import Link from "next/link";
 import { subscribe } from "@/lib/firebase/newsletterService";
 
@@ -105,18 +107,26 @@ export default function Home() {
     };
     return (
         <>
-            <div
+            <ParallaxImage
                 id="hero"
-                className="flex justify-center items-end w-full h-svh top-0 p-10"
-                style={{background: `url(${url}) center no-repeat`}}
+                src={url}
+                alt="Flourish Roots Hair salon"
+                sizes="100vw"
+                strength={80}
+                priority
+                className="flex justify-center items-end w-full h-svh"
             >
-                <div className="flex items-center flex-col m:w-1/4 w-2/3 text-center text-white">
-                    <h1 className={`${Bagelan.className} text-6xl md:text-9xl`}>FLOURISH ROOTS HAIR</h1>
-                    <p className={`${merriweather.className} m:w-2/3 w-full my-6 text-xl font-medium`}>PROMOTING HEALTHIER HAIR</p>
-
-                  <a href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796" target="_blank" rel="noopener noreferrer"><button className="bg-[#BD2E2E] hover:bg-[#BD2E2E] text-white text-sm py-5 m:px-14 px-10 rounded-md">Book A Session</button></a>
+                <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+                <div className="absolute inset-0 flex items-end justify-center p-10">
+                  <div className="flex items-center flex-col w-2/3 text-center text-white">
+                      <h1 className={`${Bagelan.className} text-6xl md:text-9xl`}>FLOURISH ROOTS HAIR</h1>
+                      <p className={`${merriweather.className} w-full my-6 text-xl font-medium`}>PROMOTING HEALTHIER HAIR</p>
+                      <a href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796" target="_blank" rel="noopener noreferrer">
+                        <button className="bg-[#BD2E2E] text-white text-sm py-5 px-10 rounded-md">Book A Session</button>
+                      </a>
+                  </div>
                 </div>
-            </div>
+            </ParallaxImage>
 
             <section id="intro" className={`${merriweather.className} flex flex-col items-center text-center py-24 sm:mx-12`}>
                 <h4 className="w-2/3 text-center text-xl py-5">Holistic haircare designed to nurture your natural beauty</h4>
@@ -146,46 +156,59 @@ export default function Home() {
             <ServiceCard image="/salon.webp" title="Salon Services" />
           </section>
 
+          <HowItWorks />
+
           <Suspense fallback={<section id="about" className="min-h-svh py-16 md:py-24 bg-[#faf9f7]" />}>
             <About />
           </Suspense>
 
-          <section className="grid grid-cols-1 sm:grid-cols-2 w-full md:h-lvh">
-            <div className="flex sm:col-span-2 md:col-span-1 flex-col items-center justify-center text-center bg-[#DDA15E] md:px-24 px-5 h-full">
-              <Image className="py-5" src="/logo.svg" alt="" height={50} width={50} />
-              <span className={`${merriweather.className} text-3xl uppercase py-5`}>
-                Keep up to date with the hair care tips
-              </span>
-              <span>
-                Want to learn about hair care and hair growth? Join our newsletter to get updates on the latest
-              </span>
+          <Testimonials />
 
-              <form className="py-10" onSubmit={handleForm}>
-                <input name="name" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none" type="text" placeholder="ENTER YOUR NAME"/>
-                <input name="email" className="w-full my-2 py-4 px-4 appearance-none focus:outline-none mb-5 text-sm" type="email" placeholder="ENTER YOUR EMAIL"/>
-                {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-                <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted ? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"}/>
-              </form>
-            </div>
-            <div className="h-lvh hidden md:block" style={{backgroundImage: "url('/newsletter.webp')", backgroundSize: "cover"}}></div>
-          </section>
+          <section className="grid grid-cols-1 md:grid-cols-2 w-full">
+            {/* Image — desktop left */}
+            <ParallaxImage
+              src="/newsletter-large.webp"
+              alt="Natural hair care"
+              sizes="50vw"
+              strength={60}
+              className="hidden md:block min-h-[640px]"
+            />
 
-          <section className="flex flex-col items-center justify-between h-svh">
-            <Marquee className="pt-8" speed={30} style={{overflowY: "hidden"}}>
-              <span className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>TESTIMONIALS</span>
-            </Marquee>
-            <div className="w-full flex text-center flex-col items-center justify-center">
-              <h3 className={`${merriweather.className} sm:w-2/3 md:w-5/6 sm:text-7xl text-4xl sm:px-10 px-2 py-5`}>Testimonials</h3>
-              <p className="sm:w-1/2 p-5">
-                Literally one of the best natural hair salons I’ve visited in Lagos, the service is top notch! They handled my hair with such care, I had zero complaints. My hair felt so good and healthy after, I’m definitely making you guys my go to hair salon.
+            {/* Form — right */}
+            <div className="bg-[#DDA15E] px-8 md:px-14 lg:px-20 py-20 md:py-28 flex flex-col justify-center">
+              <p className={`${merriweather.className} text-[10px] tracking-[0.3em] uppercase text-[#120D07]/50 mb-6`}>
+                Newsletter
               </p>
-              <Image src={"/logo.svg"} alt={""} height={50} width={50} />
-              <span className="italic text-xs py-2">Adaugo Ugochukwu</span>
+              <h2 className={`${merriweather.className} text-3xl md:text-4xl font-bold text-[#120D07] leading-tight mb-4`}>
+                Hair tips, straight<br />to your inbox.
+              </h2>
+              <p className="text-[#120D07]/60 text-sm leading-relaxed mb-10 max-w-xs">
+                Expert advice on natural hair care, growth tips, and updates from Mariam — delivered directly to you.
+              </p>
+
+              <form className="flex flex-col gap-0" onSubmit={handleForm}>
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="Your name"
+                  className="w-full bg-transparent border-b border-[#120D07]/30 focus:border-[#120D07] py-3 mb-5 text-sm text-[#120D07] placeholder-[#120D07]/40 outline-none transition-colors duration-200"
+                />
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Your email address"
+                  className="w-full bg-transparent border-b border-[#120D07]/30 focus:border-[#120D07] py-3 mb-8 text-sm text-[#120D07] placeholder-[#120D07]/40 outline-none transition-colors duration-200"
+                />
+                {error && <p className="text-red-800 text-xs mb-4">{error}</p>}
+                <Button onSubmit={handleForm} loading={loading} wFull dark text={submitted ? <Checkmark text="SUBSCRIBED" /> : "SUBSCRIBE"} />
+              </form>
+
+              <p className="text-[10px] text-[#120D07]/35 mt-5 tracking-wide">
+                No spam. Unsubscribe anytime.
+              </p>
             </div>
-            <Marquee className="pt-8" speed={30} direction="right" style={{overflowY: "hidden"}}>
-              <p className={`${Bagelan.className} text-[4em] md:text-[15em] text-gray-100 whitespace-nowrap`}>- TESTIMONIALS</p>
-            </Marquee>
           </section>
+
         </>
     );
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -35,7 +35,7 @@ const NAV_LINKS = [
   {
     id: "about",
     label: "About Us",
-    href: "/#about",
+    href: "/about",
     col: "A",
     image: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=1200&q=80",
   },
@@ -51,27 +51,31 @@ const NAV_LINKS = [
   {
     id: "story",
     label: "Our Story",
-    href: "/#story",
+    href: "/about#story",
     col: "B",
-    image: "https://images.unsplash.com/photo-1720010944710-01161d017608?q=80&w=3165&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/story.webp",
   },
   {
     id: "gallery",
     label: "Gallery",
-    href: "/#gallery",
+    href: "/gallery",
     col: "B",
     image: "/gallery.avif",
   },
   {
     id: "contact",
     label: "Contact",
-    href: "/#contact",
+    href: "/contact",
     col: "B",
     image: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=1200&q=80",
   },
 ]
 
 const DEFAULT_IMAGE = NAV_LINKS[0].image
+
+// Derived once — NAV_LINKS is static
+const COL_A = NAV_LINKS.filter((l) => l.col === "A")
+const COL_B = NAV_LINKS.filter((l) => l.col === "B")
 
 // Menu slide-in easing
 const MENU_EASE = [0.24, 0.43, 0.15, 0.97]
@@ -85,12 +89,6 @@ const IMAGE_EASE = [0.4, 0, 0.2, 1]
 export function SplitMenu({ isOpen, onClose }) {
   const [hoveredImage, setHoveredImage] = useState(null)
 
-  const scheduleHover = useCallback((image) => {
-    setHoveredImage(image)
-  }, [])
-
-  const colA = NAV_LINKS.filter((l) => l.col === "A")
-  const colB = NAV_LINKS.filter((l) => l.col === "B")
   const activeImage = hoveredImage ?? DEFAULT_IMAGE
 
   return (
@@ -144,28 +142,28 @@ export function SplitMenu({ isOpen, onClose }) {
                   Desktop: 2 columns | Mobile: single column, no image transitions */}
               <nav
                 className="flex-1 px-8 pt-6 pb-4"
-                onMouseLeave={() => scheduleHover(null)}
+                onMouseLeave={() => setHoveredImage(null)}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6">
                   <div className="flex flex-col">
-                    {colA.map((link, i) => (
+                    {COL_A.map((link, i) => (
                       <NavLink
                         key={link.id}
                         link={link}
                         index={i}
-                        onHover={scheduleHover}
+                        onHover={setHoveredImage}
                         onClick={onClose}
                       />
                     ))}
                   </div>
 
                   <div className="flex flex-col">
-                    {colB.map((link, i) => (
+                    {COL_B.map((link, i) => (
                       <NavLink
                         key={link.id}
                         link={link}
-                        index={i + colA.length}
-                        onHover={scheduleHover}
+                        index={i + COL_A.length}
+                        onHover={setHoveredImage}
                         onClick={onClose}
                       />
                     ))}
@@ -180,21 +178,27 @@ export function SplitMenu({ isOpen, onClose }) {
                 </p>
                 <div className="flex flex-col gap-1 mb-5">
                   <a
-                    href="mailto:hello@flourishroots.com"
+                    href="mailto:flourishnaturalsinfo@gmail.com"
                     className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
                   >
-                    hello@flourishroots.com
+                    flourishnaturalsinfo@gmail.com
                   </a>
                   <a
-                    href="tel:+2340000000000"
+                    href="tel:+2348110215014"
                     className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
                   >
-                    +234 000 000 0000
+                    +234 81 1021 5014
+                  </a>
+                  <a
+                    href="tel:+2348161672820"
+                    className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+                  >
+                    +234 81 6167 2820
                   </a>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <SocialIcon href="#" label="Instagram">
+                  <SocialIcon href="https://www.instagram.com/frh_naturals/" label="Instagram">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                       <circle cx="12" cy="12" r="4" />
@@ -202,27 +206,21 @@ export function SplitMenu({ isOpen, onClose }) {
                     </svg>
                   </SocialIcon>
 
-                  <SocialIcon href="#" label="Facebook">
+                  <SocialIcon href="https://www.facebook.com/people/FRH-Flourish-Roots-Hair-Co/61570171119138/" label="Facebook">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                     </svg>
                   </SocialIcon>
 
-                  <SocialIcon href="#" label="WhatsApp">
+                  <SocialIcon href="https://wa.me/2348110215014" label="WhatsApp">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
                     </svg>
                   </SocialIcon>
 
-                  <SocialIcon href="#" label="TikTok">
+                  <SocialIcon href="https://www.tiktok.com/@frhnaturals" label="TikTok">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.45a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34l-.01-8.83a8.2 8.2 0 0 0 4.79 1.52V4.56a4.85 4.85 0 0 1-1.02-.13z" />
-                    </svg>
-                  </SocialIcon>
-
-                  <SocialIcon href="#" label="YouTube">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-                      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20.06 12 20.06 12 20.06s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98l5.75 3.02-5.75 3.02z" />
                     </svg>
                   </SocialIcon>
                 </div>
@@ -257,8 +255,12 @@ function ImagePane({ activeImage }) {
 
   useEffect(() => {
     if (!activeImage || activeImage === bottomRef.current) return
-    const id = counterRef.current++
-    setReveals(prev => [...prev, { id, image: activeImage }])
+    setReveals(prev => {
+      // Don't stack a new layer if the last queued reveal is already this image
+      if (prev.length > 0 && prev[prev.length - 1].image === activeImage) return prev
+      const id = counterRef.current++
+      return [...prev, { id, image: activeImage }]
+    })
   }, [activeImage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRevealComplete = useCallback((id, image) => {
@@ -314,9 +316,9 @@ function ImagePane({ activeImage }) {
 // ---------------------------------------------------------------------------
 // Individual nav link
 // Mobile: only text/arrow animation fires — no image side effects (left pane
-// is hidden via CSS, so scheduleHover calls are harmless no-ops visually)
+// is hidden via CSS, so onHover calls are harmless no-ops visually)
 // ---------------------------------------------------------------------------
-function NavLink({ link, index, onHover, onClick }) {
+const NavLink = memo(function NavLink({ link, index, onHover, onClick }) {
   const [hovered, setHovered] = useState(false)
 
   const Tag = link.external ? "a" : Link
@@ -359,7 +361,7 @@ function NavLink({ link, index, onHover, onClick }) {
       </Tag>
     </motion.div>
   )
-}
+})
 
 // ---------------------------------------------------------------------------
 // Social icon button
@@ -369,6 +371,8 @@ function SocialIcon({ href, label, children }) {
     <a
       href={href}
       aria-label={label}
+      target="_blank"
+      rel="noopener noreferrer"
       className="w-8 h-8 flex items-center justify-center rounded-full border border-stone-300 text-stone-400 hover:border-stone-800 hover:text-stone-800 transition-colors duration-200"
     >
       {children}
