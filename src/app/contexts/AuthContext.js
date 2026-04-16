@@ -1,104 +1,105 @@
 "use client";
 
+/**
+ * AuthContext
+ *
+ * Provides the current user and auth actions to the entire app.
+ *
+ * Firebase Auth automatically persists the session in the browser —
+ * we don't need localStorage or manual token management.
+ * `onAuthStateChanged` fires once on mount (restoring any existing
+ * session) and again whenever the user signs in or out.
+ */
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { authApi } from "@/lib/auth/api";
-import { storage } from "@/lib/auth/storage";
-import { isValidToken } from "@/lib/auth/tokenUtils";
-import { AUTH_MODAL } from "@/lib/auth/constants";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase/config";
+import { getUserProfile } from "@/lib/firebase/userService";
+import { logOut } from "@/lib/firebase/authService";
 import AuthModal from "@/components/auth/AuthModal";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activeModal, setActiveModal] = useState(AUTH_MODAL.SIGN_IN);
+export function AuthProvider({ children }) {
+  // The merged user object: Firebase Auth UID + Firestore profile fields
+  const [user, setUser]               = useState(null);
+  const [hydrated, setHydrated]       = useState(false); // true once the initial auth check completes
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode]       = useState("signin"); // "signin" | "signup"
 
-  // Load token & user from localStorage on mount
+  // Derived — recomputed on every render so it's never stale
+  const isAuthenticated = hydrated && user !== null;
+
+  // ── Session restoration ───────────────────────────────────────────────────
   useEffect(() => {
-    const storedToken = storage.getToken();
-    const storedUser = storage.getUser();
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(storedUser);
-    }
-    setLoading(false);
-  }, []);
-
-  // Persist to localStorage whenever auth changes
-  useEffect(() => {
-    storage.setToken(token);
-    storage.setUser(user);
-  }, [token, user]);
-
-  const login = useCallback(async (credentials) => {
-    setLoading(true);
-    try {
-      const { data, status } = await authApi.login(credentials);
-
-      if (status === 200 && data?.data) {
-        const { user, token } = data.data;
-        setToken(token);
-        setUser(user);
-        setIsOpen(false);
+    // Firebase calls this immediately with the current session (or null),
+    // then on every subsequent sign-in / sign-out.
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Merge the Firestore profile (name, phone, etc.) with the UID
+        const profile = await getUserProfile(firebaseUser.uid);
+        setUser(profile ?? { uid: firebaseUser.uid, email: firebaseUser.email });
+      } else {
+        setUser(null);
       }
-    } catch (err) {
-      console.error("Login failed:", err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+      setHydrated(true);
+    });
+
+    return unsubscribe; // remove listener on unmount
   }, []);
 
-  const logout = useCallback(() => {
-    setToken(null);
-    setUser(null);
-    storage.clear();
+  // ── Actions ───────────────────────────────────────────────────────────────
+
+  /**
+   * Called by the auth modals after a successful sign-in or sign-up.
+   * `onAuthStateChanged` will also fire and keep the user in sync,
+   * but we update state immediately so the UI responds without waiting.
+   */
+  const login = useCallback((userProfile) => {
+    setUser(userProfile);
+    setAuthModalOpen(false);
   }, []);
 
-  const checkTokenValidity = useCallback(() => {
-    return isValidToken(token);
-  }, [token]);
+  const logout = useCallback(async () => {
+    await logOut();
+    // onAuthStateChanged will fire and set user to null automatically
+  }, []);
 
-  const displayAuthModal = useCallback(() => {
-    const isTokenValid = checkTokenValidity();
-    if (!isTokenValid) {
-      setIsOpen(true);
-    }
-  }, [checkTokenValidity]);
+  /** Updates just the user's profile fields in local state (e.g. after adding a phone number). */
+  const updateUser = useCallback((updates) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  }, []);
 
-  const toggleModal = useCallback(() => setIsOpen((prev) => !prev), []);
-
-  const value = {
-    activeModal,
-    user,
-    token,
-    login,
-    logout,
-    setLoading,
-    loading,
-    isOpen,
-    setIsOpen,
-    displayAuthModal,
-    toggleModal,
-    setUser,
-    setActiveModal,
-    isValidToken: checkTokenValidity,
-  };
+  const openAuthModal  = useCallback(() => { setAuthMode("signin"); setAuthModalOpen(true); }, []);
+  const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
+  const switchToSignIn = useCallback(() => setAuthMode("signin"), []);
+  const switchToSignUp = useCallback(() => setAuthMode("signup"), []);
 
   return (
-      <AuthContext.Provider value={value}>
-        {children}
-        <AuthModal />
-      </AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        updateUser,
+        isAuthenticated,
+        hydrated,
+        authModalOpen,
+        authMode,
+        login,
+        logout,
+        openAuthModal,
+        closeAuthModal,
+        switchToSignIn,
+        switchToSignUp,
+      }}
+    >
+      {children}
+      <AuthModal />
+    </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
+export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
-};
+}

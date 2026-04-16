@@ -8,30 +8,37 @@ const TESTIMONIALS = [
   {
     id: 1,
     quote:
-      "Literally one of the best natural hair salons I've visited in Lagos, the service is top notch! They handled my hair with such care, I had zero complaints. My hair felt so good and healthy after, I'm definitely making you guys my go to hair salon.",
-    name: "Adaugo Ugochukwu",
-    tag: "Salon Client",
+      "The ambience was calm, clean, and beautifully arranged — the kind of space that makes you relax the moment you step in. The stylists were absolutely perfect. They understood exactly what I wanted, handled my locs with so much care, and the retie came out neat and flawless. Beyond their skill, they were warm, attentive, and genuinely professional. Overall, it was a great visit, and I'll definitely be returning.",
+    name: "Verified Client",
+    tag: "Google Review · Salon Client",
   },
   {
     id: 2,
     quote:
-      "My hair coaching session with FRH completely changed how I approach my natural hair. I finally understand my hair's needs and my retention has improved so much. Worth every naira.",
-    name: "Chisom Eze",
-    tag: "Hair Coaching Client",
+      "Literally one of the best natural hair salons I've visited in Lagos, the service is top notch! They handled my hair with such care, I had zero complaints. My hair felt so good and healthy after, I'm definitely making you guys my go to hair salon.",
+    name: "Adaugo Ugochukwu",
+    tag: "Google Review · Salon Client",
   },
   {
     id: 3,
     quote:
-      "I was struggling with breakage for years before I found Flourish Roots Hair. After just two salon visits and following their advice, I'm seeing real growth. The team is knowledgeable, gentle, and genuinely invested in your hair health.",
-    name: "Teniola Adeyemi",
-    tag: "Salon Client",
+      "Such an amazing experience! My hair was handled with such delicate care — I absolutely loved it. Hands down, the best natural hair salon!",
+    name: "Amira",
+    tag: "Google Review · Salon Client",
   },
   {
     id: 4,
     quote:
-      "The level of attention and care here is unlike any salon I've been to. They took time to assess my scalp, explained what was going on, and gave me a realistic plan. My hair is thriving.",
-    name: "Blessing Nwosu",
-    tag: "Hair Coaching Client",
+      "Experience is 10/10. Professionalism is top notch. Definitely earned a returning customer and referrals.",
+    name: "Jovita Dim-Nzekwe",
+    tag: "Google Review · Salon Client",
+  },
+  {
+    id: 5,
+    quote:
+      "I had a great experience. I loved how my hair was nurtured and cared for as well as the amazing transformation.",
+    name: "Francisca A.",
+    tag: "Fresha Review · Salon Client",
   },
 ]
 

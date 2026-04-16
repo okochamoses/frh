@@ -1,172 +1,132 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+/**
+ * SignUpModal
+ *
+ * Creates a new account via email + password or Google.
+ * After account creation, the user's profile is written to Firestore
+ * (name, phone, etc.) and login() is called to update app state.
+ */
+
+import React, { useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { authApi } from "@/lib/auth/api";
+import { signUpWithEmail, signInWithGoogle } from "@/lib/firebase/authService";
 import { validateSignUpForm } from "@/lib/auth/validators";
-import { storage } from "@/lib/auth/storage";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription,
+  DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GoogleLogin } from "@react-oauth/google";
 import OrDivider from "./OrDivider";
-import Link from "next/link";
-import {AUTH_MODAL} from "@/lib/auth/constants";
 
-const SignUpModal = () => {
-  const { isOpen, toggleModal, loading, login, setActiveModal, setIsOpen, setLoading } = useAuth();
-  const [error, setError] = useState(null);
+// Maps Firebase Auth error codes to plain-English messages
+function getErrorMessage(error) {
+  switch (error.code) {
+    case "auth/email-already-in-use":
+      return "An account with this email already exists. Try signing in.";
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    default:
+      return "Sign up failed. Please try again.";
+  }
+}
+
+export default function SignUpModal() {
+  const { authModalOpen, closeAuthModal, login, switchToSignIn } = useAuth();
+
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
+    firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: "",
   });
+  const [error, setError]     = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (field) => (e) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
     setError(null);
   };
 
-  const handleSignUp = async (e) => {
+  // ── Email + password sign-up ────────────────────────────────────────────
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     const validation = validateSignUpForm(formData);
-    if (!validation.valid) {
-      setError(validation.error);
-      return;
-    }
+    if (!validation.valid) { setError(validation.error); return; }
 
     setLoading(true);
     try {
-      const response = await authApi.signUp(formData);
-
-      if (response.status === 201 && response.data?.data?.token) {
-        const { token, user } = response.data.data;
-        storage.setToken(token);
-        setIsOpen(false);
-      } else {
-        setError(response.data?.error || "Sign up failed");
-      }
+      const profile = await signUpWithEmail(formData);
+      login(profile);
     } catch (err) {
-      console.error("Sign up failed:", err);
-      setError(err.response?.data?.error || "Sign up failed. Please try again.");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = useCallback(
-      (data) => {
-        login({ ...data, provider: "google" }).catch((err) => {
-          setError("Google login failed. Please try again.");
-        });
-      },
-      [login]
-  );
-
-  const handleGoogleError = useCallback(() => {
-    console.log("Google Login Failed");
-    setError("Google login failed. Please try again.");
-  }, []);
+  // ── Google sign-up ──────────────────────────────────────────────────────
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const profile = await signInWithGoogle();
+      login(profile);
+    } catch (err) {
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError("Google sign-up failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-      <Dialog open={isOpen} onOpenChange={toggleModal}>
-        <DialogContent
-            className="sm:max-w-[425px]"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle className="text-3xl">Sign up</DialogTitle>
-            <DialogDescription className="text-sm">
-              Create an account using Google or your email and password.
-            </DialogDescription>
-          </DialogHeader>
+    <Dialog open={authModalOpen} onOpenChange={closeAuthModal}>
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-3xl">Create account</DialogTitle>
+          <DialogDescription>Sign up with Google or your email.</DialogDescription>
+        </DialogHeader>
 
-          <form onSubmit={handleSignUp}>
-            <div className="grid gap-4">
-              <GoogleLogin
-                  onSuccess={handleGoogleLogin}
-                  onError={handleGoogleError}
-                  useOneTap
-                  text="signup_with"
-              />
+        {/* Google */}
+        <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={loading}>
+          Sign up with Google
+        </Button>
 
-              <OrDivider />
+        <OrDivider />
 
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                    className="py-5"
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange("firstName")}
-                    placeholder="First Name"
-                />
-                <Input
-                    className="py-5"
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange("lastName")}
-                    placeholder="Last Name"
-                />
-              </div>
+        {/* Email + password form */}
+        <form onSubmit={handleSubmit} className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Input className="py-5" placeholder="First Name"   value={formData.firstName}       onChange={handleChange("firstName")} />
+            <Input className="py-5" placeholder="Last Name"    value={formData.lastName}        onChange={handleChange("lastName")} />
+          </div>
+          <Input className="py-5" type="email"    placeholder="Email"           value={formData.email}           onChange={handleChange("email")} autoComplete="email" />
+          <Input className="py-5" type="tel"      placeholder="Mobile Number"   value={formData.phone}           onChange={handleChange("phone")} />
+          <Input className="py-5" type="password" placeholder="Password"        value={formData.password}        onChange={handleChange("password")} autoComplete="new-password" />
+          <Input className="py-5" type="password" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange("confirmPassword")} autoComplete="new-password" />
 
-              <Input
-                  className="py-5"
-                  id="email"
-                  value={formData.email}
-                  onChange={handleChange("email")}
-                  placeholder="Email"
-              />
-              <Input
-                  className="py-5"
-                  id="phone"
-                  value={formData.phone}
-                  onChange={handleChange("phone")}
-                  placeholder="Mobile Number"
-              />
-              <Input
-                  className="py-5"
-                  id="password"
-                  value={formData.password}
-                  onChange={handleChange("password")}
-                  type="password"
-                  placeholder="Password"
-              />
-              <Input
-                  className="py-5"
-                  id="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange("confirmPassword")}
-                  type="password"
-                  placeholder="Confirm Password"
-              />
-            </div>
+          {error && <p className="text-red-600 text-sm">{error}</p>}
 
-            {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+          <DialogFooter>
+            <Button className="w-full" type="submit" isLoading={loading}>
+              Create account
+            </Button>
+          </DialogFooter>
+        </form>
 
-            <DialogFooter className="mt-4">
-              <Button className="w-full" type="submit" disabled={loading}>
-                {loading ? "Loading..." : "Continue"}
-              </Button>
-            </DialogFooter>
-          </form>
-
-          <span className={"text-sm text-center font-medium text-slate-400"}>Have an account? <span className={"text-blue-500 font-medium cursor-pointer"} onClick={() => {setActiveModal(AUTH_MODAL.SIGN_IN)}}>Login</span></span>
-        </DialogContent>
-      </Dialog>
+        <p className="text-sm text-center text-stone-400">
+          Already have an account?{" "}
+          <span className="text-blue-500 cursor-pointer" onClick={switchToSignIn}>
+            Sign in
+          </span>
+        </p>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default SignUpModal;
+}

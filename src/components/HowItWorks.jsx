@@ -36,7 +36,7 @@ const STEPS = [
     title: "Watch Your\nHair Flourish",
     description:
       "With ongoing check-ins and expert support, you'll see real, lasting results — retention, growth, and confidence.",
-    image: "/long-hair.webp",
+    image: "/no-scalp-issues.webp",
     alt: "Hair transformation results",
   },
 ]
