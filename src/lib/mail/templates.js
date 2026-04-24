@@ -1,190 +1,227 @@
-/**
- * Email template builders
- * These functions return the HTML content for different email types
- */
+const DARK = "#120D07";
+const GOLD = "#DDA15E";
+
+function emailShell(content) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flourish Roots Hair</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f0;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f0;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);">
+        <tr><td style="height:4px;background:${GOLD};"></td></tr>
+        <tr><td style="background:${DARK};padding:28px 36px;text-align:center;">
+          <p style="margin:0;color:${GOLD};font-size:22px;letter-spacing:0.04em;">Flourish Roots Hair</p>
+          <p style="margin:6px 0 0;color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;font-family:Arial,sans-serif;">Promoting Healthier Hair</p>
+        </td></tr>
+        <tr><td style="padding:36px 36px 28px;">
+          ${content}
+        </td></tr>
+        <tr><td style="background:#fafaf8;padding:20px 36px;border-top:1px solid rgba(18,13,7,0.07);text-align:center;">
+          <p style="margin:0;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;line-height:1.8;">
+            Shop 303, Destiny Plaza, Ago Palace Way, Isolo Lagos<br/>
+            <a href="mailto:flourishnaturalsinfo@gmail.com" style="color:rgba(18,13,7,0.4);text-decoration:none;">flourishnaturalsinfo@gmail.com</a>
+            &nbsp;·&nbsp;
+            <a href="https://instagram.com/frh_naturals" style="color:rgba(18,13,7,0.4);text-decoration:none;">@frh_naturals</a>
+          </p>
+        </td></tr>
+        <tr><td style="height:3px;background:${GOLD};"></td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
 
 export const templates = {
-  welcome: ({ firstName, verificationLink }) => ({
-    subject: `Welcome to Our Platform, ${firstName}!`,
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Welcome</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
-            <h1 style="color: #2c3e50; margin-bottom: 20px;">Welcome, ${firstName}! 🎉</h1>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Thank you for joining our flourish roots hair. We're excited to have you on board!
-            </p>
-            <p style="font-size: 16px; margin-bottom: 30px;">
-              To get started, please verify your email address by clicking the button below:
-            </p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${verificationLink}" 
-                 style="background-color: #3498db; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                Verify Email Address
-              </a>
-            </div>
-            <p style="font-size: 14px; color: #7f8c8d; margin-top: 30px;">
-              If you didn't create an account, please ignore this email.
-            </p>
-          </div>
-        </body>
-      </html>
-    `,
-    text: `Welcome, ${firstName}!\n\nThank you for joining our platform. Please verify your email by visiting: ${verificationLink}`,
+  welcome: ({ firstName }) => ({
+    subject: `Welcome to Flourish Roots Hair${firstName ? `, ${firstName}` : ""}!`,
+    html: emailShell(`
+      <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Welcome</p>
+      <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+        Hey ${firstName || "Queen"}, welcome to the FRH family 🌿
+      </h1>
+      <p style="margin:0 0 16px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        We're so glad you're here. Flourish Roots Hair is your home for healthy, thriving natural hair —
+        from expert salon services to 1-on-1 coaching built around your unique texture and goals.
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        Here's what you can do next:
+      </p>
+      <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:28px;">
+        <tr>
+          <td style="padding-bottom:12px;">
+            <a href="https://flourishrootshair.com/bookings"
+              style="display:block;background:${DARK};color:#ffffff;text-align:center;padding:14px 20px;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;letter-spacing:0.03em;">
+              Book a Salon Appointment
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="https://flourishrootshair.com/consultation"
+              style="display:block;background:${GOLD};color:${DARK};text-align:center;padding:14px 20px;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;letter-spacing:0.03em;">
+              Book a Hair Coaching Session
+            </a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0;font-size:13px;color:rgba(18,13,7,0.45);line-height:1.7;font-family:Arial,sans-serif;">
+        Have questions? Just reply to this email — we're always happy to help.
+      </p>
+    `),
   }),
+
+  bookingConfirmation: ({ userFirstName, services = [], servicesText, startTime, totalAmount }) => {
+    const fmt = (iso) => {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleString("en-NG", {
+        timeZone: "Africa/Lagos",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const serviceRows = services.length
+      ? services.map((s) => `
+          <tr>
+            <td style="padding:8px 0;font-size:14px;color:${DARK};font-family:Arial,sans-serif;border-bottom:1px solid rgba(18,13,7,0.07);">${s.title || "—"}</td>
+            <td style="padding:8px 0;font-size:14px;color:${DARK};font-family:Arial,sans-serif;border-bottom:1px solid rgba(18,13,7,0.07);text-align:right;">₦${Number(s.price || 0).toLocaleString("en-NG")}</td>
+          </tr>`).join("")
+      : `<tr><td colspan="2" style="padding:8px 0;font-size:14px;color:rgba(18,13,7,0.6);font-family:Arial,sans-serif;">${servicesText || "—"}</td></tr>`;
+
+    return {
+      subject: "Your booking is confirmed",
+      html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Booking Confirmed</p>
+        <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+          You're all booked, ${userFirstName || "Queen"}!
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:rgba(18,13,7,0.7);line-height:1.7;">
+          We've received your appointment and we can't wait to see you. Here's a summary of your booking:
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:24px;padding:0;">
+          <tr><td style="padding:20px 20px 4px;">
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Date &amp; Time</p>
+            <p style="margin:0;font-size:15px;color:${DARK};font-family:Arial,sans-serif;font-weight:600;">${fmt(startTime)}</p>
+          </td></tr>
+          <tr><td style="padding:12px 20px 4px;border-top:1px solid rgba(18,13,7,0.06);">
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Location</p>
+            <p style="margin:0;font-size:15px;color:${DARK};font-family:Arial,sans-serif;">Shop 303, Destiny Plaza, Ago Palace Way, Isolo Lagos</p>
+          </td></tr>
+          <tr><td style="padding:12px 20px 16px;border-top:1px solid rgba(18,13,7,0.06);">
+            <p style="margin:0 0 10px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Services</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${serviceRows}
+              <tr>
+                <td style="padding-top:10px;font-size:14px;color:${DARK};font-family:Arial,sans-serif;font-weight:700;">Total</td>
+                <td style="padding-top:10px;font-size:14px;color:${DARK};font-family:Arial,sans-serif;font-weight:700;text-align:right;">₦${Number(totalAmount || 0).toLocaleString("en-NG")}</td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 24px;font-size:14px;color:rgba(18,13,7,0.6);line-height:1.7;font-family:Arial,sans-serif;">
+          Need to reschedule or have a question? Just reply to this email and we'll sort it out.
+        </p>
+        <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);line-height:1.7;font-family:Arial,sans-serif;">
+          See you soon 🌿<br/>
+          <strong style="color:${DARK};">The FRH Team</strong>
+        </p>
+      `),
+    };
+  },
+
+  ownerNotification: ({ userFirstName, userEmail, userMobileNumber, servicesText, startTime, totalAmount }) => {
+    const fmt = (iso) => {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleString("en-NG", {
+        timeZone: "Africa/Lagos",
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const rows = [
+      ["Client",   userFirstName || "—"],
+      ["Email",    userEmail || "—"],
+      ["Phone",    userMobileNumber || "—"],
+      ["Services", servicesText || "—"],
+      ["Date",     fmt(startTime)],
+      ["Total",    `₦${Number(totalAmount || 0).toLocaleString("en-NG")}`],
+    ];
+
+    return {
+      subject: `New booking: ${userFirstName || userEmail} — ${servicesText || ""}`,
+      html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">New Booking</p>
+        <h1 style="margin:0 0 24px;font-size:22px;color:${DARK};line-height:1.2;">
+          New appointment from ${userFirstName || "a client"}
+        </h1>
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:20px;">
+          ${rows.map(([label, value], i) => `
+            <tr><td style="padding:${i === 0 ? "16px" : "10px"} 20px ${i === rows.length - 1 ? "16px" : "4px"};">
+              <p style="margin:0 0 2px;font-size:10px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">${label}</p>
+              <p style="margin:0;font-size:14px;color:${DARK};font-family:Arial,sans-serif;">${value}</p>
+            </td></tr>
+            ${i < rows.length - 1 ? `<tr><td style="height:1px;background:rgba(18,13,7,0.06);"></td></tr>` : ""}
+          `).join("")}
+        </table>
+      `),
+    };
+  },
 
   passwordReset: ({ firstName, resetLink, expiresIn = "1 hour" }) => ({
     subject: "Reset Your Password",
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Password Reset</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #fff3cd; padding: 30px; border-radius: 10px; border-left: 4px solid #ffc107;">
-            <h1 style="color: #856404; margin-bottom: 20px;">Password Reset Request</h1>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Hi ${firstName},
-            </p>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              We received a request to reset your password. Click the button below to create a new password:
-            </p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetLink}" 
-                 style="background-color: #ffc107; color: #212529; padding: 14px 28px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                Reset Password
-              </a>
-            </div>
-            <p style="font-size: 14px; color: #856404; margin-top: 30px;">
-              This link will expire in ${expiresIn}. If you didn't request a password reset, please ignore this email or contact support if you have concerns.
-            </p>
-          </div>
-        </body>
-      </html>
-    `,
-    text: `Hi ${firstName},\n\nWe received a request to reset your password. Visit this link to reset it: ${resetLink}\n\nThis link expires in ${expiresIn}.`,
-  }),
-
-  emailVerification: ({ firstName, verificationCode, verificationLink }) => ({
-    subject: "Verify Your Email Address",
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Email Verification</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #e7f3ff; padding: 30px; border-radius: 10px; border-left: 4px solid #2196f3;">
-            <h1 style="color: #1565c0; margin-bottom: 20px;">Verify Your Email</h1>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Hi ${firstName},
-            </p>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Please verify your email address using the code below or click the button:
-            </p>
-            <div style="background-color: white; padding: 20px; border-radius: 5px; text-align: center; margin: 20px 0;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1565c0;">
-                ${verificationCode}
-              </span>
-            </div>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${verificationLink}" 
-                 style="background-color: #2196f3; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                Verify Email
-              </a>
-            </div>
-            <p style="font-size: 14px; color: #1565c0; margin-top: 30px;">
-              This code will expire in 10 minutes.
-            </p>
-          </div>
-        </body>
-      </html>
-    `,
-    text: `Hi ${firstName},\n\nYour verification code is: ${verificationCode}\n\nOr visit: ${verificationLink}`,
-  }),
-
-  orderConfirmation: ({ firstName, orderId, orderTotal, orderItems, trackingLink }) => ({
-    subject: `Order Confirmation - #${orderId}`,
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Order Confirmation</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #d4edda; padding: 30px; border-radius: 10px; border-left: 4px solid #28a745;">
-            <h1 style="color: #155724; margin-bottom: 20px;">Order Confirmed! ✓</h1>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Hi ${firstName},
-            </p>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Thank you for your order! We've received your payment and are processing your order.
-            </p>
-            <div style="background-color: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
-              <h2 style="color: #155724; margin-top: 0;">Order #${orderId}</h2>
-              <p style="margin: 10px 0;"><strong>Total:</strong> ${orderTotal}</p>
-              <div style="margin-top: 20px;">
-                <h3>Items:</h3>
-                ${orderItems.map(item => `<p style="margin: 5px 0;">• ${item}</p>`).join('')}
-              </div>
-            </div>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${trackingLink}" 
-                 style="background-color: #28a745; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                Track Your Order
-              </a>
-            </div>
-          </div>
-        </body>
-      </html>
-    `,
-    text: `Hi ${firstName},\n\nYour order #${orderId} has been confirmed!\nTotal: ${orderTotal}\n\nTrack your order: ${trackingLink}`,
+    html: emailShell(`
+      <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Password Reset</p>
+      <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">Reset your password</h1>
+      <p style="margin:0 0 20px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        Hi ${firstName || "there"},<br/><br/>
+        We received a request to reset your password. Click below to create a new one:
+      </p>
+      <div style="text-align:center;margin:28px 0;">
+        <a href="${resetLink}"
+          style="display:inline-block;background:${DARK};color:#ffffff;padding:14px 28px;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;letter-spacing:0.03em;">
+          Reset Password
+        </a>
+      </div>
+      <p style="margin:0;font-size:13px;color:rgba(18,13,7,0.45);line-height:1.7;font-family:Arial,sans-serif;">
+        This link expires in ${expiresIn}. If you didn't request this, you can safely ignore it.
+      </p>
+    `),
   }),
 
   notification: ({ firstName, title, message, actionLink, actionText }) => ({
     subject: title,
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${title}</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
-            <h1 style="color: #2c3e50; margin-bottom: 20px;">${title}</h1>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Hi ${firstName},
-            </p>
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              ${message}
-            </p>
-            ${actionLink ? `
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${actionLink}" 
-                   style="background-color: #3498db; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                  ${actionText || "View Details"}
-                </a>
-              </div>
-            ` : ''}
-          </div>
-        </body>
-      </html>
-    `,
-    text: `Hi ${firstName},\n\n${title}\n\n${message}${actionLink ? `\n\n${actionLink}` : ''}`,
+    html: emailShell(`
+      <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Notification</p>
+      <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">${title}</h1>
+      <p style="margin:0 0 20px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        Hi ${firstName || "there"},<br/><br/>
+        ${message}
+      </p>
+      ${actionLink ? `
+        <div style="text-align:center;margin:28px 0;">
+          <a href="${actionLink}"
+            style="display:inline-block;background:${DARK};color:#ffffff;padding:14px 28px;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;letter-spacing:0.03em;">
+            ${actionText || "View Details"}
+          </a>
+        </div>
+      ` : ""}
+    `),
   }),
 };

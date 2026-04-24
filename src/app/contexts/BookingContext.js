@@ -125,9 +125,27 @@ export function BookingProvider({ children }) {
 
       await createBooking({ user, services: selectedServices, startTime, endTime, totalAmount: totalPrice });
 
+      const notifyRes = await fetch("/api/bookings/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userEmail:        user.email,
+          userFirstName:    user.firstName,
+          userMobileNumber: user.mobileNumber,
+          services:         selectedServices,
+          servicesText:     selectedServices.map((s) => s.title).join(" | "),
+          startTime,
+          totalAmount:      totalPrice,
+        }),
+      });
+
+      if (!notifyRes.ok) {
+        await notifyRes.json().catch(() => ({}));
+      }
+
       setBookingSuccess(true);
     } catch (err) {
-      console.error("Booking error:", err);
+      console.error("[BookingContext] Booking error:", err);
       setBookingError("Booking failed. Please try again.");
     } finally {
       setIsSubmitting(false);

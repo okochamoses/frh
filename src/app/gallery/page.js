@@ -3,7 +3,7 @@ import { Bagelan, merriweather } from "@/app/layout"
 
 const IMAGES = [
   { src: "/salon.webp",          alt: "Salon interior",              width: 800, height: 1000 },
-  { src: "/ceo.webp",            alt: "Mariam Okocha Ijeoma",        width: 800, height: 1000 },
+  { src: "/ceo.png",             alt: "Mariam Okocha Ijeoma",        width: 800, height: 1000 },
   { src: "/coaching.webp",       alt: "Hair coaching session",       width: 800, height: 600  },
   { src: "/hair-coaching.jpeg",  alt: "Hair coaching consultation",  width: 800, height: 1000 },
   { src: "/gallery.avif",        alt: "Hair transformation",         width: 800, height: 600  },

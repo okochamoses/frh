@@ -1,16 +1,13 @@
-import nodemailer from "nodemailer";
-import { MAIL_CONFIG } from "./config";
-import { templates } from "./templates";
+const nodemailer = require("nodemailer");
+const { MAIL_CONFIG } = require("./config");
+const { templates } = require("./templates");
 
 function createTransporter() {
   return nodemailer.createTransport({
     host: MAIL_CONFIG.host,
     port: MAIL_CONFIG.port,
     secure: MAIL_CONFIG.secure,
-    auth: {
-      user: MAIL_CONFIG.user,
-      pass: MAIL_CONFIG.pass,
-    },
+    auth: { user: MAIL_CONFIG.user, pass: MAIL_CONFIG.pass },
   });
 }
 
@@ -46,11 +43,6 @@ class MailService {
     const { subject, html } = templates.newsletterWelcome({ firstName });
     return this.sendEmail({ to, subject, html });
   }
-
-  async sendNotification({ to, firstName, title, message, actionLink, actionText }) {
-    const { subject, html } = templates.notification({ firstName, title, message, actionLink, actionText });
-    return this.sendEmail({ to, subject, html });
-  }
 }
 
-export default new MailService();
+module.exports = new MailService();

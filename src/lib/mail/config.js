@@ -1,15 +1,17 @@
 export const MAIL_CONFIG = {
-  API_URL: "https://api.mailersend.com/v1",
-  FROM_EMAIL: process.env.MAILERSEND_FROM_EMAIL || "noreply@yourdomain.com",
-  FROM_NAME: process.env.MAILERSEND_FROM_NAME || "Your App Name",
-  API_KEY: process.env.MAILERSEND_API_KEY,
+  host: "smtp.hostinger.com",
+  port: 465,
+  secure: true,
+  user: process.env.SMTP_USER,
+  pass: process.env.SMTP_PASS,
+  fromName: "Mariam at FRH",
+  ownerEmail: process.env.SMTP_USER,
 };
 
-// Email template types
 export const EMAIL_TEMPLATES = {
   WELCOME: "welcome",
-  PASSWORD_RESET: "password_reset",
-  EMAIL_VERIFICATION: "email_verification",
-  ORDER_CONFIRMATION: "order_confirmation",
+  BOOKING_CONFIRMATION: "bookingConfirmation",
+  OWNER_NOTIFICATION: "ownerNotification",
+  PASSWORD_RESET: "passwordReset",
   NOTIFICATION: "notification",
 };
