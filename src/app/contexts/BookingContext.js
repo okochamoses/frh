@@ -19,10 +19,11 @@ import { createBooking } from "@/lib/firebase/bookingService";
 dayjs.extend(utc);
 
 // ── Business rules ────────────────────────────────────────────────────────────
-const OFF_DAYS      = new Set([1]); // Monday (0 = Sun … 6 = Sat)
-const START_HOUR    = 9;            // 9 AM WAT
-const END_HOUR      = 18;           // 6 PM WAT
-const SLOT_MINUTES  = 15;
+const OFF_DAYS       = new Set([1]); // Monday (0 = Sun … 6 = Sat)
+const START_HOUR     = 9;            // 9 AM WAT
+const END_HOUR       = 19;           // slots generated up to 7 PM WAT
+const CUTOFF_MINUTES = 19 * 60;      // no appointment may finish after 7 PM (19:00)
+const SLOT_MINUTES   = 15;
 const LOOKAHEAD_DAYS = 30;
 
 // ── Pure schedule helpers (no state, no side-effects) ─────────────────────────
@@ -86,6 +87,21 @@ export function BookingProvider({ children }) {
     () => selectedServices.reduce((sum, s) => sum + s.duration, 0),
     [selectedServices]
   );
+
+  // Removes past slots and slots where start + service duration would exceed 7 PM
+  const filteredTimeSlots = useMemo(() => {
+    const now = dayjs();
+    return Object.fromEntries(
+      Object.entries(timeSlots).map(([key, slots]) => [
+        key,
+        slots.filter(
+          (slot) =>
+            slot.isAfter(now) &&
+            (totalDuration === 0 || slot.hour() * 60 + slot.minute() + totalDuration <= CUTOFF_MINUTES)
+        ),
+      ])
+    );
+  }, [timeSlots, totalDuration]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
@@ -174,6 +190,7 @@ export function BookingProvider({ children }) {
         // Derived
         availableDays,
         timeSlots,
+        filteredTimeSlots,
         totalPrice,
         totalDuration,
         // Actions

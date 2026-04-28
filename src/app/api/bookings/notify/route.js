@@ -21,6 +21,11 @@ export async function POST(req) {
     mailService.sendOwnerNotification(booking),
   ]);
 
+  if (clientResult.status === "rejected")
+    console.error("[notify] client email failed:", clientResult.reason);
+  if (ownerResult.status === "rejected")
+    console.error("[notify] owner email failed:", ownerResult.reason);
+
   const allFailed = clientResult.status === "rejected" && ownerResult.status === "rejected";
   if (allFailed) {
     return Response.json({ error: "Failed to send emails" }, { status: 500 });

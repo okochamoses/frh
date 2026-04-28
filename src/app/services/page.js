@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Image from "next/image";
 import dayjs from "dayjs";
 import { merriweather, Bagelan } from "@/app/layout";
@@ -218,7 +218,7 @@ function PhoneDialog({ open, onClose, onSuccess }) {
 // ── Booking drawer (date + time selection) ────────────────────────────────────
 function BookingDrawer({ open, onClose }) {
   const {
-    availableDays, timeSlots,
+    availableDays, filteredTimeSlots,
     selectedTime, selectTime,
     totalDuration, totalPrice, selectedServices,
     isSubmitting, bookingError, bookingSuccess,
@@ -230,14 +230,32 @@ function BookingDrawer({ open, onClose }) {
 
   // Show slots for the selected date, falling back to today
   const activeKey   = selectedDate?.format("DD/MM/YYYY") ?? dayjs().format("DD/MM/YYYY");
-  const currentSlots = timeSlots[activeKey] ?? [];
+  const currentSlots = filteredTimeSlots[activeKey] ?? [];
+
+  const isDayUnavailable = useCallback(
+    (day, isOffDay) =>
+      isOffDay || (filteredTimeSlots[day.format("DD/MM/YYYY")] ?? []).length === 0,
+    [filteredTimeSlots]
+  );
 
   const handleDayClick = (day, isOffDay) => {
-    if (isOffDay) return;
-    // Select the first available slot on that day so the time grid updates immediately
-    const firstSlot = timeSlots[day.format("DD/MM/YYYY")]?.[0];
+    if (isDayUnavailable(day, isOffDay)) return;
+    const firstSlot = filteredTimeSlots[day.format("DD/MM/YYYY")]?.[0];
     if (firstSlot) selectTime(firstSlot);
   };
+
+  // Find the next bookable day after the given day (skips off-days + days with no slots)
+  const nextBookableDay = useCallback(
+    (afterDay) => {
+      for (const { day, isOffDay } of availableDays) {
+        if (!day.isAfter(afterDay, "day")) continue;
+        const slots = filteredTimeSlots[day.format("DD/MM/YYYY")] ?? [];
+        if (!isOffDay && slots.length > 0) return day;
+      }
+      return null;
+    },
+    [availableDays, filteredTimeSlots]
+  );
 
   const handleClose = () => { backToServices(); onClose(); };
   const handleDone  = () => { reset(); onClose(); };
@@ -400,17 +418,18 @@ function BookingDrawer({ open, onClose }) {
                   }}
                 >
                   {availableDays.map(({ day, isOffDay }, i) => {
-                    const isActive = selectedDate?.isSame(day, "day");
+                    const isActive     = selectedDate?.isSame(day, "day");
+                    const isUnavailable = isDayUnavailable(day, isOffDay);
                     return (
                       <SwiperSlide key={i} className="flex justify-center">
                         <button
                           onClick={() => handleDayClick(day, isOffDay)}
-                          disabled={isOffDay}
+                          disabled={isUnavailable}
                           className="flex flex-col items-center gap-1 w-full py-1"
                         >
                           <span
                             className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold border transition-colors duration-150 ${
-                              isOffDay
+                              isUnavailable
                                 ? "line-through text-stone-300 border-transparent cursor-not-allowed"
                                 : isActive
                                 ? "bg-[#120D07] text-white border-[#120D07]"
@@ -434,24 +453,55 @@ function BookingDrawer({ open, onClose }) {
                 <p className={`${merriweather.className} text-[10px] tracking-widest uppercase text-stone-400 mb-3`}>
                   Available Times
                 </p>
-                <div className="grid grid-cols-4 gap-2">
-                  {currentSlots.map((time, i) => {
-                    const isActive = selectedTime?.isSame(time);
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => selectTime(time)}
-                        className={`text-xs py-2.5 border transition-colors duration-150 ${
-                          isActive
-                            ? "bg-[#120D07] text-white border-[#120D07]"
-                            : "border-stone-200 text-stone-700 hover:border-stone-800 hover:bg-stone-50"
-                        }`}
-                      >
-                        {time.format("HH:mm")}
-                      </button>
-                    );
-                  })}
-                </div>
+                {currentSlots.length === 0 ? (() => {
+                  const activeDay = selectedDate ?? dayjs().startOf("day");
+                  const next = nextBookableDay(activeDay);
+                  const nextLabel = next
+                    ? next.isSame(dayjs().add(1, "day"), "day")
+                      ? "tomorrow"
+                      : next.format("dddd")
+                    : null;
+                  return (
+                    <div className="rounded-sm border border-stone-200 bg-stone-50 px-4 py-5 text-center">
+                      <p className={`${merriweather.className} text-sm text-stone-600`}>
+                        No times available for this day.
+                      </p>
+                      {next ? (
+                        <p className="mt-1 text-xs text-stone-400">
+                          Would you like to book for{" "}
+                          <button
+                            onClick={() => handleDayClick(next, false)}
+                            className="font-semibold text-[#120D07] underline underline-offset-2 hover:text-[#BD2E2E] transition-colors"
+                          >
+                            {nextLabel}
+                          </button>
+                          ?
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-stone-400">No upcoming availability found.</p>
+                      )}
+                    </div>
+                  );
+                })() : (
+                  <div className="grid grid-cols-4 gap-2">
+                    {currentSlots.map((time, i) => {
+                      const isActive = selectedTime?.isSame(time);
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => selectTime(time)}
+                          className={`text-xs py-2.5 border transition-colors duration-150 ${
+                            isActive
+                              ? "bg-[#120D07] text-white border-[#120D07]"
+                              : "border-stone-200 text-stone-700 hover:border-stone-800 hover:bg-stone-50"
+                          }`}
+                        >
+                          {time.format("HH:mm")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Selection summary */}
