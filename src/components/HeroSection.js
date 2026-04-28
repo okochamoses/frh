@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Image from "next/image";
+import Link from "next/link";
 import { Bagelan, merriweather } from "@/app/layout";
 
 export default function HeroSection() {
@@ -203,15 +204,11 @@ export default function HeroSection() {
         className="absolute bottom-10 sm:bottom-12 left-0 right-0 flex justify-center z-30"
         style={{ opacity: 0 }}
       >
-        <a
-          href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link href="/services">
           <button className="bg-[#BD2E2E] hover:bg-[#9e2626] text-white text-[0.65rem] py-4 px-10 tracking-[0.25em] uppercase transition-colors duration-300">
             Book A Session
           </button>
-        </a>
+        </Link>
       </div>
 
       {/* Geometric accent — sweeping curve, bottom-left */}

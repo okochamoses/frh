@@ -80,14 +80,12 @@ export default function Footer() {
             beside Market Square Supermarket,<br />
             Lagos
           </p>
-          <a
-            href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/services"
             className="inline-block mt-5 text-xs tracking-widest uppercase border border-[#DDA15E] text-[#DDA15E] hover:bg-[#DDA15E] hover:text-[#120D07] transition-all duration-200 px-5 py-2.5"
           >
             Book a Session →
-          </a>
+          </Link>
         </div>
       </div>
 

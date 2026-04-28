@@ -42,14 +42,12 @@ export function Header() {
 
                 {/* Right side: Book CTA + User avatar + Hamburger */}
                 <div className="flex items-center gap-4">
-                    <a
-                        href="https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <Link
+                        href="/services"
                         className="hidden md:inline-flex bg-[#BD2E2E] text-white text-sm px-4 py-2 rounded-md hover:bg-[#a02626] transition-colors"
                     >
                         Book A Session
-                    </a>
+                    </Link>
 
                     {/* User avatar — only shown when logged in */}
                     <UserMenu />

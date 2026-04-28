@@ -10,7 +10,7 @@ const variants = {
   hover: { scale: 1.05 },
 };
 
-const FRESHA_BOOKING_URL = "https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796";
+const FRESHA_BOOKING_URL = "/services";
 
 export default function ServiceCard({ image, title, url }) {
   const href = url || FRESHA_BOOKING_URL;

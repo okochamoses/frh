@@ -43,9 +43,8 @@ const NAV_LINKS = [
   {
     id: "book",
     label: "Book A Session",
-    href: "https://www.fresha.com/a/flourish-roots-hair-co-lagos-ago-palace-way-bxvf8kef/booking?allOffer=true&menu=true&pId=1427796",
+    href: "/services",
     col: "B",
-    external: true,
     image: "/salon.webp",
   },
   {

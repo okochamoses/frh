@@ -81,7 +81,7 @@ const About = () => {
               </svg>
             </Link>
             <Link
-              href="/#story"
+              href="/about#story"
               className={`${merriweather.className} text-xs tracking-widest uppercase text-stone-400 hover:text-stone-800 transition-colors duration-200 border-b border-transparent hover:border-stone-800 pb-0.5`}
             >
               Our Story
