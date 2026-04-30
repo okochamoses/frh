@@ -2,14 +2,12 @@ import Image from "next/image"
 import { Bagelan, merriweather } from "@/app/layout"
 
 const IMAGES = [
-  { src: "/salon.webp",          alt: "Salon interior",              width: 800, height: 1000 },
-  { src: "/ceo.png",             alt: "Mariam Okocha Ijeoma",        width: 800, height: 1000 },
-  { src: "/coaching.webp",       alt: "Hair coaching session",       width: 800, height: 600  },
-  { src: "/hair-coaching.jpeg",  alt: "Hair coaching consultation",  width: 800, height: 1000 },
-  { src: "/gallery.avif",        alt: "Hair transformation",         width: 800, height: 600  },
-  { src: "/long-hair.webp",      alt: "Natural long hair",           width: 800, height: 1000 },
-  { src: "/scalp-issues.webp",   alt: "Scalp care treatment",        width: 800, height: 600  },
-  { src: "/story.webp",          alt: "Flourish Roots Hair Co.",     width: 800, height: 1000 },
+  { src: "/gallery/IMG_6324.webp", alt: "Hair transformation",       width: 800, height: 1000 },
+  { src: "/gallery/IMG_6327.webp", alt: "Hair styling",              width: 800, height: 1000 },
+  { src: "/gallery/IMG_6938.webp", alt: "Hair care session",         width: 800, height: 600  },
+  { src: "/gallery/IMG_7317.webp", alt: "Hair consultation",         width: 800, height: 1000 },
+  { src: "/gallery/IMG_7537.webp", alt: "Hair treatment",            width: 800, height: 1000 },
+  { src: "/gallery/img.png",       alt: "Portfolio showcase",         width: 800, height: 600  },
 ]
 
 export default function GalleryPage() {

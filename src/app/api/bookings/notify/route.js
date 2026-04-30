@@ -1,4 +1,15 @@
+import crypto from "crypto";
 import mailService from "@/lib/mail/MailService";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://flourishrootshair.com";
+
+function makeCompleteUrl(bookingId, review) {
+  const token = crypto
+    .createHmac("sha256", process.env.BOOKING_SECRET || "")
+    .update(bookingId)
+    .digest("hex");
+  return `${APP_URL}/api/bookings/${bookingId}/complete?token=${token}&review=${review}`;
+}
 
 export async function POST(req) {
   let body;
@@ -8,13 +19,16 @@ export async function POST(req) {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { userEmail, userFirstName, userMobileNumber, services, servicesText, startTime, totalAmount } = body;
+  const { bookingId, userEmail, userFirstName, userMobileNumber, services, servicesText, startTime, totalAmount } = body;
 
   if (!userEmail) {
     return Response.json({ error: "userEmail is required" }, { status: 400 });
   }
 
-  const booking = { userEmail, userFirstName, userMobileNumber, services, servicesText, startTime, totalAmount };
+  const completeUrl       = bookingId ? makeCompleteUrl(bookingId, false) : null;
+  const completeReviewUrl = bookingId ? makeCompleteUrl(bookingId, true)  : null;
+
+  const booking = { userEmail, userFirstName, userMobileNumber, services, servicesText, startTime, totalAmount, completeUrl, completeReviewUrl };
 
   const [clientResult, ownerResult] = await Promise.allSettled([
     mailService.sendBookingConfirmation({ to: userEmail, booking }),

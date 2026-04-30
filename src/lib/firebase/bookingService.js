@@ -55,6 +55,10 @@ export async function createBooking({ user, services, startTime, endTime, totalA
     startTime,
     endTime,
 
+    // Scheduler tracking
+    status:        "pending",
+    reminderSent:  false,
+
     createdAt: serverTimestamp(),
   });
 

@@ -139,12 +139,13 @@ export function BookingProvider({ children }) {
       const endTime   = selectedTime.utc().add(1, "hour").add(totalDuration, "minute")
                           .format("YYYY-MM-DDTHH:mm:ss");
 
-      await createBooking({ user, services: selectedServices, startTime, endTime, totalAmount: totalPrice });
+      const bookingId = await createBooking({ user, services: selectedServices, startTime, endTime, totalAmount: totalPrice });
 
       const notifyRes = await fetch("/api/bookings/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          bookingId,
           userEmail:        user.email,
           userFirstName:    user.firstName,
           userMobileNumber: user.mobileNumber,

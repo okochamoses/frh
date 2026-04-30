@@ -51,6 +51,21 @@ class MailService {
     const { subject, html } = templates.notification({ firstName, title, message, actionLink, actionText });
     return this.sendEmail({ to, subject, html });
   }
+
+  async sendAppointmentReminder({ to, booking }) {
+    const { subject, html } = templates.appointmentReminder(booking);
+    return this.sendEmail({ to, subject, html });
+  }
+
+  async sendServiceComplete({ to, booking }) {
+    const { subject, html } = templates.serviceComplete(booking);
+    return this.sendEmail({ to, subject, html });
+  }
+
+  async sendServiceCompleteWithReview({ to, booking }) {
+    const { subject, html } = templates.serviceCompleteWithReview(booking);
+    return this.sendEmail({ to, subject, html });
+  }
 }
 
 export default new MailService();
