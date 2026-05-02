@@ -48,7 +48,7 @@ const SalonServicesPage = () => {
   const [chooseService, setChooseService] = useState()
 
   const { displayAuthModal, loading, token, user, isValidToken } = useAuth();
-  const { bookingLoader, bookingTime, bookService } = useBooking();
+  const { isSubmitting, selectedTime, goToDatetime, submitBooking } = useBooking();
   const router = useRouter()
 
   const categorizeServices = () => {
@@ -90,30 +90,14 @@ const SalonServicesPage = () => {
   }
 
   const handleSubmit = async () => {
-    console.log(isValidToken())
-    if (isValidToken()) {
-      console.log(1)
-      if (!chooseService) {
-        setChooseService(true);
-        console.log(2)
-        return;
-      }
-      console.log(3)
-      // handle the full submission
-      const res = await bookService(bookingTime, selectedServices);
-      if (res.status) {
-        // show the booking confirmation
-        router.push('/bookingConfirmation')
-      }
-    }
-    if (!chooseService) {
-      setChooseService(true);
+    if (!isValidToken()) {
+      if (!chooseService) { setChooseService(true); return; }
+      displayAuthModal();
       return;
     }
-    if(chooseService && !isValidToken()) displayAuthModal();
-    if (!chooseService && bookingTime?.isSame(bookingTime?.startOf("day"))) {
-      console.log("Error, please book time")
-    }
+    if (!chooseService) { setChooseService(true); return; }
+    await submitBooking();
+    router.push('/bookingConfirmation');
   }
 
   const totalTime = () => selectedServices.reduce((acc, curr) => acc + curr?.duration, 0);
@@ -147,10 +131,10 @@ const SalonServicesPage = () => {
 
                 <hr className="my-6"/>
                 {
-                  bookingTime ? (
+                  selectedTime ? (
                       <div className="pb-5 text-gray-500 text-sm">
-                        <p className="flex items-center gap-2"><CiCalendar />{bookingTime.format("dddd, D MMMM")}</p>
-                        <p className="flex items-center gap-2"><CiClock2 />{bookingTime.format("HH:mm")}-{bookingTime.add(totalTime(), "minutes").format("HH:mm")} ({convertToHour(totalTime())} duration)</p>
+                        <p className="flex items-center gap-2"><CiCalendar />{selectedTime.format("dddd, D MMMM")}</p>
+                        <p className="flex items-center gap-2"><CiClock2 />{selectedTime.format("HH:mm")}-{selectedTime.add(totalTime(), "minutes").format("HH:mm")} ({convertToHour(totalTime())} duration)</p>
                       </div>
                   ) : undefined
                 }
@@ -165,7 +149,7 @@ const SalonServicesPage = () => {
                   <span>Total</span>
                   <span>₦{selectedServices.reduce((acc, curr) => acc + curr.price, 0).toLocaleString('en-US')}</span>
                 </div>
-                  <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={bookingLoader}>Continue</Button>
+                  <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={isSubmitting}>Continue</Button>
                   <AddPhoneNumber isOpen={token && !user?.mobileNumber && chooseService} setIsPhoneRequired={setIsPhoneRequired} />
               </div>
             </div>
@@ -175,7 +159,7 @@ const SalonServicesPage = () => {
                 <p>₦{selectedServices.reduce((acc, curr) => acc + curr.price, 0).toLocaleString('en-US')}</p>
                 <p>{selectedServices.length ? selectedServices.length : "No"} services • {convertToHour(selectedServices.reduce((acc, curr) => acc + curr.duration, 0))}</p>
               </div>
-              <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={bookingLoader}>Continue</Button>
+              <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={isSubmitting}>Continue</Button>
             </div>
           </section>
 
@@ -225,7 +209,7 @@ const convertToHour = (minutes) => {
 }
 
 const Booking = () => {
-  const { availableDays, availableTimes, bookingTime, updateBookingTime } = useBooking();
+  const { availableDays, filteredTimeSlots, selectedTime, selectTime } = useBooking();
 
   return (
       <div>
@@ -274,8 +258,8 @@ const Booking = () => {
                         className="flex-col justify-center items-center"
                     >
                       <div
-                          className={`${merriweather.className} flex justify-center items-center h-16 w-16 border rounded-full text-3xl font-bold ${isOffDay ? "line-through text-gray-300" : ""} ${bookingTime?.format('DD/MM/YYYY') === day.format('DD/MM/YYYY') ? "bg-blue-600 text-white" : "bg-white text-black"}  cursor-pointer`}
-                          onClick={() => updateBookingTime(day)}
+                          className={`${merriweather.className} flex justify-center items-center h-16 w-16 border rounded-full text-3xl font-bold ${isOffDay ? "line-through text-gray-300" : ""} ${selectedTime?.format('DD/MM/YYYY') === day.format('DD/MM/YYYY') ? "bg-blue-600 text-white" : "bg-white text-black"}  cursor-pointer`}
+                          onClick={() => selectTime(day)}
                       >
                         <span>{day?.format("DD")}</span>
                       </div>
@@ -288,15 +272,15 @@ const Booking = () => {
 
         <div>
           {
-            (bookingTime ? availableTimes[bookingTime.format("DD/MM/YYYY")] : availableTimes[dayjs().format("DD/MM/YYYY")])?.map((time, index) => (
+            (filteredTimeSlots?.[selectedTime ? selectedTime.format("DD/MM/YYYY") : dayjs().format("DD/MM/YYYY")] ?? []).map((time, index) => (
               <div
                   key={index}
                   className={`border p-5 rounded-lg my-2 hover:bg-gray-200 ${
-                      bookingTime?.isSame(time)
+                      selectedTime?.isSame(time)
                           ? "border-2 border-blue-600 bg-gray-100"
                           : "border-gray-200"
                   }`}
-                  onClick={() => updateBookingTime(time)}
+                  onClick={() => selectTime(time)}
               >
                 {time.format("HH:mm")}
               </div>

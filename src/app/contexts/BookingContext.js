@@ -139,26 +139,7 @@ export function BookingProvider({ children }) {
       const endTime   = selectedTime.utc().add(1, "hour").add(totalDuration, "minute")
                           .format("YYYY-MM-DDTHH:mm:ss");
 
-      const bookingId = await createBooking({ user, services: selectedServices, startTime, endTime, totalAmount: totalPrice });
-
-      const notifyRes = await fetch("/api/bookings/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId,
-          userEmail:        user.email,
-          userFirstName:    user.firstName,
-          userMobileNumber: user.mobileNumber,
-          services:         selectedServices,
-          servicesText:     selectedServices.map((s) => s.title).join(" | "),
-          startTime,
-          totalAmount:      totalPrice,
-        }),
-      });
-
-      if (!notifyRes.ok) {
-        await notifyRes.json().catch(() => ({}));
-      }
+      await createBooking({ user, services: selectedServices, startTime, endTime, totalAmount: totalPrice });
 
       setBookingSuccess(true);
     } catch (err) {

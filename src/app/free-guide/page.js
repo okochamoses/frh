@@ -161,7 +161,7 @@ function LeadForm({ onSuccess }) {
     setStatus("loading")
     setErrorMessage("")
     try {
-      const res  = await fetch("/api/lead-magnet", {
+      const res  = await fetch("https://us-central1-flourish-roots.cloudfunctions.net/leadMagnet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), firstName: firstName.trim() || undefined }),

@@ -142,7 +142,7 @@ const templates = {
         };
     },
 
-    ownerNotification({userFirstName, userEmail, userMobileNumber, servicesText, startTime, totalAmount}) {
+    ownerNotification({userFirstName, userEmail, userMobileNumber, servicesText, startTime, totalAmount, completeUrl, completeReviewUrl}) {
         const fmt = (iso) => {
             if (!iso) return "—";
             return new Date(iso).toLocaleString("en-NG", {
@@ -165,6 +165,31 @@ const templates = {
             ["Total", `₦${Number(totalAmount || 0).toLocaleString("en-NG")}`],
         ];
 
+        const actionButtons = completeUrl ? `
+      <p style="margin:24px 0 10px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">When service is done</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding-bottom:8px;">
+            <a href="${completeUrl}"
+              style="display:block;background:${DARK};color:#ffffff;text-align:center;padding:13px 20px;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;letter-spacing:0.03em;">
+              Mark as Complete
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="${completeReviewUrl}"
+              style="display:block;background:${GOLD};color:${DARK};text-align:center;padding:13px 20px;border-radius:8px;font-size:13px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;letter-spacing:0.03em;">
+              Mark Complete &amp; Ask for Review
+            </a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:10px 0 0;font-size:11px;color:rgba(18,13,7,0.35);font-family:Arial,sans-serif;text-align:center;">
+        Each link can only be used once.
+      </p>
+    ` : "";
+
         return {
             subject: `New booking: ${userFirstName || userEmail} — ${servicesText || ""}`,
             html: emailShell(`
@@ -182,7 +207,115 @@ const templates = {
             ${i < rows.length - 1 ? `<tr><td style="height:1px;background:rgba(18,13,7,0.06);"></td></tr>` : ""}
           `).join("")}
         </table>
+        ${actionButtons}
       `),
+        };
+    },
+
+    appointmentReminder({userFirstName, services = [], servicesText, startTime}) {
+        const fmt = (iso) => {
+            if (!iso) return "—";
+            return new Date(iso).toLocaleString("en-NG", {
+                timeZone: "Africa/Lagos",
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        };
+
+        const serviceRows = services.length
+            ? services.map((s) => `
+          <tr>
+            <td style="padding:7px 0;font-size:14px;color:${DARK};font-family:Arial,sans-serif;border-bottom:1px solid rgba(18,13,7,0.06);">${s.title || "—"}</td>
+            <td style="padding:7px 0;font-size:13px;color:rgba(18,13,7,0.5);font-family:Arial,sans-serif;border-bottom:1px solid rgba(18,13,7,0.06);text-align:right;">${s.duration ? `${Math.floor(s.duration / 60) > 0 ? Math.floor(s.duration / 60) + "h " : ""}${s.duration % 60 > 0 ? s.duration % 60 + "m" : ""}`.trim() : ""}</td>
+          </tr>`).join("")
+            : `<tr><td colspan="2" style="padding:7px 0;font-size:14px;color:rgba(18,13,7,0.6);font-family:Arial,sans-serif;">${servicesText || "—"}</td></tr>`;
+
+        return {
+            subject: "Your appointment is in 1 hour 🌿",
+            html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Reminder</p>
+        <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+          See you soon, ${userFirstName || "Queen"}!
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:rgba(18,13,7,0.7);line-height:1.7;">
+          Just a reminder that your appointment at Flourish Roots Hair is coming up in about an hour.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:24px;">
+          <tr><td style="padding:16px 20px 12px;">
+            <p style="margin:0 0 4px;font-size:10px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">When</p>
+            <p style="margin:0;font-size:15px;color:${DARK};font-family:Arial,sans-serif;font-weight:600;">${fmt(startTime)}</p>
+          </td></tr>
+          <tr><td style="height:1px;background:rgba(18,13,7,0.06);"></td></tr>
+          <tr><td style="padding:12px 20px 16px;">
+            <p style="margin:0 0 4px;font-size:10px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Where</p>
+            <p style="margin:0;font-size:14px;color:${DARK};font-family:Arial,sans-serif;">Shop 303, Destiny Plaza, Ago Palace Way, Isolo Lagos</p>
+          </td></tr>
+          <tr><td style="height:1px;background:rgba(18,13,7,0.06);"></td></tr>
+          <tr><td style="padding:12px 20px 16px;">
+            <p style="margin:0 0 10px;font-size:10px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Services</p>
+            <table width="100%" cellpadding="0" cellspacing="0">${serviceRows}</table>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);line-height:1.7;font-family:Arial,sans-serif;">
+          If you need to reschedule, please reply to this email as soon as possible.<br/>
+          We look forward to seeing you 🌿<br/>
+          <strong style="color:${DARK};">The FRH Team</strong>
+        </p>
+      `),
+        };
+    },
+
+    serviceComplete({userFirstName}) {
+        return {
+            subject: "Thank you for visiting Flourish Roots Hair 🌿",
+            html: emailShell(`
+      <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Thank You</p>
+      <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+        It was wonderful having you, ${userFirstName || "Queen"}!
+      </h1>
+      <p style="margin:0 0 16px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        We hope you're loving your hair. Thank you for trusting us with your natural hair journey — it means everything to us.
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        Remember to keep up with your hair care routine and don't hesitate to reach out if you have any questions.
+      </p>
+      <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);line-height:1.7;font-family:Arial,sans-serif;">
+        See you next time 🌿<br/>
+        <strong style="color:${DARK};">The FRH Team</strong>
+      </p>
+    `),
+        };
+    },
+
+    serviceCompleteWithReview({userFirstName}) {
+        return {
+            subject: "Thank you for visiting — we'd love your feedback 🌿",
+            html: emailShell(`
+      <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Thank You</p>
+      <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+        It was wonderful having you, ${userFirstName || "Queen"}!
+      </h1>
+      <p style="margin:0 0 16px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        We hope you're loving your hair. Thank you for trusting us with your natural hair journey.
+      </p>
+      <p style="margin:0 0 24px;font-size:15px;color:rgba(18,13,7,0.72);line-height:1.7;">
+        If you enjoyed your visit, we'd be so grateful if you took a moment to leave us a review — it helps other women find us and supports everything we do here at FRH.
+      </p>
+      <div style="text-align:center;margin:28px 0;">
+        <a href="https://g.page/r/CUqz4MoAvNK0EAI/review"
+          style="display:inline-block;background:${GOLD};color:${DARK};padding:14px 32px;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;text-decoration:none;font-weight:700;letter-spacing:0.03em;">
+          Leave a Review
+        </a>
+      </div>
+      <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);line-height:1.7;font-family:Arial,sans-serif;">
+        See you next time 🌿<br/>
+        <strong style="color:${DARK};">The FRH Team</strong>
+      </p>
+    `),
         };
     },
 

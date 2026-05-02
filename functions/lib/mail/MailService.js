@@ -43,6 +43,21 @@ class MailService {
     const { subject, html } = templates.newsletterWelcome({ firstName });
     return this.sendEmail({ to, subject, html });
   }
+
+  async sendAppointmentReminder({ to, booking }) {
+    const { subject, html } = templates.appointmentReminder(booking);
+    return this.sendEmail({ to, subject, html });
+  }
+
+  async sendServiceComplete({ to, booking }) {
+    const { subject, html } = templates.serviceComplete(booking);
+    return this.sendEmail({ to, subject, html });
+  }
+
+  async sendServiceCompleteWithReview({ to, booking }) {
+    const { subject, html } = templates.serviceCompleteWithReview(booking);
+    return this.sendEmail({ to, subject, html });
+  }
 }
 
 module.exports = new MailService();
