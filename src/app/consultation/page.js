@@ -303,7 +303,7 @@ export default function Consultation() {
           <Reveal>
             <div className="overflow-hidden rounded-xl" style={{ border: `1px solid ${GOLD}30` }}>
               <img
-                src="/long-hair.webp"
+                src="/ceo.png"
                 alt="Mariam — hair coach"
                 className="h-full min-h-[300px] w-full object-cover transition-transform duration-700 hover:scale-105"
               />
@@ -321,7 +321,7 @@ export default function Consultation() {
               I'm Mariam — I've Sat Exactly Where You're Sitting
             </h2>
             <p className="mt-4 text-sm leading-7" style={{ color: "rgba(255,255,255,0.75)" }}>
-              I'm a certified hair coach, salon owner, and Lagos woman who has personally lived through hair loss,
+              I'm a certified hair coach, salon owner, and African woman who has personally lived through hair loss,
               dryness, and postpartum shedding.
             </p>
             <p className="mt-3 text-sm leading-7" style={{ color: "rgba(255,255,255,0.75)" }}>

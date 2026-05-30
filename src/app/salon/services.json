@@ -298,7 +298,7 @@
   {
     "title": "Natural hair twists loosening",
     "price": 2000,
-    "duration": "1h 30m",
+    "duration": 90,
     "Extra Time": "",
     "Tax": "No tax",
     "Description": "Medium sized twists, only available Tuesdays, Wednesdays, Thursdays and Fridays NOT Saturdays and Sundays please.  You won't be attended to if defaulted. Fuller and longer hair attracts more by our discretion. ",
@@ -638,7 +638,7 @@
   {
     "title": "Natural hair updo with blow drying",
     "price": 8000,
-    "duration": "2h 45m",
+    "duration": 165,
     "Extra Time": "",
     "Tax": "No tax",
     "Description": "To blow dry before styling\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
@@ -843,7 +843,7 @@
   {
     "title": "Washing ,Moisturizing, deep conditioning with client full kit package.",
     "price": 5000,
-    "duration": "1h 25m",
+    "duration": 85,
     "Extra Time": "",
     "Tax": "No tax",
     "Description": "This service requires the client complete product package such as shampoo, leave-in conditioner, hair butter \n, deep conditioner and oil .\n\nIncomplete product package will lead to the full payment of the salon price.\n\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
@@ -1013,7 +1013,7 @@
   {
     "title": "Sister Locs - Long Hair ",
     "price": 85000,
-    "duration": "9h",
+    "duration": 540,
     "Extra Time": "",
     "Tax": "No tax",
     "Description": "Sister Locs are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you. This comes with washing and blowdrying.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (5,000)\n\nCancellation/Rescheduling leads to forfeiture of 50% of amount paid, whether in full or part.",
@@ -1030,7 +1030,7 @@
   {
     "title": "Bridal Service ",
     "price": 60000,
-    "duration": "1h 15m",
+    "duration": 75,
     "Extra Time": "",
     "Tax": "No tax",
     "Description": "Bridal Hair consultations and services, Consultations may require treatments and Trial sessions before the Wedding day.(these are included in the charge) ",
@@ -1149,7 +1149,7 @@
   {
     "title": "All Toe Fixing - Big Toe Fixing",
     "price": 3000,
-    "duration": "45m",
+    "duration": 45,
     "Extra Time": "",
     "Tax": "No tax",
     "Description": "",

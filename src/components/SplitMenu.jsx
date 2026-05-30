@@ -23,7 +23,7 @@ const NAV_LINKS = [
     label: "Salon Services",
     href: "/services",
     col: "A",
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80",
+    image: "/hair-wash.webp",
   },
   {
     id: "coaching",
@@ -66,7 +66,7 @@ const NAV_LINKS = [
     label: "Contact",
     href: "/contact",
     col: "B",
-    image: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=1200&q=80",
+    image: "/map.webp",
   },
 ]
 
