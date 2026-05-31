@@ -4,8 +4,10 @@ import dynamic from "next/dynamic";
 import Footer from "../components/footer";
 import { Header } from "@/components/header";
 import { AuthProvider } from "@/app/contexts/AuthContext";
+import { BookingProvider } from "@/app/contexts/BookingContext";
 import { useLeadMagnet } from "@/hooks/useLeadMagnet";
 import { BookingFAB } from "@/components/BookingFAB";
+import { GlobalBookingBar } from "@/components/GlobalBookingBar";
 
 const LeadMagnetModal = dynamic(
   () => import("@/components/LeadMagnetModal").then((m) => ({ default: m.LeadMagnetModal })),
@@ -27,21 +29,25 @@ function LeadMagnetGate({ children }) {
 export default function Root({ children }) {
   return (
     <AuthProvider>
-      {LEAD_MAGNET_DISABLED ? (
-        <>
-          <Header />
-          {children}
-          <Footer />
-          <BookingFAB />
-        </>
-      ) : (
-        <LeadMagnetGate>
-          <Header />
-          {children}
-          <Footer />
-          <BookingFAB />
-        </LeadMagnetGate>
-      )}
+      <BookingProvider>
+        {LEAD_MAGNET_DISABLED ? (
+          <>
+            <Header />
+            {children}
+            <Footer />
+            <GlobalBookingBar />
+            <BookingFAB />
+          </>
+        ) : (
+          <LeadMagnetGate>
+            <Header />
+            {children}
+            <Footer />
+            <GlobalBookingBar />
+            <BookingFAB />
+          </LeadMagnetGate>
+        )}
+      </BookingProvider>
     </AuthProvider>
   );
 }

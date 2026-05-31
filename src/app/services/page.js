@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import dayjs from "dayjs";
 import { merriweather, Bagelan } from "@/app/layout";
 import services from "../salon/services.json";
-import { BookingProvider, useBooking } from "@/app/contexts/BookingContext";
+import { useBooking } from "@/app/contexts/BookingContext";
+import { ExpandableBookingBar } from "@/components/ExpandableBookingBar";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -118,32 +119,7 @@ function ServiceCard({ service, onClickImage }) {
 }
 
 // ── Booking bar (sticky bottom) ───────────────────────────────────────────────
-function BookingBar({ onBookNow }) {
-  const { selectedServices, totalPrice, totalDuration } = useBooking();
 
-  if (selectedServices.length === 0) return null;
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#120D07] text-white shadow-2xl">
-      <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between gap-4">
-        <div>
-          <p className={`${merriweather.className} text-sm font-bold`}>
-            {selectedServices.length} service{selectedServices.length !== 1 ? "s" : ""} selected
-          </p>
-          <p className="text-stone-400 text-xs mt-0.5">
-            ₦{totalPrice.toLocaleString("en-US")} • {formatDuration(totalDuration)}
-          </p>
-        </div>
-        <button
-          onClick={onBookNow}
-          className={`${merriweather.className} text-[9px] tracking-widest uppercase bg-[#DDA15E] text-[#120D07] px-6 py-3 hover:bg-[#c8894a] transition-colors duration-200 flex-shrink-0`}
-        >
-          Book Now
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ── Phone collection dialog ───────────────────────────────────────────────────
 function PhoneDialog({ open, onClose, onSuccess }) {
@@ -541,6 +517,79 @@ function BookingDrawer({ open, onClose }) {
   );
 }
 
+// ── Pills scroller ────────────────────────────────────────────────────────────
+function PillsScroller({ categories, active, onSelect }) {
+  const scrollRef = useRef(null);
+  const [fadeLeft, setFadeLeft] = useState(false);
+  const [fadeRight, setFadeRight] = useState(false);
+
+  const updateFades = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setFadeLeft(el.scrollLeft > 4);
+    setFadeRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    updateFades();
+    el.addEventListener("scroll", updateFades, { passive: true });
+    const ro = new ResizeObserver(updateFades);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", updateFades); ro.disconnect(); };
+  }, [updateFades]);
+
+  return (
+    <div className="relative flex-1 w-full min-w-0">
+      {/* Left fade + scroll hint chevron */}
+      <div
+        className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 z-10 flex items-center justify-start pl-1 transition-opacity duration-200"
+        style={{
+          opacity: fadeLeft ? 1 : 0,
+          background: "linear-gradient(to right, #faf9f7 60%, transparent)",
+        }}
+      >
+        <svg viewBox="0 0 12 12" className="w-3 h-3 text-stone-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 2L4 6l4 4" />
+        </svg>
+      </div>
+      {/* Right fade + scroll hint chevron */}
+      <div
+        className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 z-10 flex items-center justify-end pr-1 transition-opacity duration-200"
+        style={{
+          opacity: fadeRight ? 1 : 0,
+          background: "linear-gradient(to left, #faf9f7 60%, transparent)",
+        }}
+      >
+        <svg viewBox="0 0 12 12" className="w-3 h-3 text-stone-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 2l4 4-4 4" />
+        </svg>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-2 overflow-x-auto"
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+      >
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => onSelect(cat)}
+            className={`${merriweather.className} flex-shrink-0 text-[9px] tracking-widest uppercase px-3 py-2 transition-colors duration-200 ${
+              active === cat
+                ? "bg-[#120D07] text-white"
+                : "bg-white border border-stone-200 text-stone-500 hover:border-stone-800 hover:text-stone-800"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 function ServicesPageContent() {
   const { isAuthenticated, user, openAuthModal } = useAuth();
@@ -641,24 +690,11 @@ function ServicesPageContent() {
           </div>
 
           {/* Category pills */}
-          <div
-            className="flex gap-2 overflow-x-auto flex-1 w-full"
-            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-          >
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`${merriweather.className} flex-shrink-0 text-[9px] tracking-widest uppercase px-3 py-2 transition-colors duration-200 ${
-                  category === cat
-                    ? "bg-[#120D07] text-white"
-                    : "bg-white border border-stone-200 text-stone-500 hover:border-stone-800 hover:text-stone-800"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          <PillsScroller
+            categories={CATEGORIES}
+            active={category}
+            onSelect={setCategory}
+          />
         </div>
       </div>
 
@@ -729,7 +765,7 @@ function ServicesPageContent() {
       </Dialog>
 
       {/* ── Booking layer ── */}
-      <BookingBar onBookNow={handleBookNow} />
+      <ExpandableBookingBar actionLabel="Book Now" onAction={handleBookNow} />
 
       <PhoneDialog
         open={phoneDialogOpen}
@@ -745,11 +781,6 @@ function ServicesPageContent() {
   );
 }
 
-// Wrap page in BookingProvider so useBooking is available to all sub-components
 export default function ServicesPage() {
-  return (
-    <BookingProvider>
-      <ServicesPageContent />
-    </BookingProvider>
-  );
+  return <ServicesPageContent />;
 }

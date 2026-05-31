@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { CalendarDays, X, ClipboardList, Scissors } from "lucide-react";
+import { useBooking } from "@/app/contexts/BookingContext";
 
 export function BookingFAB() {
+  const { selectedServices } = useBooking();
+  const bookingBarActive = selectedServices.length > 0;
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const ref = useRef(null);
@@ -31,7 +34,7 @@ export function BookingFAB() {
   }, []);
 
   return (
-    <div ref={ref} className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+    <div ref={ref} className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none transition-all duration-300 ${visible && !bookingBarActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
 
       {/* Dropdown card */}
       <div
