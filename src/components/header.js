@@ -46,7 +46,7 @@ export function Header() {
                         href="/services"
                         className="hidden md:inline-flex bg-[#BD2E2E] text-white text-sm px-4 py-2 rounded-md hover:bg-[#a02626] transition-colors"
                     >
-                        Book A Session
+                        Book a Salon Visit
                     </Link>
 
                     {/* User avatar — only shown when logged in */}

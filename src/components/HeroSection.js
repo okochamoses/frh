@@ -206,7 +206,7 @@ export default function HeroSection() {
       >
         <Link href="/services">
           <button className="bg-[#BD2E2E] hover:bg-[#9e2626] text-white text-[0.65rem] py-4 px-10 tracking-[0.25em] uppercase transition-colors duration-300">
-            Book A Session
+            Book a Salon Visit
           </button>
         </Link>
       </div>

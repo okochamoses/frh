@@ -5,6 +5,7 @@ import Footer from "../components/footer";
 import { Header } from "@/components/header";
 import { AuthProvider } from "@/app/contexts/AuthContext";
 import { useLeadMagnet } from "@/hooks/useLeadMagnet";
+import { BookingFAB } from "@/components/BookingFAB";
 
 const LeadMagnetModal = dynamic(
   () => import("@/components/LeadMagnetModal").then((m) => ({ default: m.LeadMagnetModal })),
@@ -31,12 +32,14 @@ export default function Root({ children }) {
           <Header />
           {children}
           <Footer />
+          <BookingFAB />
         </>
       ) : (
         <LeadMagnetGate>
           <Header />
           {children}
           <Footer />
+          <BookingFAB />
         </LeadMagnetGate>
       )}
     </AuthProvider>

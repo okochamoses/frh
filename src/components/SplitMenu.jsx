@@ -42,7 +42,7 @@ const NAV_LINKS = [
   // Column B
   {
     id: "book",
-    label: "Book A Session",
+    label: "Book a Salon Visit",
     href: "/services",
     col: "B",
     image: "/salon.webp",

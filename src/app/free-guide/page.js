@@ -506,7 +506,7 @@ export default function FreeGuidePage() {
               className="inline-flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-90"
               style={{ background: GOLD, color: DARK }}
             >
-              Book a Session <ArrowRight size={14} strokeWidth={2.5} />
+              Book a Hair Consultation <ArrowRight size={14} strokeWidth={2.5} />
             </Link>
           </div>
         </div>

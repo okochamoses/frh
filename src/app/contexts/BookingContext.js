@@ -20,7 +20,8 @@ dayjs.extend(utc);
 
 // ── Business rules ────────────────────────────────────────────────────────────
 const OFF_DAYS       = new Set([1]); // Monday (0 = Sun … 6 = Sat)
-const START_HOUR     = 9;            // 9 AM WAT
+const START_HOUR     = 9;            // 9 AM WAT (Mon–Sat)
+const SUNDAY_START_HOUR = 13;        // 1 PM WAT (Sun)
 const END_HOUR       = 19;           // slots generated up to 7 PM WAT
 const CUTOFF_MINUTES = 19 * 60;      // no appointment may finish after 7 PM (19:00)
 const SLOT_MINUTES   = 15;
@@ -40,14 +41,15 @@ function buildAvailableDays() {
  * array of dayjs datetimes representing 15-minute appointment slots.
  */
 function buildTimeSlots(days) {
-  const workMinutes = (END_HOUR - START_HOUR) * 60;
-  const slotsPerDay = Math.floor(workMinutes / SLOT_MINUTES) + 1;
-
   return days
     .filter((d) => !d.isOffDay)
     .reduce((acc, { day }) => {
-      const key = day.format("DD/MM/YYYY");
-      const dayStart = day.hour(START_HOUR).minute(0).second(0);
+      const isSunday   = day.day() === 0;
+      const startHour  = isSunday ? SUNDAY_START_HOUR : START_HOUR;
+      const workMinutes = (END_HOUR - startHour) * 60;
+      const slotsPerDay = Math.floor(workMinutes / SLOT_MINUTES) + 1;
+      const key      = day.format("DD/MM/YYYY");
+      const dayStart = day.hour(startHour).minute(0).second(0);
       acc[key] = Array.from({ length: slotsPerDay }, (_, i) =>
         dayStart.add(i * SLOT_MINUTES, "minute")
       );

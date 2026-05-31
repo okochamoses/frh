@@ -122,7 +122,7 @@ export default function Home() {
                       <h1 className={`${Bagelan.className} text-6xl md:text-9xl`}>FLOURISH ROOTS HAIR</h1>
                       <p className={`${merriweather.className} w-full my-6 text-xl font-medium`}>PROMOTING HEALTHIER HAIR</p>
                       <Link href="/services">
-                        <button className="bg-[#BD2E2E] text-white text-sm py-5 px-10 rounded-md">Book A Session</button>
+                        <button className="bg-[#BD2E2E] text-white text-sm py-5 px-10 rounded-md">Book a Salon Visit</button>
                       </Link>
                   </div>
                 </div>

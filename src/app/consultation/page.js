@@ -219,18 +219,9 @@ export default function Consultation() {
             className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
             <Link
-              href={primaryLink}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#services"
               className="rounded-md px-7 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ background: RED }}
-            >
-              Book Your Session
-            </Link>
-            <Link
-              href="#services"
-              className="rounded-md border px-7 py-3 text-sm font-semibold transition-all hover:bg-white/10"
-              style={{ borderColor: `${GOLD}60`, color: GOLD }}
             >
               See All Services
             </Link>
@@ -678,7 +669,7 @@ export default function Consultation() {
                 className="rounded-md px-8 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
                 style={{ background: RED }}
               >
-                Book Your Session
+                Book a Hair Consultation
               </Link>
               <Link
                 href="#services"
