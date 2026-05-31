@@ -90,6 +90,7 @@ export function LeadMagnetModal({ isOpen, onClose, onSuccess }) {
       <DialogContent
         className={cn("max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto border-0 p-0 [&>button]:text-black/40 [&>button]:hover:text-black [&>button]:hover:opacity-100")}
         onEscapeKeyDown={handleClose}
+        onOpenAutoFocus={(e) => e.preventDefault()}
         aria-describedby="lead-magnet-description"
         style={{ background: "#fff" }}
       >

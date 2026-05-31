@@ -34,7 +34,7 @@ export function BookingFAB() {
   }, []);
 
   return (
-    <div ref={ref} className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none transition-all duration-300 ${visible && !bookingBarActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+    <div ref={ref} className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 transition-all duration-300 ${visible && !bookingBarActive ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"}`}>
 
       {/* Dropdown card */}
       <div
@@ -87,7 +87,6 @@ export function BookingFAB() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Book an appointment"
-        style={{ pointerEvents: "auto" }}
         className="w-12 h-12 rounded-full bg-[#BD2E2E] hover:bg-[#9e2626] text-white flex items-center justify-center shadow-lg transition-colors duration-200 focus:outline-none"
       >
         {open
