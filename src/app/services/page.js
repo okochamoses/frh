@@ -550,6 +550,18 @@ function ServicesPageContent() {
   const [category, setCategory] = useState("All");
   const [preview, setPreview] = useState(null);
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setNavVisible(y < lastY || y < 10);
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // BookingDrawer is open when step = 'datetime'
   const drawerOpen = step === "datetime";
@@ -605,7 +617,7 @@ function ServicesPageContent() {
       </div>
 
       {/* ── Sticky filter bar ── */}
-      <div className="sticky top-20 z-30 bg-[#faf9f7] border-b border-stone-200 px-4 md:px-8 py-4">
+      <div className={`sticky z-30 bg-[#faf9f7] border-b border-stone-200 px-4 md:px-8 py-4 transition-[top] duration-300 ${navVisible ? "top-20" : "top-0"}`}>
         <div className="max-w-screen-xl mx-auto flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           {/* Search */}
           <div className="relative flex-shrink-0 w-full sm:w-64">
