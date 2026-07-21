@@ -125,7 +125,9 @@ export function BookingProvider({ children }) {
 
   /**
    * Saves the booking to Firestore.
-   * Nigeria is UTC+1 (WAT), so we add 1 hour before storing the ISO string.
+   * `selectedTime` is a browser-local dayjs; `.utc().toISOString()` stores the
+   * true instant (with a `Z` marker) so downstream formatting in Africa/Lagos
+   * renders the exact time the customer picked.
    */
   const submitBooking = useCallback(async () => {
     if (!selectedTime) {
@@ -137,9 +139,8 @@ export function BookingProvider({ children }) {
     setBookingError(null);
 
     try {
-      const startTime = selectedTime.utc().add(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
-      const endTime   = selectedTime.utc().add(1, "hour").add(totalDuration, "minute")
-                          .format("YYYY-MM-DDTHH:mm:ss");
+      const startTime = selectedTime.utc().toISOString();
+      const endTime   = selectedTime.utc().add(totalDuration, "minute").toISOString();
 
       await createBooking({ user, services: selectedServices, startTime, endTime, totalAmount: totalPrice });
 
