@@ -37,14 +37,31 @@ const buttonVariants = cva(
   }
 )
 
-const Button = React.forwardRef(({ className, variant, size, asChild = false, isLoading, ...props }, ref) => {
+const Button = React.forwardRef(({ className, variant, size, asChild = false, isLoading, disabled, children, ...props }, ref) => {
   const Comp = asChild ? Slot : "button"
+  // A loading button must also be disabled — otherwise the spinner is purely
+  // decorative and a double-click fires the request twice.
+  const isDisabled = disabled || isLoading
+
+  // Slot requires exactly one child, so an asChild button renders its child
+  // untouched. Otherwise keep the label next to the spinner: replacing it left
+  // the button with no accessible name while loading, so screen readers (and
+  // tests) could no longer identify it.
+  const content = asChild ? children : (
+    <>
+      {isLoading && <ImSpinner8 className="animate-spin" />}
+      {children}
+    </>
+  )
+
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}
       ref={ref}
+      disabled={isDisabled}
+      aria-busy={isLoading || undefined}
       {...props}>
-      {isLoading ? <ImSpinner8 className="animate-spin" /> : props.children}
+      {content}
     </Comp>
   );
 })

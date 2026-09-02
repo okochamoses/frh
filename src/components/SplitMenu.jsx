@@ -5,6 +5,57 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
+import { useAuth } from "@/app/contexts/AuthContext"
+
+// ---------------------------------------------------------------------------
+// Account section — the only sign-in entry point at phone widths
+// ---------------------------------------------------------------------------
+function MenuAuthSection({ onClose }) {
+  const { user, isAuthenticated, hydrated, logout, openAuthModal } = useAuth()
+
+  if (!hydrated) return null
+
+  const handleSignIn = () => {
+    onClose()
+    openAuthModal()
+  }
+
+  const handleSignOut = async () => {
+    onClose()
+    await logout()
+  }
+
+  return (
+    <div className="px-8 py-6 border-t border-stone-200 flex-shrink-0">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-3">Account</p>
+
+      {isAuthenticated ? (
+        <div className="flex flex-col gap-2 items-start">
+          <p className="text-sm text-stone-500">
+            {[user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email}
+          </p>
+          <Link href="/bookings" onClick={onClose} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+            My bookings
+          </Link>
+          <Link href="/settings" onClick={onClose} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+            Settings
+          </Link>
+          <button type="button" onClick={handleSignOut} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+            Log out
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={handleSignIn}
+          className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+        >
+          Sign in
+        </button>
+      )}
+    </div>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Nav data — swap image paths for real project assets later
@@ -169,6 +220,10 @@ export function SplitMenu({ isOpen, onClose }) {
                   </div>
                 </div>
               </nav>
+
+              {/* Account — the header's sign-in button is desktop-only, so
+                  without this there is no way to sign in on a phone. */}
+              <MenuAuthSection onClose={onClose} />
 
               {/* Footer — contact + socials */}
               <div className="px-8 py-6 border-t border-stone-200 flex-shrink-0">

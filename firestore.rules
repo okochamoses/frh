@@ -16,9 +16,33 @@ service cloud.firestore {
     // ── User profiles ─────────────────────────────────────────────────────────
     // Users can only read and write their own profile document.
     // The document ID always matches the Firebase Auth UID.
+    //
+    // Writes are restricted to the known profile fields. Without this a signed-in
+    // user could add arbitrary keys to their own document — including any field
+    // we might later come to treat as privileged (a role or staff flag).
     match /users/{userId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function hasOnlyAllowedFields() {
+        return request.resource.data.keys().hasOnly([
+          'firstName', 'lastName', 'email', 'mobileNumber', 'provider', 'createdAt'
+        ]);
+      }
+
+      allow read: if isOwner();
+
+      allow create: if isOwner()
+                    && hasOnlyAllowedFields()
+                    && request.resource.data.email is string;
+
+      allow update: if isOwner()
+                    && hasOnlyAllowedFields()
+                    // The email is set at sign-up and must not drift from Auth.
+                    && request.resource.data.email == resource.data.email;
+
+      allow delete: if false;
     }
 
     // ── Bookings ──────────────────────────────────────────────────────────────

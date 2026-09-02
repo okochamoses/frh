@@ -29,11 +29,10 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {FaFacebook} from "react-icons/fa6";
-import { GoogleLogin } from '@react-oauth/google';
-import axios from "axios";
 import {Label} from "@/components/ui/label";
 import {BookingProvider, useBooking} from "@/app/contexts/BookingContext";
 import {useAuth} from "@/app/contexts/AuthContext";
+import {updateMobileNumber} from "@/lib/firebase/userService";
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'next/navigation';
 
@@ -47,7 +46,7 @@ const SalonServicesPage = () => {
   const [isPhoneRequired, setIsPhoneRequired] = useState(false);
   const [chooseService, setChooseService] = useState()
 
-  const { displayAuthModal, loading, token, user, isValidToken } = useAuth();
+  const { openAuthModal, isAuthenticated, user, updateUser } = useAuth();
   const { isSubmitting, selectedTime, goToDatetime, submitBooking } = useBooking();
   const router = useRouter()
 
@@ -89,15 +88,20 @@ const SalonServicesPage = () => {
     );
   }
 
-  const handleSubmit = async () => {
-    if (!isValidToken()) {
-      if (!chooseService) { setChooseService(true); return; }
-      displayAuthModal();
-      return;
-    }
-    if (!chooseService) { setChooseService(true); return; }
+  const completeBooking = async () => {
     await submitBooking();
     router.push('/bookingConfirmation');
+  }
+
+  const handleSubmit = async () => {
+    if (!chooseService) { setChooseService(true); return; }
+    if (!isAuthenticated) {
+      // Resume the booking once they are signed in rather than dropping them
+      // back on the page with nothing having happened.
+      openAuthModal({ onSuccess: completeBooking });
+      return;
+    }
+    await completeBooking();
   }
 
   const totalTime = () => selectedServices.reduce((acc, curr) => acc + curr?.duration, 0);
@@ -150,7 +154,7 @@ const SalonServicesPage = () => {
                   <span>₦{selectedServices.reduce((acc, curr) => acc + curr.price, 0).toLocaleString('en-US')}</span>
                 </div>
                   <Button className="w-full" disabled={!selectedServices.length} onClick={handleSubmit} isLoading={isSubmitting}>Continue</Button>
-                  <AddPhoneNumber isOpen={token && !user?.mobileNumber && chooseService} setIsPhoneRequired={setIsPhoneRequired} />
+                  <AddPhoneNumber />
               </div>
             </div>
             {/*Mobile bar for selections*/}
@@ -292,13 +296,13 @@ const Booking = () => {
 }
 
 const AddPhoneNumber = () => {
-  const { token, user, setUser } = useAuth();
+  const { isAuthenticated, user, updateUser } = useAuth();
   const [error, setError] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneProvided, setPhoneProvided] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const isOpen = token && !user?.mobileNumber && !phoneProvided;
+  const isOpen = isAuthenticated && !user?.mobileNumber && !phoneProvided;
   if (!isOpen) return null;
 
   const validate = () => {
@@ -313,11 +317,16 @@ const AddPhoneNumber = () => {
   const handleSubmit = async () => {
     if (!validate()) return;
     setIsLoading(true)
-    const {data, status} = await axios.patch('/api/user', {id: user.id, mobileNumber: phone});
-    if(status !== 200) return; // log a something went wrong error
-    setUser(data)
-    setPhoneProvided(true);
-    setIsLoading(false);
+    try {
+      // Write straight to Firestore — the old /api/user route no longer exists.
+      await updateMobileNumber(user.uid, phone);
+      updateUser({ mobileNumber: phone });
+      setPhoneProvided(true);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const onChange = (e) => {

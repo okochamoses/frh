@@ -632,17 +632,27 @@ function ServicesPageContent() {
   const rest = useMemo(() => filtered.filter((s) => !s.featured), [filtered]);
   const isFiltering = !!search.trim() || category !== "All";
 
-  const handleBookNow = useCallback(() => {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
-    if (!user?.mobileNumber) {
+  // Continues the booking once we know who the user is. Takes the profile
+  // explicitly because when this runs straight after sign-in the `user` from
+  // context has not committed yet.
+  const continueBooking = useCallback((profile) => {
+    if (!profile?.mobileNumber) {
       setPhoneDialogOpen(true);
       return;
     }
     goToDatetime();
-  }, [isAuthenticated, user, openAuthModal, goToDatetime]);
+  }, [goToDatetime]);
+
+  const handleBookNow = useCallback(() => {
+    if (!isAuthenticated) {
+      // Hand the modal what to do afterwards, so signing in resumes the
+      // booking instead of dropping the user back on the page having to
+      // find and press Book Now a second time.
+      openAuthModal({ onSuccess: continueBooking });
+      return;
+    }
+    continueBooking(user);
+  }, [isAuthenticated, user, openAuthModal, continueBooking]);
 
   const handlePhoneSuccess = useCallback(() => {
     setPhoneDialogOpen(false);

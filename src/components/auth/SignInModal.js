@@ -7,9 +7,8 @@
  *   1. Email + password (standard)
  *   2. Google OAuth popup (via Firebase Auth)
  *
- * On success, calls login() from AuthContext which updates the app state
- * and closes the modal. Firebase Auth's onAuthStateChanged also fires and
- * keeps the session in sync.
+ * On success, calls login() from AuthContext which updates the app state,
+ * closes the modal and resumes any action the user was interrupted from.
  */
 
 import React, { useState } from "react";
@@ -18,55 +17,45 @@ import { signInWithEmail, signInWithGoogle } from "@/lib/firebase/authService";
 import { getUserProfile } from "@/lib/firebase/userService";
 import { validateEmail } from "@/lib/auth/validators";
 import {
-  Dialog, DialogContent, DialogDescription,
-  DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+  getSignInErrorMessage,
+  getGoogleErrorMessage,
+  isUserCancelledPopup,
+} from "@/lib/auth/errors";
+import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import OrDivider from "./OrDivider";
-
-// Maps Firebase Auth error codes to plain-English messages
-function getErrorMessage(error) {
-  switch (error.code) {
-    case "auth/user-not-found":
-    case "auth/invalid-credential":
-      return "No account found with this email. Want to sign up?";
-    case "auth/wrong-password":
-      return "Incorrect password. Please try again.";
-    case "auth/too-many-requests":
-      return "Too many attempts. Please wait a moment and try again.";
-    default:
-      return "Sign in failed. Please try again.";
-  }
-}
+import FormError from "./FormError";
 
 export default function SignInModal() {
-  const { authModalOpen, closeAuthModal, login, switchToSignUp } = useAuth();
+  const { login, switchToSignUp, switchToReset, authEmail, setAuthEmail } = useAuth();
 
-  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [error, setError]       = useState(null);
   const [loading, setLoading]   = useState(false);
 
-  const handleEmailChange = (e) => { setEmail(e.target.value); setError(null); };
-  const handlePasswordChange = (e) => setPassword(e.target.value);
+  // Any edit clears the previous error — a stale message next to a field the
+  // user has already corrected is just confusing.
+  const handleEmailChange = (e) => { setAuthEmail(e.target.value); setError(null); };
+  const handlePasswordChange = (e) => { setPassword(e.target.value); setError(null); };
 
   // ── Email + password sign-in ────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    const emailCheck = validateEmail(email);
+    const emailCheck = validateEmail(authEmail);
     if (!emailCheck.valid) { setError(emailCheck.error); return; }
     if (!password.trim())  { setError("Password is required"); return; }
 
     setLoading(true);
     try {
-      const firebaseUser = await signInWithEmail(email, password);
+      const firebaseUser = await signInWithEmail(authEmail, password);
       const profile = await getUserProfile(firebaseUser.uid);
       login(profile ?? { uid: firebaseUser.uid, email: firebaseUser.email });
     } catch (err) {
-      setError(getErrorMessage(err));
+      setError(getSignInErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -78,47 +67,50 @@ export default function SignInModal() {
     setError(null);
     try {
       const profile = await signInWithGoogle();
-      login(profile);
+      // null means the popup was blocked and we redirected instead — the page
+      // is navigating away, so there is nothing to do here.
+      if (profile) login(profile);
     } catch (err) {
-      // User closed the popup — don't show an error
-      if (err.code !== "auth/popup-closed-by-user") {
-        setError("Google sign-in failed. Please try again.");
-      }
+      if (!isUserCancelledPopup(err)) setError(getGoogleErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog open={authModalOpen} onOpenChange={closeAuthModal}>
-      <DialogContent
-        className="sm:max-w-[425px]"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onCloseAutoFocus={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle className="text-3xl">Log in</DialogTitle>
-          <DialogDescription>Enter your email and password to continue.</DialogDescription>
-        </DialogHeader>
+    <>
+      <DialogHeader>
+        <DialogTitle className="text-3xl">Log in</DialogTitle>
+        <DialogDescription>Enter your email and password to continue.</DialogDescription>
+      </DialogHeader>
 
-        {/* Google */}
-        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
-          Continue with Google
-        </Button>
+      {/* Google */}
+      <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={loading}>
+        Continue with Google
+      </Button>
 
-        <OrDivider />
+      <OrDivider />
 
-        {/* Email + password */}
-        <form onSubmit={handleSubmit} className="grid gap-3">
+      {/* noValidate: without it the browser blocks submit with its own tooltip
+          and our validation messages never render. */}
+      <form onSubmit={handleSubmit} className="grid gap-3" noValidate>
+        <div className="grid gap-1.5">
+          <Label htmlFor="signin-email">Email</Label>
           <Input
+            id="signin-email"
             type="email"
             placeholder="Email"
-            value={email}
+            value={authEmail}
             onChange={handleEmailChange}
             className="py-5"
             autoComplete="email"
           />
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="signin-password">Password</Label>
           <Input
+            id="signin-password"
             type="password"
             placeholder="Password"
             value={password}
@@ -126,23 +118,29 @@ export default function SignInModal() {
             className="py-5"
             autoComplete="current-password"
           />
+        </div>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+        <button
+          type="button"
+          onClick={switchToReset}
+          className="justify-self-start text-sm text-blue-500 hover:underline"
+        >
+          Forgot your password?
+        </button>
 
-          <DialogFooter>
-            <Button className="w-full" type="submit" isLoading={loading}>
-              Sign in
-            </Button>
-          </DialogFooter>
-        </form>
+        <FormError>{error}</FormError>
 
-        <p className="text-sm text-center text-stone-400">
-          Don&apos;t have an account?{" "}
-          <span className="text-blue-500 cursor-pointer" onClick={switchToSignUp}>
-            Sign up
-          </span>
-        </p>
-      </DialogContent>
-    </Dialog>
+        <Button className="w-full" type="submit" isLoading={loading}>
+          Sign in
+        </Button>
+      </form>
+
+      <p className="text-sm text-center text-stone-400">
+        Don&apos;t have an account?{" "}
+        <button type="button" className="text-blue-500 hover:underline" onClick={switchToSignUp}>
+          Sign up
+        </button>
+      </p>
+    </>
   );
 }

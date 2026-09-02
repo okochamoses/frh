@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase emulator state / test output
+/.emulator-data/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+firestore-debug.log
+firebase-debug.log
+ui-debug.log
+/out-e2e/
+firebase.e2e.json.local
