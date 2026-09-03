@@ -2,17 +2,14 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
-import dayjs from "dayjs";
 import { merriweather, Bagelan } from "@/app/layout";
 import services from "../salon/services.json";
 import { useBooking } from "@/app/contexts/BookingContext";
 import { ExpandableBookingBar } from "@/components/ExpandableBookingBar";
+import { BookingDrawer } from "@/components/booking/BookingDrawer";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { Navigation } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleLeft, faAngleRight, faCheck } from "@fortawesome/free-solid-svg-icons";
-import { CiCalendar, CiClock2 } from "react-icons/ci";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateMobileNumber } from "@/lib/firebase/userService";
-import "swiper/css";
-import "swiper/css/navigation";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -118,10 +113,15 @@ function ServiceCard({ service, onClickImage }) {
   );
 }
 
-// ── Booking bar (sticky bottom) ───────────────────────────────────────────────
-
-
 // ── Phone collection dialog ───────────────────────────────────────────────────
+// Nigerian mobile numbers: 0803… locally, +234803… internationally.
+const NG_MOBILE = /^(?:\+234|0)[789]\d{9}$/;
+
+/** Stores every number the same way, so the salon can dial straight from an email. */
+function normaliseNgMobile(value) {
+  return value.startsWith("0") ? `+234${value.slice(1)}` : value;
+}
+
 function PhoneDialog({ open, onClose, onSuccess }) {
   const { user, updateUser } = useAuth();
   const [phone, setPhone]   = useState("");
@@ -129,8 +129,10 @@ function PhoneDialog({ open, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
-    if (!/^(?:\+234|0)/.test(phone)) {
-      setError("Number must start with +234 or 0");
+    if (!NG_MOBILE.test(phone)) {
+      // The old check only looked at the prefix, so a bare "0" passed and was
+      // written to the profile — and then onto every booking.
+      setError("Enter a full mobile number, e.g. 08031234567 or +2348031234567");
       return false;
     }
     setError("");
@@ -147,8 +149,9 @@ function PhoneDialog({ open, onClose, onSuccess }) {
     setLoading(true);
     try {
       // Write directly to Firestore — no API route needed
-      await updateMobileNumber(user.uid, phone);
-      updateUser({ mobileNumber: phone });
+      const normalised = normaliseNgMobile(phone);
+      await updateMobileNumber(user.uid, normalised);
+      updateUser({ mobileNumber: normalised });
       onSuccess();
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -167,7 +170,8 @@ function PhoneDialog({ open, onClose, onSuccess }) {
         <DialogHeader>
           <DialogTitle className="text-2xl">Add Phone Number</DialogTitle>
           <DialogDescription>
-            Enter your phone number to confirm your appointment.
+            We only use this to reach you about your appointment — if we ever need to
+            confirm a time or let you know about a delay.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
@@ -177,9 +181,13 @@ function PhoneDialog({ open, onClose, onSuccess }) {
             className="h-12"
             value={phone}
             onChange={handleChange}
-            placeholder="+234 or 0..."
+            placeholder="08031234567"
+            inputMode="tel"
+            autoComplete="tel"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "phone-error" : undefined}
           />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p id="phone-error" role="alert" className="text-red-500 text-sm">{error}</p>}
         </div>
         <DialogFooter>
           <Button className="w-full" onClick={handleSubmit} isLoading={loading}>
@@ -191,331 +199,9 @@ function PhoneDialog({ open, onClose, onSuccess }) {
   );
 }
 
-// ── Booking drawer (date + time selection) ────────────────────────────────────
-function BookingDrawer({ open, onClose }) {
-  const {
-    availableDays, filteredTimeSlots,
-    selectedTime, selectTime,
-    totalDuration, totalPrice, selectedServices,
-    isSubmitting, bookingError, bookingSuccess,
-    submitBooking, backToServices, reset,
-  } = useBooking();
-
-  // Derive the active date from the selected time slot
-  const selectedDate = selectedTime?.startOf("day") ?? null;
-
-  // Show slots for the selected date, falling back to today
-  const activeKey   = selectedDate?.format("DD/MM/YYYY") ?? dayjs().format("DD/MM/YYYY");
-  const currentSlots = filteredTimeSlots[activeKey] ?? [];
-
-  const isDayUnavailable = useCallback(
-    (day, isOffDay) =>
-      isOffDay || (filteredTimeSlots[day.format("DD/MM/YYYY")] ?? []).length === 0,
-    [filteredTimeSlots]
-  );
-
-  const handleDayClick = (day, isOffDay) => {
-    if (isDayUnavailable(day, isOffDay)) return;
-    const firstSlot = filteredTimeSlots[day.format("DD/MM/YYYY")]?.[0];
-    if (firstSlot) selectTime(firstSlot);
-  };
-
-  // Find the next bookable day after the given day (skips off-days + days with no slots)
-  const nextBookableDay = useCallback(
-    (afterDay) => {
-      for (const { day, isOffDay } of availableDays) {
-        if (!day.isAfter(afterDay, "day")) continue;
-        const slots = filteredTimeSlots[day.format("DD/MM/YYYY")] ?? [];
-        if (!isOffDay && slots.length > 0) return day;
-      }
-      return null;
-    },
-    [availableDays, filteredTimeSlots]
-  );
-
-  const handleClose = () => { backToServices(); onClose(); };
-  const handleDone  = () => { reset(); onClose(); };
-
-  return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      {/*
-        Three-zone layout:
-          1. Pinned header  — title + summary strip
-          2. Scrollable body — date carousel + time grid
-          3. Pinned footer  — confirm button
-        `overflow-hidden` on DialogContent prevents the whole modal from scrolling;
-        only the middle zone scrolls.
-      */}
-      <DialogContent
-        className="sm:max-w-lg flex flex-col gap-0 p-0 overflow-hidden max-h-[90vh]"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        {bookingSuccess ? (
-          // ── Success state ─────────────────────────────────────────────────
-          <div className="flex flex-col max-h-[90vh] overflow-y-auto">
-            <div className="px-6 pt-8 pb-5 text-center">
-              <div
-                className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50 shadow-sm"
-                aria-hidden
-              >
-                <FontAwesomeIcon icon={faCheck} className="text-xl text-emerald-600" />
-              </div>
-              <DialogTitle
-                className={`${merriweather.className} text-2xl font-bold tracking-tight text-stone-900`}
-              >
-                Booking confirmed
-              </DialogTitle>
-              <DialogDescription className="mt-2 text-sm leading-relaxed text-stone-500">
-                We&apos;ll reach out shortly to confirm your appointment.
-              </DialogDescription>
-            </div>
-
-            <div className="space-y-4 px-6 pb-2">
-              {selectedTime && (
-                <div className="rounded-xl border border-stone-200/90 bg-stone-50/80 p-4 shadow-sm">
-                  <p
-                    className={`${merriweather.className} mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400`}
-                  >
-                    When
-                  </p>
-                  <div className="space-y-2.5 text-left text-sm text-stone-700">
-                    <p className="flex items-start gap-3">
-                      <CiCalendar className="mt-0.5 h-[1.1em] w-[1.1em] flex-shrink-0 text-stone-500" />
-                      <span className="leading-snug">{selectedTime.format("dddd, D MMMM YYYY")}</span>
-                    </p>
-                    <p className="flex items-start gap-3">
-                      <CiClock2 className="mt-0.5 h-[1.1em] w-[1.1em] flex-shrink-0 text-stone-500" />
-                      <span>
-                        {selectedTime.format("HH:mm")} –{" "}
-                        {selectedTime.add(totalDuration, "minute").format("HH:mm")}
-                        <span className="ml-1.5 text-stone-400 tabular-nums">
-                          ({formatDuration(totalDuration)})
-                        </span>
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="rounded-xl border border-stone-200/90 bg-white p-4 shadow-sm">
-                <p
-                  className={`${merriweather.className} mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400`}
-                >
-                  Your services
-                </p>
-                <ul className="divide-y divide-stone-100">
-                  {selectedServices.map((s, i) => (
-                    <li
-                      key={`${s.title}-${i}`}
-                      className="flex gap-4 py-3.5 first:pt-0 last:pb-0"
-                    >
-                      <div className="min-w-0 flex-1 text-left">
-                        <p className={`${merriweather.className} text-sm font-semibold leading-snug text-stone-900`}>
-                          {s.title}
-                        </p>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-stone-500">
-                          {s.category && <span className="text-stone-400">{s.category}</span>}
-                          {s.category && s.duration > 0 && (
-                            <span className="text-stone-300" aria-hidden>
-                              ·
-                            </span>
-                          )}
-                          {s.duration > 0 && <span>{formatDuration(s.duration)}</span>}
-                        </div>
-                      </div>
-                      <p
-                        className={`${merriweather.className} flex-shrink-0 text-sm font-semibold tabular-nums text-[#120D07]`}
-                      >
-                        ₦{s.price.toLocaleString("en-US")}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-4 flex items-baseline justify-between border-t border-stone-200 pt-4">
-                  <span
-                    className={`${merriweather.className} text-xs font-bold uppercase tracking-wider text-stone-600`}
-                  >
-                    Total
-                  </span>
-                  <span className={`${merriweather.className} text-lg font-bold tabular-nums text-[#120D07]`}>
-                    ₦{totalPrice.toLocaleString("en-US")}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 pb-6 pt-4">
-              <Button className="w-full" onClick={handleDone}>
-                Done
-              </Button>
-            </div>
-          </div>
-
-        ) : (
-          <>
-            {/* ── Zone 1: Pinned header ─────────────────────────────────── */}
-            <div className="px-6 pt-6 pb-4 border-b border-stone-100 flex-shrink-0">
-              <DialogTitle className={`${merriweather.className} text-xl mb-1`}>
-                Select Date &amp; Time
-              </DialogTitle>
-              <DialogDescription className="text-xs">
-                {selectedServices.length} service{selectedServices.length !== 1 ? "s" : ""}&ensp;·&ensp;
-                {formatDuration(totalDuration)}&ensp;·&ensp;
-                ₦{totalPrice.toLocaleString("en-US")}
-              </DialogDescription>
-            </div>
-
-            {/* ── Zone 2: Scrollable body ───────────────────────────────── */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-
-              {/* Date carousel */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <p className={`${merriweather.className} text-sm font-bold text-stone-800`}>
-                    {dayjs().format("MMMM YYYY")}
-                  </p>
-                  <div className="flex gap-4 text-stone-400">
-                    <button className="swiper-prev-booking hover:text-stone-800 transition-colors">
-                      <FontAwesomeIcon icon={faAngleLeft} />
-                    </button>
-                    <button className="swiper-next-booking hover:text-stone-800 transition-colors">
-                      <FontAwesomeIcon icon={faAngleRight} />
-                    </button>
-                  </div>
-                </div>
-
-                <Swiper
-                  speed={500}
-                  navigation={{ nextEl: ".swiper-next-booking", prevEl: ".swiper-prev-booking" }}
-                  modules={[Navigation]}
-                  breakpoints={{
-                    0:   { slidesPerView: 5, slidesPerGroup: 5 },
-                    480: { slidesPerView: 7, slidesPerGroup: 7 },
-                  }}
-                >
-                  {availableDays.map(({ day, isOffDay }, i) => {
-                    const isActive     = selectedDate?.isSame(day, "day");
-                    const isUnavailable = isDayUnavailable(day, isOffDay);
-                    return (
-                      <SwiperSlide key={i} className="flex justify-center">
-                        <button
-                          onClick={() => handleDayClick(day, isOffDay)}
-                          disabled={isUnavailable}
-                          className="flex flex-col items-center gap-1 w-full py-1"
-                        >
-                          <span
-                            className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold border transition-colors duration-150 ${
-                              isUnavailable
-                                ? "line-through text-stone-300 border-transparent cursor-not-allowed"
-                                : isActive
-                                ? "bg-[#120D07] text-white border-[#120D07]"
-                                : "text-stone-800 border-stone-200 hover:border-stone-700"
-                            }`}
-                          >
-                            {day.format("D")}
-                          </span>
-                          <span className="text-[10px] text-stone-400 uppercase">
-                            {day.format("ddd")}
-                          </span>
-                        </button>
-                      </SwiperSlide>
-                    );
-                  })}
-                </Swiper>
-              </div>
-
-              {/* Time slots */}
-              <div>
-                <p className={`${merriweather.className} text-[10px] tracking-widest uppercase text-stone-400 mb-3`}>
-                  Available Times
-                </p>
-                {currentSlots.length === 0 ? (() => {
-                  const activeDay = selectedDate ?? dayjs().startOf("day");
-                  const next = nextBookableDay(activeDay);
-                  const nextLabel = next
-                    ? next.isSame(dayjs().add(1, "day"), "day")
-                      ? "tomorrow"
-                      : next.format("dddd")
-                    : null;
-                  return (
-                    <div className="rounded-sm border border-stone-200 bg-stone-50 px-4 py-5 text-center">
-                      <p className={`${merriweather.className} text-sm text-stone-600`}>
-                        No times available for this day.
-                      </p>
-                      {next ? (
-                        <p className="mt-1 text-xs text-stone-400">
-                          Would you like to book for{" "}
-                          <button
-                            onClick={() => handleDayClick(next, false)}
-                            className="font-semibold text-[#120D07] underline underline-offset-2 hover:text-[#BD2E2E] transition-colors"
-                          >
-                            {nextLabel}
-                          </button>
-                          ?
-                        </p>
-                      ) : (
-                        <p className="mt-1 text-xs text-stone-400">No upcoming availability found.</p>
-                      )}
-                    </div>
-                  );
-                })() : (
-                  <div className="grid grid-cols-4 gap-2">
-                    {currentSlots.map((time, i) => {
-                      const isActive = selectedTime?.isSame(time);
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => selectTime(time)}
-                          className={`text-xs py-2.5 border transition-colors duration-150 ${
-                            isActive
-                              ? "bg-[#120D07] text-white border-[#120D07]"
-                              : "border-stone-200 text-stone-700 hover:border-stone-800 hover:bg-stone-50"
-                          }`}
-                        >
-                          {time.format("HH:mm")}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Selection summary */}
-              {selectedTime && (
-                <div className="flex items-center gap-5 text-sm text-stone-500 bg-stone-50 rounded-sm px-4 py-3">
-                  <span className="flex items-center gap-1.5">
-                    <CiCalendar className="flex-shrink-0 text-base" />
-                    {selectedTime.format("ddd, D MMM")}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CiClock2 className="flex-shrink-0 text-base" />
-                    {selectedTime.format("HH:mm")} – {selectedTime.add(totalDuration, "minute").format("HH:mm")}
-                  </span>
-                </div>
-              )}
-
-              {bookingError && (
-                <p className="text-red-600 text-sm">{bookingError}</p>
-              )}
-            </div>
-
-            {/* ── Zone 3: Pinned footer ─────────────────────────────────── */}
-            <div className="px-6 pb-6 pt-4 border-t border-stone-100 flex-shrink-0">
-              <Button
-                className="w-full"
-                disabled={!selectedTime}
-                isLoading={isSubmitting}
-                onClick={submitBooking}
-              >
-                Confirm Booking
-              </Button>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
+// ── Booking drawer ────────────────────────────────────────────────────────────
+// Lives in src/components/booking/BookingDrawer.jsx — /bookings uses the same
+// picker to reschedule an appointment.
 
 // ── Pills scroller ────────────────────────────────────────────────────────────
 function PillsScroller({ categories, active, onSelect }) {
@@ -599,6 +285,8 @@ function ServicesPageContent() {
   const [category, setCategory] = useState("All");
   const [preview, setPreview] = useState(null);
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  // Dismissing the phone dialog used to abandon the booking in silence.
+  const [phoneAbandoned, setPhoneAbandoned] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
 
   useEffect(() => {
@@ -637,6 +325,7 @@ function ServicesPageContent() {
   // context has not committed yet.
   const continueBooking = useCallback((profile) => {
     if (!profile?.mobileNumber) {
+      setPhoneAbandoned(false);
       setPhoneDialogOpen(true);
       return;
     }
@@ -656,8 +345,14 @@ function ServicesPageContent() {
 
   const handlePhoneSuccess = useCallback(() => {
     setPhoneDialogOpen(false);
+    setPhoneAbandoned(false);
     goToDatetime();
   }, [goToDatetime]);
+
+  const handlePhoneClose = useCallback(() => {
+    setPhoneDialogOpen(false);
+    setPhoneAbandoned(true);
+  }, []);
 
   return (
     <>
@@ -779,9 +474,38 @@ function ServicesPageContent() {
 
       <PhoneDialog
         open={phoneDialogOpen}
-        onClose={() => setPhoneDialogOpen(false)}
+        onClose={handlePhoneClose}
         onSuccess={handlePhoneSuccess}
       />
+
+      {/* Closing the phone dialog leaves the booking unfinished — say so rather
+          than letting Book Now look broken. */}
+      {phoneAbandoned && !phoneDialogOpen && (
+        <div
+          role="status"
+          className="fixed inset-x-0 bottom-24 z-50 mx-auto w-[min(92vw,26rem)] rounded-lg border border-stone-200 bg-white px-4 py-3 text-center shadow-xl"
+        >
+          <p className="text-sm text-stone-700">
+            Your booking isn&apos;t finished — we still need a phone number.
+          </p>
+          <div className="mt-2 flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setPhoneAbandoned(false); setPhoneDialogOpen(true); }}
+              className={`${merriweather.className} text-xs font-semibold uppercase tracking-wider text-[#BD2E2E] underline underline-offset-4`}
+            >
+              Add number
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhoneAbandoned(false)}
+              className="text-xs uppercase tracking-wider text-stone-400"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       <BookingDrawer
         open={drawerOpen}

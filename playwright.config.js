@@ -21,8 +21,8 @@ const BASE_URL = process.env.E2E_BASE_URL || DEFAULT_URL;
 
 const emulatorCommand =
   TARGET === "export"
-    ? "npx firebase emulators:start --only auth,firestore,hosting --project demo-flourish --config firebase.e2e.json"
-    : "npx firebase emulators:start --only auth,firestore --project demo-flourish";
+    ? "npx firebase emulators:start --only auth,firestore,functions,hosting --project demo-flourish --config firebase.e2e.json"
+    : "npx firebase emulators:start --only auth,firestore,functions --project demo-flourish";
 
 // In export mode the Hosting emulator serves the app, so there is no dev server.
 const appServer =
@@ -75,8 +75,8 @@ export default defineConfig({
 
   webServer: [
     {
-      // Auth + Firestore only in dev mode — the functions emulator is not
-      // needed and its predeploy lint hook makes startup slow.
+      // Functions are in the list because bookings are created, cancelled and
+      // rescheduled by callables — nothing writes that collection directly.
       command: emulatorCommand,
       // Probe the Auth emulator: it comes up after Firestore, so waiting on it
       // covers both. resetEmulators() re-checks anyway.

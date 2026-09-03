@@ -8,6 +8,8 @@
 export const EMULATOR_PROJECT_ID = "demo-flourish";
 export const AUTH_EMULATOR = "http://127.0.0.1:9099";
 export const FIRESTORE_EMULATOR = "http://127.0.0.1:8080";
+export const FUNCTIONS_EMULATOR = "http://127.0.0.1:5001";
+export const FUNCTIONS_REGION = "us-central1";
 
 // The emulator accepts any bearer token for admin routes.
 const ADMIN_HEADERS = { Authorization: "Bearer owner", "Content-Type": "application/json" };
@@ -164,6 +166,59 @@ export async function writeAsUser(idToken, { path, fields, mask = null }) {
     }
   );
   return res.status;
+}
+
+/**
+ * Creates a Firestore document as a signed-in user, so security rules apply.
+ * Returns the HTTP status rather than throwing, so specs can assert on it.
+ */
+export async function createAsUser(idToken, { collection, fields }) {
+  const res = await fetch(
+    `${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}` +
+      `/databases/(default)/documents/${collection}`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ fields }),
+    }
+  );
+  return res.status;
+}
+
+/**
+ * Invokes a callable Cloud Function on the emulator as a signed-in user.
+ *
+ * Callables are plain HTTPS endpoints underneath: `{data: ...}` in, `{result}`
+ * or `{error}` out. Returns both so specs can assert on the error code the
+ * function chose, not just that something failed.
+ */
+export async function callFunction(name, data, idToken) {
+  const res = await fetch(
+    `${FUNCTIONS_EMULATOR}/${EMULATOR_PROJECT_ID}/${FUNCTIONS_REGION}/${name}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+      },
+      body: JSON.stringify({ data }),
+    }
+  );
+  const body = await res.json().catch(() => ({}));
+  return {status: res.status, result: body.result, error: body.error};
+}
+
+/** Reads a booking document with admin access (rules bypassed). */
+export async function readBooking(id) {
+  const res = await fetch(
+    `${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}` +
+      `/databases/(default)/documents/bookings/${encodeURIComponent(id)}`,
+    { headers: ADMIN_HEADERS }
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Failed to read booking ${id}: ${res.status}`);
+  const body = await res.json();
+  return unwrapFields(body.fields ?? {});
 }
 
 /**

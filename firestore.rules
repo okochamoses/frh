@@ -46,14 +46,17 @@ service cloud.firestore {
     }
 
     // ── Bookings ──────────────────────────────────────────────────────────────
-    // Users can create bookings for themselves and read their own bookings.
-    // Update and delete are intentionally blocked from the client.
+    // Read-only from the client. Every write goes through the createBooking,
+    // cancelBooking and rescheduleBooking callables, which run as admin.
+    //
+    // Client writes used to be allowed as long as `userId` matched the caller,
+    // which left the email address, price, time and status to the browser —
+    // and onBookingCreated mails whatever address it finds on the document.
     match /bookings/{bookingId} {
-      allow create: if request.auth != null
-                    && request.resource.data.userId == request.auth.uid;
+      allow create, update, delete: if false;
 
-      allow read:   if request.auth != null
-                    && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null
+                  && resource.data.userId == request.auth.uid;
     }
   }
 }

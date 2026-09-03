@@ -29,8 +29,17 @@ export function BookingFAB() {
         setOpen(false);
       }
     }
+    // Escape closes it too — a keyboard user could otherwise open the menu and
+    // have no way to dismiss it.
+    function handleKeyDown(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
@@ -38,6 +47,8 @@ export function BookingFAB() {
 
       {/* Dropdown card */}
       <div
+        id="booking-fab-menu"
+        aria-hidden={!open}
         style={{
           opacity: open ? 1 : 0,
           transform: open ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
@@ -85,8 +96,11 @@ export function BookingFAB() {
 
       {/* FAB button */}
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Book an appointment"
+        aria-expanded={open}
+        aria-controls="booking-fab-menu"
         className="w-12 h-12 rounded-full bg-[#BD2E2E] hover:bg-[#9e2626] text-white flex items-center justify-center shadow-lg transition-colors duration-200 focus:outline-none"
       >
         {open

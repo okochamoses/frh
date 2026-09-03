@@ -18,6 +18,7 @@
         "*.local"
       ],
       "predeploy": [
+        "npm --prefix \"$PROJECT_DIR\" run sync:services",
         "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
@@ -33,19 +34,28 @@
       {
         "source": "**/*.@(html)",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       },
       {
         "source": "/_next/static/**",
         "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
         ]
       },
       {
         "source": "**/*.@(js|css)",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       }
     ],
@@ -66,6 +76,10 @@
       "host": "127.0.0.1",
       "port": 4000
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "functions": {
+      "host": "127.0.0.1",
+      "port": 5001
+    }
   }
 }

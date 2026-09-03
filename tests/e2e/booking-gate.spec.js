@@ -70,7 +70,42 @@ test("the phone dialog rejects a badly formatted number", async ({ page }) => {
 
   await page.getByLabel("Mobile Number").fill("12345");
   await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByText(/must start with \+234 or 0/i)).toBeVisible();
+  await expect(page.getByText(/enter a full mobile number/i)).toBeVisible();
+});
+
+test("the phone dialog rejects a bare prefix", async ({ page }) => {
+  // The old check only looked at the prefix, so "0" passed validation and was
+  // written to the profile — and from there onto every booking.
+  const user = await seedUser({ email: uniqueEmail("shortphone"), mobileNumber: null });
+
+  await selectFirstService(page);
+  await page.getByRole("button", { name: "Book Now" }).click();
+  const modal = new AuthModal(page);
+  await modal.signIn(user);
+  await modal.expectClosed();
+
+  await page.getByLabel("Mobile Number").fill("0");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByText(/enter a full mobile number/i)).toBeVisible();
+});
+
+test("closing the phone dialog says the booking is unfinished", async ({ page }) => {
+  // Dismissing it used to abandon the booking in silence, which made Book Now
+  // look broken.
+  const user = await seedUser({ email: uniqueEmail("abandonphone"), mobileNumber: null });
+
+  await selectFirstService(page);
+  await page.getByRole("button", { name: "Book Now" }).click();
+  const modal = new AuthModal(page);
+  await modal.signIn(user);
+  await modal.expectClosed();
+
+  await expect(page.getByRole("heading", { name: /add phone number/i })).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await expect(page.getByText(/booking isn.t finished/i)).toBeVisible();
+  await page.getByRole("button", { name: "Add number" }).click();
+  await expect(page.getByRole("heading", { name: /add phone number/i })).toBeVisible();
 });
 
 test("a user with a phone number goes straight to date selection", async ({ page }) => {

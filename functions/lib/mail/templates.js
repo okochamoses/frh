@@ -1,5 +1,20 @@
+const {watDate} = require("../time");
+
 const DARK = "#120D07";
 const GOLD = "#DDA15E";
+
+/**
+ * Formats a stored booking time in Lagos wall-clock.
+ *
+ * Goes through `watDate` rather than `new Date` so bookings written before the
+ * UTC migration (naive "2026-08-21T10:00:00") render at the time the client
+ * actually picked instead of an hour late.
+ */
+function formatWat(iso, options) {
+    const d = watDate(iso);
+    if (!d) return "\u2014";
+    return d.toLocaleString("en-NG", {timeZone: "Africa/Lagos", ...options});
+}
 
 function emailShell(content) {
     return `<!DOCTYPE html>
@@ -79,18 +94,14 @@ const templates = {
     },
 
     bookingConfirmation({userFirstName, services = [], servicesText, startTime, totalAmount}) {
-        const fmt = (iso) => {
-            if (!iso) return "—";
-            return new Date(iso).toLocaleString("en-NG", {
-                timeZone: "Africa/Lagos",
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        };
+        const fmt = (iso) => formatWat(iso, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
 
         const serviceRows = services.length
             ? services.map((s) => `
@@ -143,18 +154,14 @@ const templates = {
     },
 
     ownerNotification({userFirstName, userEmail, userMobileNumber, servicesText, startTime, totalAmount, completeUrl, completeReviewUrl}) {
-        const fmt = (iso) => {
-            if (!iso) return "—";
-            return new Date(iso).toLocaleString("en-NG", {
-                timeZone: "Africa/Lagos",
-                weekday: "short",
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        };
+        const fmt = (iso) => formatWat(iso, {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
 
         const rows = [
             ["Client", userFirstName || "—"],
@@ -212,18 +219,65 @@ const templates = {
         };
     },
 
-    appointmentReminder({userFirstName, services = [], servicesText, startTime}) {
-        const fmt = (iso) => {
-            if (!iso) return "—";
-            return new Date(iso).toLocaleString("en-NG", {
-                timeZone: "Africa/Lagos",
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
+    adminDailyDigest({dateLabel, bookings = []}) {
+        const time = (iso) => formatWat(iso, {hour: "2-digit", minute: "2-digit"});
+
+        const total = bookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+
+        const bookingCards = bookings.map((b) => `
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:12px;">
+        <tr><td style="padding:16px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="font-size:16px;color:${DARK};font-family:Arial,sans-serif;font-weight:700;">${time(b.startTime)}</td>
+              <td style="font-size:14px;color:${DARK};font-family:Arial,sans-serif;text-align:right;">₦${Number(b.totalAmount || 0).toLocaleString("en-NG")}</td>
+            </tr>
+          </table>
+          <p style="margin:8px 0 0;font-size:14px;color:${DARK};font-family:Arial,sans-serif;font-weight:600;">${b.userFirstName || b.userEmail || "Client"}</p>
+          <p style="margin:2px 0 0;font-size:13px;color:rgba(18,13,7,0.6);font-family:Arial,sans-serif;">${b.servicesText || (b.services || []).map((s) => s.title).filter(Boolean).join(", ") || "—"}</p>
+          <p style="margin:6px 0 0;font-size:12px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;">
+            ${b.userMobileNumber || "no phone"} &nbsp;·&nbsp; ${b.userEmail || "no email"}
+          </p>
+        </td></tr>
+      </table>`).join("");
+
+        const emptyState = `
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:12px;">
+        <tr><td style="padding:20px;text-align:center;">
+          <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);font-family:Arial,sans-serif;">
+            No appointments booked for tomorrow.
+          </p>
+        </td></tr>
+      </table>`;
+
+        const summary = bookings.length
+            ? `${bookings.length} appointment${bookings.length === 1 ? "" : "s"} · ₦${total.toLocaleString("en-NG")} expected`
+            : "Nothing on the books yet";
+
+        return {
+            subject: `Tomorrow (${dateLabel}): ${bookings.length} booking${bookings.length === 1 ? "" : "s"}`,
+            html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Tomorrow's Schedule</p>
+        <h1 style="margin:0 0 8px;font-size:22px;color:${DARK};line-height:1.2;">${dateLabel}</h1>
+        <p style="margin:0 0 24px;font-size:14px;color:rgba(18,13,7,0.6);font-family:Arial,sans-serif;">${summary}</p>
+        ${bookings.length ? bookingCards : emptyState}
+        <p style="margin:20px 0 0;font-size:13px;color:rgba(18,13,7,0.45);line-height:1.7;font-family:Arial,sans-serif;">
+          Times are West Africa Time. Each booking's "Mark as Complete" links are in its original booking email.
+        </p>
+      `),
         };
+    },
+
+    appointmentReminder({userFirstName, services = [], servicesText, startTime}) {
+        const fmt = (iso) => formatWat(iso, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
 
         const serviceRows = services.length
             ? services.map((s) => `
@@ -412,6 +466,136 @@ const templates = {
           Thank you for letting us be a part of your hair journey. We can't wait to help your hair thrive.<br/><br/>
           Stay beautiful,<br/>
           <strong style="color:${DARK};">The Flourish Roots Team</strong>
+        </p>
+      `),
+        };
+    },
+
+    bookingCancelled({userFirstName, servicesText, startTime}) {
+        const fmt = (iso) => formatWat(iso, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+
+        return {
+            subject: "Your appointment has been cancelled",
+            html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Cancelled</p>
+        <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+          Your appointment is cancelled, ${userFirstName || "Queen"}
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:rgba(18,13,7,0.7);line-height:1.7;">
+          We've cancelled the appointment below. Nothing further is needed from you.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:24px;">
+          <tr><td style="padding:20px;">
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Was booked for</p>
+            <p style="margin:0 0 14px;font-size:15px;color:${DARK};font-family:Arial,sans-serif;font-weight:600;text-decoration:line-through;">${fmt(startTime)}</p>
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Services</p>
+            <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.7);font-family:Arial,sans-serif;">${servicesText || "—"}</p>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 24px;font-size:14px;color:rgba(18,13,7,0.6);line-height:1.7;font-family:Arial,sans-serif;">
+          Changed your mind? You can book again any time from our website, or just reply to this email and we'll find you a slot.
+        </p>
+        <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);line-height:1.7;font-family:Arial,sans-serif;">
+          Hope to see you soon 🌿<br/>
+          <strong style="color:${DARK};">The FRH Team</strong>
+        </p>
+      `),
+        };
+    },
+
+    bookingRescheduled({userFirstName, servicesText, previousStartTime, startTime}) {
+        const fmt = (iso) => formatWat(iso, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+
+        return {
+            subject: "Your appointment has been moved",
+            html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">Rescheduled</p>
+        <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+          All set, ${userFirstName || "Queen"} — your new time is confirmed
+        </h1>
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#fafaf8;border:1px solid rgba(18,13,7,0.08);border-radius:10px;margin-bottom:24px;">
+          <tr><td style="padding:20px 20px 4px;">
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Previously</p>
+            <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.5);font-family:Arial,sans-serif;text-decoration:line-through;">${fmt(previousStartTime)}</p>
+          </td></tr>
+          <tr><td style="padding:12px 20px 20px;border-top:1px solid rgba(18,13,7,0.06);">
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">New date &amp; time</p>
+            <p style="margin:0 0 14px;font-size:16px;color:${DARK};font-family:Arial,sans-serif;font-weight:700;">${fmt(startTime)}</p>
+            <p style="margin:0 0 4px;font-size:11px;color:rgba(18,13,7,0.4);font-family:Arial,sans-serif;letter-spacing:0.15em;text-transform:uppercase;">Services</p>
+            <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.7);font-family:Arial,sans-serif;">${servicesText || "—"}</p>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 24px;font-size:14px;color:rgba(18,13,7,0.6);line-height:1.7;font-family:Arial,sans-serif;">
+          Shop 303, Destiny Plaza, Ago Palace Way, Isolo Lagos. Need to change it again? You can do that from your appointments page.
+        </p>
+        <p style="margin:0;font-size:14px;color:rgba(18,13,7,0.55);line-height:1.7;font-family:Arial,sans-serif;">
+          See you then 🌿<br/>
+          <strong style="color:${DARK};">The FRH Team</strong>
+        </p>
+      `),
+        };
+    },
+
+    ownerBookingChanged({change, userFirstName, userEmail, userMobileNumber, servicesText, previousStartTime, startTime, totalAmount}) {
+        const fmt = (iso) => formatWat(iso, {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+
+        const cancelled = change === "cancelled";
+
+        const rows = [
+            ["Client", userFirstName || "—"],
+            ["Email", userEmail || "—"],
+            ["Phone", userMobileNumber || "—"],
+            ["Services", servicesText || "—"],
+            cancelled ?
+                ["Was booked for", fmt(previousStartTime || startTime)] :
+                ["Was booked for", fmt(previousStartTime)],
+            ...(cancelled ? [] : [["Now booked for", fmt(startTime)]]),
+            ["Total", `₦${Number(totalAmount || 0).toLocaleString("en-NG")}`],
+        ];
+
+        const rowHtml = rows.map(([label, value]) => `
+          <tr>
+            <td style="padding:9px 0;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;border-bottom:1px solid rgba(18,13,7,0.06);white-space:nowrap;">${label}</td>
+            <td style="padding:9px 0 9px 16px;font-size:14px;color:${DARK};font-family:Arial,sans-serif;border-bottom:1px solid rgba(18,13,7,0.06);text-align:right;">${value}</td>
+          </tr>`).join("");
+
+        return {
+            subject: cancelled ?
+                `Cancelled: ${userFirstName || userEmail} — ${servicesText || ""}` :
+                `Moved: ${userFirstName || userEmail} — ${servicesText || ""}`,
+            html: emailShell(`
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(18,13,7,0.45);font-family:Arial,sans-serif;letter-spacing:0.1em;text-transform:uppercase;">${cancelled ? "Cancellation" : "Reschedule"}</p>
+        <h1 style="margin:0 0 20px;font-size:24px;color:${DARK};line-height:1.2;">
+          ${userFirstName || "A client"} ${cancelled ? "cancelled an appointment" : "moved an appointment"}
+        </h1>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          ${rowHtml}
+        </table>
+        <p style="margin:0;font-size:13px;color:rgba(18,13,7,0.45);line-height:1.7;font-family:Arial,sans-serif;">
+          ${cancelled ? "The slot is free again — no action needed." : "Your daily digest will reflect the new time."}
         </p>
       `),
         };

@@ -8,6 +8,7 @@ import { BookingProvider } from "@/app/contexts/BookingContext";
 import { useLeadMagnet } from "@/hooks/useLeadMagnet";
 import { BookingFAB } from "@/components/BookingFAB";
 import { GlobalBookingBar } from "@/components/GlobalBookingBar";
+import { BookingBarSpacer } from "@/components/BookingBarSpacer";
 
 const LeadMagnetModal = dynamic(
   () => import("@/components/LeadMagnetModal").then((m) => ({ default: m.LeadMagnetModal })),
@@ -35,6 +36,7 @@ export default function Root({ children }) {
             <Header />
             {children}
             <Footer />
+            <BookingBarSpacer />
             <GlobalBookingBar />
             <BookingFAB />
           </>
@@ -43,6 +45,7 @@ export default function Root({ children }) {
             <Header />
             {children}
             <Footer />
+            <BookingBarSpacer />
             <GlobalBookingBar />
             <BookingFAB />
           </LeadMagnetGate>

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 /**
  * Set NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true to run against the local
@@ -19,6 +20,7 @@ export const EMULATOR_PROJECT_ID = "demo-flourish";
 const EMULATOR_HOST = process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST || "127.0.0.1";
 const AUTH_EMULATOR_PORT = Number(process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT || 9099);
 const FIRESTORE_EMULATOR_PORT = Number(process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_PORT || 8080);
+const FUNCTIONS_EMULATOR_PORT = Number(process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || 5001);
 
 const emulatorConfig = {
   apiKey: "demo-api-key",
@@ -65,6 +67,10 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
+// us-central1 is the default region and matches where the booking callables
+// and FUNCTION_BASE in functions/index.js are deployed.
+export const functions = getFunctions(app);
+
 // connect*Emulator throws if called twice on the same instance, which fast
 // refresh would otherwise do. A module-scoped flag is not enough because the
 // module itself is re-evaluated, so we tag the app instance.
@@ -73,12 +79,14 @@ if (USE_EMULATOR && !app.__emulatorsConnected) {
     disableWarnings: true,
   });
   connectFirestoreEmulator(db, EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+  connectFunctionsEmulator(functions, EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
   app.__emulatorsConnected = true;
 
   if (typeof window !== "undefined") {
     console.info(
       `[firebase] Using emulators — project ${EMULATOR_PROJECT_ID}, ` +
-        `auth :${AUTH_EMULATOR_PORT}, firestore :${FIRESTORE_EMULATOR_PORT}`
+        `auth :${AUTH_EMULATOR_PORT}, firestore :${FIRESTORE_EMULATOR_PORT}, ` +
+        `functions :${FUNCTIONS_EMULATOR_PORT}`
     );
   }
 }

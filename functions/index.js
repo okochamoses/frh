@@ -4,16 +4,28 @@ const {setGlobalOptions} = require("firebase-functions");
 
 initializeApp();
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
-const {onRequest} = require("firebase-functions/v2/https");
+const {onRequest, onCall, HttpsError} = require("firebase-functions/v2/https");
+const {defineSecret} = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const mailService = require("./lib/mail/MailService");
 const {validateEmail} = require("./lib/validators");
 const {
+    createBooking: writeBooking,
+    getUserProfile,
     getBookingById,
+    cancelBooking: writeCancellation,
+    rescheduleBooking: writeReschedule,
     markBookingComplete,
     markReminderSent,
     getUnremindedBookingsInWindow,
+    getBookingsInWindow,
+    claimAdminDigest,
 } = require("./lib/adminBookingService");
+const {watDate, watDateKey} = require("./lib/time");
+const {validateSlot} = require("./lib/bookingRules");
+const {lookup} = require("./lib/serviceCatalogue");
+
+const MAIL_SECRETS = ["SMTP_USER", "SMTP_PASS"];
 
 setGlobalOptions({maxInstances: 10});
 
@@ -120,6 +132,11 @@ exports.onBookingCreated = onDocumentCreated(
             return;
         }
 
+        if (booking.status === "cancelled") {
+            logger.info("onBookingCreated: booking created cancelled, no mail", {bookingId});
+            return;
+        }
+
         const completeUrl = makeCompleteUrl(bookingId, false, secret);
         const completeReviewUrl = makeCompleteUrl(bookingId, true, secret);
         const bookingWithUrls = {...booking, completeUrl, completeReviewUrl};
@@ -143,14 +160,262 @@ exports.onBookingCreated = onDocumentCreated(
     }
 );
 
+// ── Booking write path (callable) ─────────────────────────────────────────────
+//
+// Bookings used to be written straight from the browser, with Firestore rules
+// checking only that `userId` matched the caller. Everything else — the email
+// we then send to, the price, the time, the status — was whatever the client
+// typed. That made `onBookingCreated` an authenticated mail relay through the
+// salon's SMTP account. These callables are the only write path now; the
+// client sends service titles and a start time, and nothing else is trusted.
+//
+// Overlapping appointments are deliberately allowed: several stylists work in
+// parallel, so two clients booking the same slot is normal.
+
+/** The signed-in caller's identity, or a typed error. */
+function requireCaller(request) {
+    const auth = request.auth;
+    if (!auth) {
+        throw new HttpsError("unauthenticated", "Please sign in to manage a booking.");
+    }
+    const email = auth.token?.email;
+    if (!email) {
+        throw new HttpsError("failed-precondition", "Your account has no email address.");
+    }
+    return {uid: auth.uid, email};
+}
+
+function requireOwnedBooking(booking, uid) {
+    // Same error for "not found" and "not yours" so the callable can't be used
+    // to probe which booking ids exist.
+    if (!booking || booking.userId !== uid) {
+        throw new HttpsError("not-found", "That booking could not be found.");
+    }
+    if (booking.status === "cancelled") {
+        throw new HttpsError("failed-precondition", "That booking is already cancelled.");
+    }
+    if (booking.status === "completed") {
+        throw new HttpsError("failed-precondition", "That appointment has already happened.");
+    }
+    const start = watDate(booking.startTime);
+    if (!start || start.getTime() <= Date.now()) {
+        throw new HttpsError(
+            "failed-precondition",
+            "That appointment has already started. Please call the salon."
+        );
+    }
+    return booking;
+}
+
+exports.createBooking = onCall(
+    {cors: true},
+    async (request) => {
+        const {uid, email} = requireCaller(request);
+        const {serviceTitles, startTime} = request.data ?? {};
+
+        let priced;
+        try {
+            priced = lookup(serviceTitles);
+        } catch (err) {
+            throw new HttpsError("invalid-argument", err.message);
+        }
+
+        const slot = validateSlot(startTime, priced.totalDuration);
+        if (!slot.ok) {
+            throw new HttpsError("out-of-range", slot.reason);
+        }
+
+        const profile = await getUserProfile(uid);
+        if (!profile?.mobileNumber) {
+            throw new HttpsError(
+                "failed-precondition",
+                "Please add a mobile number to your profile before booking."
+            );
+        }
+
+        const bookingId = await writeBooking({
+            userId: uid,
+            userEmail: email,
+            userFirstName: profile.firstName ?? null,
+            userMobileNumber: profile.mobileNumber,
+
+            services: priced.services,
+            servicesText: priced.servicesText,
+            totalAmount: priced.totalPrice,
+            totalDuration: priced.totalDuration,
+
+            startTime: slot.start.toISOString(),
+            endTime: slot.end.toISOString(),
+
+            status: "pending",
+            reminderSent: false,
+        });
+
+        logger.info("Booking created", {bookingId, uid});
+
+        return {
+            bookingId,
+            startTime: slot.start.toISOString(),
+            endTime: slot.end.toISOString(),
+            totalAmount: priced.totalPrice,
+        };
+    }
+);
+
+exports.cancelBooking = onCall(
+    {cors: true, secrets: MAIL_SECRETS},
+    async (request) => {
+        const {uid} = requireCaller(request);
+        const {bookingId} = request.data ?? {};
+
+        if (typeof bookingId !== "string" || !bookingId) {
+            throw new HttpsError("invalid-argument", "No booking specified.");
+        }
+
+        const booking = requireOwnedBooking(await getBookingById(bookingId), uid);
+
+        await writeCancellation(bookingId);
+        logger.info("Booking cancelled", {bookingId, uid});
+
+        // Email failures must not fail the cancellation — it already happened.
+        const results = await Promise.allSettled([
+            mailService.sendBookingCancelled({
+                to: booking.userEmail,
+                booking: {
+                    userFirstName: booking.userFirstName,
+                    servicesText: booking.servicesText,
+                    startTime: booking.startTime,
+                },
+            }),
+            mailService.sendOwnerBookingChanged({change: "cancelled", ...booking}),
+        ]);
+
+        results
+            .filter((r) => r.status === "rejected")
+            .forEach((r) => logger.error("[cancelBooking] email failed:", r.reason));
+
+        return {bookingId, status: "cancelled"};
+    }
+);
+
+exports.rescheduleBooking = onCall(
+    {cors: true, secrets: MAIL_SECRETS},
+    async (request) => {
+        const {uid} = requireCaller(request);
+        const {bookingId, startTime} = request.data ?? {};
+
+        if (typeof bookingId !== "string" || !bookingId) {
+            throw new HttpsError("invalid-argument", "No booking specified.");
+        }
+
+        const booking = requireOwnedBooking(await getBookingById(bookingId), uid);
+
+        // Services and price are untouched by a reschedule, so the duration
+        // comes from the booking rather than the request. Older bookings
+        // predate `totalDuration`, so fall back to the stored span.
+        const totalDuration = Number.isFinite(booking.totalDuration) ?
+            booking.totalDuration :
+            Math.round(
+                (watDate(booking.endTime)?.getTime() - watDate(booking.startTime)?.getTime()) / 60000
+            );
+
+        const slot = validateSlot(startTime, totalDuration);
+        if (!slot.ok) {
+            throw new HttpsError("out-of-range", slot.reason);
+        }
+
+        const previousStartTime = booking.startTime;
+
+        await writeReschedule(bookingId, {
+            startTime: slot.start.toISOString(),
+            endTime: slot.end.toISOString(),
+        });
+        logger.info("Booking rescheduled", {bookingId, uid});
+
+        const results = await Promise.allSettled([
+            mailService.sendBookingRescheduled({
+                to: booking.userEmail,
+                booking: {
+                    userFirstName: booking.userFirstName,
+                    servicesText: booking.servicesText,
+                    previousStartTime,
+                    startTime: slot.start.toISOString(),
+                },
+            }),
+            mailService.sendOwnerBookingChanged({
+                change: "rescheduled",
+                ...booking,
+                previousStartTime,
+                startTime: slot.start.toISOString(),
+            }),
+        ]);
+
+        results
+            .filter((r) => r.status === "rejected")
+            .forEach((r) => logger.error("[rescheduleBooking] email failed:", r.reason));
+
+        return {
+            bookingId,
+            startTime: slot.start.toISOString(),
+            endTime: slot.end.toISOString(),
+        };
+    }
+);
+
 // ── Mark booking complete (from owner email link) ─────────────────────────────
+
+/**
+ * Renders the "are you sure?" page that a GET lands on.
+ *
+ * The owner's link must not complete the booking on its own: Gmail, Outlook
+ * Safe Links and most corporate mail scanners fetch every URL in an email
+ * before a human ever sees it. A GET that mutated would mark the appointment
+ * complete — and fire the client's "how was your visit?" email — days early.
+ * So the GET only asks, and the form below POSTs the actual change.
+ */
+function confirmPage(res, {id, token, review, booking}) {
+    const when = watDate(booking.startTime);
+    const whenLabel = when ?
+        when.toLocaleString("en-NG", {
+            timeZone: "Africa/Lagos",
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+        }) :
+        "an unknown time";
+
+    const escape = (v) => String(v).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
+    }[c]));
+
+    return htmlPage(
+        res,
+        "Mark this appointment complete?",
+        `<strong>${escape(booking.userFirstName || booking.userEmail || "A client")}</strong> —
+     ${escape(booking.servicesText || "appointment")}<br/>${escape(whenLabel)}
+     ${review ? "<br/><br/>They will also be asked for a Google review." : ""}
+     <form method="POST" style="margin-top:24px;">
+       <input type="hidden" name="id" value="${escape(id)}" />
+       <input type="hidden" name="token" value="${escape(token)}" />
+       <input type="hidden" name="review" value="${review}" />
+       <button type="submit"
+         style="background:${GOLD};color:${DARK};border:0;border-radius:8px;padding:14px 28px;font-size:15px;font-family:Arial,sans-serif;font-weight:700;cursor:pointer;">
+         ${review ? "Complete &amp; ask for a review" : "Yes, mark it complete"}
+       </button>
+     </form>`
+    );
+}
 
 exports.completeBooking = onRequest(
     {cors: true, secrets: ["SMTP_USER", "SMTP_PASS", "BOOKING_SECRET"]},
     async (req, res) => {
-        const id = req.query.id || "";
-        const token = req.query.token || "";
-        const review = req.query.review === "true";
+        // The confirmation form POSTs the same three values back as a body.
+        const source = req.method === "POST" ? {...req.query, ...(req.body ?? {})} : req.query;
+        const id = source.id || "";
+        const token = source.token || "";
+        const review = String(source.review) === "true";
         const secret = process.env.BOOKING_SECRET || "";
 
         if (!verifyToken(id, token, secret)) {
@@ -175,6 +440,21 @@ exports.completeBooking = onRequest(
                 "Already marked complete",
                 `${booking.userFirstName || "The client"} was already notified. No further action needed.`
             );
+        }
+
+        if (booking.status === "cancelled") {
+            return htmlPage(
+                res,
+                "This booking was cancelled",
+                `${booking.userFirstName || "The client"} cancelled this appointment, so there is nothing to complete.`,
+                true
+            );
+        }
+
+        // A GET only ever asks. Nothing below this line runs for a link
+        // fetched by a mail scanner.
+        if (req.method !== "POST") {
+            return confirmPage(res, {id, token, review, booking});
         }
 
         try {
@@ -210,23 +490,129 @@ exports.completeBooking = onRequest(
 
 // ── Appointment reminder scheduler ───────────────────────────────────────────
 
-const SCHEDULER_SECRET = "59153cff-3ce5-4762-83d8-f0cd568b199e";
+// Set with `firebase functions:secrets:set SCHEDULER_SECRET`, and sent by the
+// cron job as the `secure` header. This used to be a literal in this file —
+// that value is in git history and must be treated as compromised.
+const SCHEDULER_SECRET = defineSecret("SCHEDULER_SECRET");
+
+/**
+ * Constant-time header check. Hashing first keeps both sides the same length,
+ * so `timingSafeEqual` compares instead of throwing on a short header.
+ */
+function hasSchedulerSecret(req) {
+    const provided = req.headers["secure"];
+    if (typeof provided !== "string" || provided.length === 0) return false;
+
+    const expected = SCHEDULER_SECRET.value();
+    if (!expected) {
+        logger.error("SCHEDULER_SECRET is not configured — rejecting request.");
+        return false;
+    }
+
+    return crypto.timingSafeEqual(
+        crypto.createHash("sha256").update(provided).digest(),
+        crypto.createHash("sha256").update(expected).digest()
+    );
+}
 const WAT_OFFSET_MS = 60 * 60 * 1000;
 
 function toWATIso(ms) {
     return new Date(ms).toISOString().slice(0, 19);
 }
 
+// The nightly admin digest rides on the same 15-minute cron: it only fires
+// during this WAT hour, and the Firestore claim keeps it to one send per day.
+const DIGEST_HOUR_WAT = 20;
+
+function addDays(dateKey, days) {
+    const d = new Date(`${dateKey}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Emails the owner every booking scheduled for the next day.
+ * `force` skips the hour check and the once-a-day claim (manual trigger).
+ */
+async function runAdminDailyDigest({force = false} = {}) {
+    const now = new Date();
+    const hourWAT = Number(
+        now.toLocaleString("en-GB", {timeZone: "Africa/Lagos", hour: "2-digit", hour12: false})
+    );
+
+    if (!force && hourWAT !== DIGEST_HOUR_WAT) {
+        return {skipped: "outside digest hour", hourWAT};
+    }
+
+    const tomorrowKey = addDays(watDateKey(now), 1);
+
+    if (!force && !(await claimAdminDigest(tomorrowKey))) {
+        return {skipped: "already sent", date: tomorrowKey};
+    }
+
+    // Query a padded window so both storage formats (naive WAT and UTC "…Z")
+    // are covered, then narrow to the real WAT calendar day.
+    const candidates = await getBookingsInWindow(
+        `${addDays(tomorrowKey, -1)}T00:00:00`,
+        `${addDays(tomorrowKey, 1)}T23:59:59Z`
+    );
+
+    const bookings = candidates
+        .filter((b) => {
+            const d = watDate(b.startTime);
+            return d && watDateKey(d) === tomorrowKey;
+        })
+        .sort((a, b) => watDate(a.startTime) - watDate(b.startTime));
+
+    const dateLabel = new Date(`${tomorrowKey}T12:00:00Z`).toLocaleDateString("en-NG", {
+        timeZone: "Africa/Lagos",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
+
+    await mailService.sendAdminDailyDigest({dateLabel, bookings});
+    logger.info("[adminDailyDigest] sent", {date: tomorrowKey, count: bookings.length});
+
+    return {sent: true, date: tomorrowKey, count: bookings.length};
+}
+
+exports.adminDailyDigest = onRequest(
+    // `invoker: public` only opens the door; the `secure` header below is the lock.
+    {cors: false, invoker: "public", secrets: [...MAIL_SECRETS, SCHEDULER_SECRET]},
+    async (req, res) => {
+        if (req.method !== "POST") {
+            return res.status(405).json({error: "Method not allowed"});
+        }
+        if (!hasSchedulerSecret(req)) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+
+        try {
+            return res.json(await runAdminDailyDigest({force: req.query.force === "true"}));
+        } catch (err) {
+            logger.error("[adminDailyDigest] failed:", err);
+            return res.status(500).json({error: "Failed to send digest"});
+        }
+    }
+);
+
 exports.schedulerMessages = onRequest(
-    {cors: false, secrets: ["SMTP_USER", "SMTP_PASS"]},
+    {cors: false, secrets: [...MAIL_SECRETS, SCHEDULER_SECRET]},
     async (req, res) => {
         if (req.method !== "POST") {
             return res.status(405).json({error: "Method not allowed"});
         }
 
-        if (req.headers["secure"] !== SCHEDULER_SECRET) {
+        if (!hasSchedulerSecret(req)) {
             return res.status(401).json({error: "Unauthorized"});
         }
+
+        const digest = await runAdminDailyDigest().catch((err) => {
+            logger.error("[schedulerMessages] admin digest failed:", err);
+            return {error: "digest failed"};
+        });
 
         const nowWAT = Date.now() + WAT_OFFSET_MS;
         const windowStart = toWATIso(nowWAT + 45 * 60 * 1000);
@@ -248,7 +634,7 @@ exports.schedulerMessages = onRequest(
         });
 
         if (bookings.length === 0) {
-            return res.json({sent: 0});
+            return res.json({sent: 0, digest});
         }
 
         const results = await Promise.allSettled(
@@ -274,7 +660,7 @@ exports.schedulerMessages = onRequest(
             logger.error(`[schedulerMessages] reminder failed for booking index ${i}:`, r.reason)
         );
 
-        return res.json({sent, failed: failed.length});
+        return res.json({sent, failed: failed.length, digest});
     }
 );
 

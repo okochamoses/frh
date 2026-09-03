@@ -1,18 +1,15 @@
 /**
  * bookingService.js
  *
- * All Firestore operations for the `bookings` collection.
+ * The `bookings` collection is read-only from the browser (see firestore.rules).
+ * Creating, cancelling and rescheduling all go through Cloud Functions, which
+ * price the services and validate the slot server-side — the client only ever
+ * sends service titles and a start time.
  */
 
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
-import { db } from "./config";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { db, functions } from "./config";
 
 /**
  * @typedef {object} BookingRecord
@@ -21,48 +18,75 @@ import { db } from "./config";
  * @property {Array<{ title?: string, price?: number, duration?: number, category?: string }>} [services]
  * @property {string} [servicesText]
  * @property {number} totalAmount
+ * @property {number} [totalDuration]        Minutes
  * @property {string} startTime              ISO datetime string
  * @property {string} endTime                ISO datetime string
+ * @property {"pending"|"completed"|"cancelled"} [status]
  * @property {import("firebase/firestore").Timestamp} [createdAt]
  */
 
 /**
- * Saves a new booking to Firestore.
+ * Turns a callable rejection into something worth showing a user.
+ *
+ * The functions SDK gives HttpsError messages verbatim, and ours are written
+ * for the customer ("Sunday appointments start from 1pm"). Anything unexpected
+ * — a network drop, an `internal` — gets the generic line instead of a stack.
+ */
+function toUserMessage(err, fallback) {
+  const code = err?.code ?? "";
+  if (code === "functions/internal" || code === "functions/unknown" || !err?.message) {
+    return fallback;
+  }
+  if (code === "functions/unavailable" || code === "functions/deadline-exceeded") {
+    return "We couldn't reach the salon's booking service. Please check your connection and try again.";
+  }
+  return err.message;
+}
+
+async function call(name, payload, fallback) {
+  try {
+    const { data } = await httpsCallable(functions, name)(payload);
+    return data;
+  } catch (err) {
+    const friendly = new Error(toUserMessage(err, fallback));
+    friendly.cause = err;
+    friendly.code = err?.code;
+    throw friendly;
+  }
+}
+
+/**
+ * Creates a booking.
+ *
+ * Only the titles and the start time are sent: the server looks up prices and
+ * durations from its own copy of the catalogue, derives the customer's email
+ * and name from the auth token, and computes `endTime` itself.
  *
  * @param {object} params
- * @param {object} params.user           - The authenticated user profile
- * @param {Array}  params.services       - Selected service objects
- * @param {string} params.startTime      - ISO datetime string (WAT)
- * @param {string} params.endTime        - ISO datetime string (WAT)
- * @param {number} params.totalAmount    - Total price in NGN
- *
- * @returns {string} The new Firestore document ID
+ * @param {Array<{title: string}>} params.services  Selected service objects
+ * @param {string} params.startTime                 ISO datetime string
+ * @returns {Promise<{bookingId: string, startTime: string, endTime: string, totalAmount: number}>}
  */
-export async function createBooking({ user, services, startTime, endTime, totalAmount }) {
-  const docRef = await addDoc(collection(db, "bookings"), {
-    // Who is booking
-    userId:          user.uid,
-    userEmail:       user.email,
-    userFirstName:   user.firstName,
-    userMobileNumber: user.mobileNumber,
+export async function createBooking({ services, startTime }) {
+  return call(
+    "createBooking",
+    { serviceTitles: services.map((s) => s.title), startTime },
+    "Booking failed. Please try again."
+  );
+}
 
-    // What they're booking
-    services,
-    servicesText:  services.map((s) => s.title).join(" | "),
-    totalAmount,
+/** Cancels one of the signed-in user's own bookings. */
+export async function cancelBooking(bookingId) {
+  return call("cancelBooking", { bookingId }, "We couldn't cancel that booking. Please try again.");
+}
 
-    // When
-    startTime,
-    endTime,
-
-    // Scheduler tracking
-    status:        "pending",
-    reminderSent:  false,
-
-    createdAt: serverTimestamp(),
-  });
-
-  return docRef.id;
+/** Moves one of the signed-in user's own bookings to a new start time. */
+export async function rescheduleBooking(bookingId, startTime) {
+  return call(
+    "rescheduleBooking",
+    { bookingId, startTime },
+    "We couldn't move that booking. Please try again."
+  );
 }
 
 /**

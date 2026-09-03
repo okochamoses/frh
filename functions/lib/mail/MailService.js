@@ -44,6 +44,11 @@ class MailService {
     return this.sendEmail({ to, subject, html });
   }
 
+  async sendAdminDailyDigest({ dateLabel, bookings }) {
+    const { subject, html } = templates.adminDailyDigest({ dateLabel, bookings });
+    return this.sendEmail({ to: MAIL_CONFIG.ownerEmail, subject, html });
+  }
+
   async sendAppointmentReminder({ to, booking }) {
     const { subject, html } = templates.appointmentReminder(booking);
     return this.sendEmail({ to, subject, html });
@@ -57,6 +62,22 @@ class MailService {
   async sendServiceCompleteWithReview({ to, booking }) {
     const { subject, html } = templates.serviceCompleteWithReview(booking);
     return this.sendEmail({ to, subject, html });
+  }
+
+  async sendBookingCancelled({ to, booking }) {
+    const { subject, html } = templates.bookingCancelled(booking);
+    return this.sendEmail({ to, subject, html });
+  }
+
+  async sendBookingRescheduled({ to, booking }) {
+    const { subject, html } = templates.bookingRescheduled(booking);
+    return this.sendEmail({ to, subject, html });
+  }
+
+  /** Tells the owner a client cancelled or moved an appointment. */
+  async sendOwnerBookingChanged(booking) {
+    const { subject, html } = templates.ownerBookingChanged(booking);
+    return this.sendEmail({ to: MAIL_CONFIG.ownerEmail, subject, html });
   }
 }
 
