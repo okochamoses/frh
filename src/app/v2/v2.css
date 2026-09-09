@@ -1,0 +1,209 @@
+/* V2 design-system tokens (see docs/design-v2/DESIGN.md).
+   Scoped to .v2-root so V1 styling is untouched. */
+.v2-root {
+  --color-brand-primary: #1a0000;
+  --color-brand-accent: #98bbf4;
+
+  --color-surface-sand: #ffffff;
+  --color-surface-cream: #f2f2f2;
+  --color-surface-latte: #ededec;
+  --color-surface-obsidian: #221919;
+
+  --color-text-primary: #1a0000;
+  --color-text-secondary: #514f4c;
+  --color-text-tertiary: #aeaea6;
+
+  --space-xs: 4px;  --space-sm: 8px;  --space-md: 16px; --space-lg: 24px;
+  --space-xl: 32px; --space-2xl: 40px; --space-3xl: 48px; --space-4xl: 64px;
+  --space-5xl: 80px; --space-6xl: 96px;
+
+  /* Page container. 1464px box minus the 32px desktop gutters leaves a
+     1400px content column, which is what the three-card row is sized from:
+     (1400 - 2 * 16px gap) / 3 = 456px cards. */
+  --v2-container: 1464px;
+
+  /* How far the hero collage is pulled up onto the hero gradient. The hero
+     carries it as bottom padding (plus a little breathing room under the CTA),
+     the collage as an equal negative margin, so the two always line up. The
+     collage strip is 1827:861, i.e. 61.2vw tall at its 130vw width — the
+     remainder of that height hangs below the hero onto the page background.
+
+     Mobile overlaps proportionally harder: the strip is short there, and a
+     shallow overlap reads as a misaligned seam rather than a deliberate one. */
+  --collage-inset: 32vw;
+
+  /* No box-shadows — elevation is communicated via surface color layering only. */
+  --shadow-sm: none;
+  --shadow-md: none;
+}
+
+@media (min-width: 768px) {
+  .v2-root { --collage-inset: 37vw; }
+}
+
+@media (min-width: 1024px) {
+  .v2-root { --collage-inset: 40vw; }
+}
+
+/* Film-grain overlay for the two mustard bands — the hero at the top of the
+   page and the closing call at the foot of it. The mustard underneath comes
+   from the section's own background utility; this rule only adds the texture,
+   so the page opens and closes on the same surface.
+
+   The tile is an SVG fractal noise, desaturated to mono and blended in
+   `overlay` so it darkens and lightens the mustard rather than laying grey
+   dots on top of it. `isolation: isolate` keeps that blend inside the hero
+   instead of reaching the page background, and stitchTiles makes the 180px
+   repeat seamless. */
+.v2-hero-bg {
+  position: relative;
+  isolation: isolate;
+}
+
+.v2-hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* Paragraph copy runs in Barlow; everything else (UI, labels, nav) stays on
+   the Manrope body face set by the layout. */
+.v2-root p {
+  font-family: var(--font-paragraph), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Restrained focus treatment — no browser-default blue. */
+.v2-root :focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-root *,
+  .v2-root *::before,
+  .v2-root *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Type set ────────────────────────────────────────────────────────────────
+   Three roles, built from the brand specimen:
+
+     .type-display    Icarus Nocturne   the face alone, for a headline that
+                                        sizes itself (the hero)
+     .type-display-*  Icarus Nocturne   headlines and pull quotes
+     .type-eyebrow    Barlow Condensed  uppercase kickers above a headline
+     (default)        Manrope           everything else — body, UI, forms
+
+   Icarus Nocturne has one weight and no italic, so emphasis inside a headline comes
+   from size or colour, never from bold or italic — the browser would synthesise
+   both and smear the hairlines. Its own hairlines also thin out as it scales up,
+   so it wants a solid, high-contrast background rather than a busy image. */
+.v2-root .type-display,
+.v2-root .type-display-hero,
+.v2-root .type-display-xl,
+.v2-root .type-display-lg,
+.v2-root .type-display-md {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  /* The face's own caps are already tightly fitted; browser-synthesised weight
+     or slant on top of that closes the counters. Tracking is left at the face's
+     own fitting for the same reason — its swashes overhang into the next glyph,
+     so tightening collides the caps instead of closing the gaps. */
+  font-synthesis: none;
+  letter-spacing: normal;
+  text-wrap: balance;
+}
+
+.v2-root .type-display-hero {
+  font-size: clamp(3rem, calc(1.9rem + 4.6vw), 6.5rem);
+  line-height: 0.92;
+}
+
+.v2-root .type-display-xl {
+  font-size: clamp(2.5rem, calc(1.95rem + 2.3vw), 4rem);
+  line-height: 0.98;
+}
+
+.v2-root .type-display-lg {
+  font-size: clamp(2rem, calc(1.7rem + 1.25vw), 2.75rem);
+  line-height: 1.05;
+}
+
+.v2-root .type-display-md {
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+.v2-root .type-eyebrow {
+  font-family: var(--font-display), "Arial Narrow", sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  /* Uppercase at this size needs the tracking back that the condensed cut
+     removes, otherwise the caps knit together. */
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* Top-band colour. On the homepage the page ground, the hero and the sticky
+   nav bar all paint with this one token, so everything above the collage is a
+   single block of mustard — and when the reader scrolls past that collage it
+   washes out to white in one motion, rather than several elements changing at
+   slightly different times.
+
+   `TopBandFade` flips the data attribute from a sentinel sitting at the bottom
+   edge of the collage; everything else here is CSS, so the swap costs no
+   re-render. */
+.v2-root {
+  --v2-topband: #fbb91c;
+}
+
+.v2-root[data-past-hero="true"] {
+  --v2-topband: var(--color-surface-sand);
+}
+
+.v2-topband {
+  background-color: var(--v2-topband);
+  transition: background-color 800ms ease;
+}
+
+/* The page ground joins the band only on a route that actually has a hero —
+   matched off the sentinel `TopBandFade` plants, so the homepage is mustard
+   on the very first frame with no flash of white before hydration. Routes
+   without a hero keep their `bg-sand` ground under a mustard bar, which is
+   how they have always looked. */
+.v2-root:has([data-topband-sentinel]) {
+  background-color: var(--v2-topband);
+  transition: background-color 800ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-topband,
+  .v2-root:has([data-topband-sentinel]) { transition: none; }
+}
+
+/* Service index. Hovering one row is a way of asking about it, so the other
+   rows step back rather than the hovered one lighting up — the page gets
+   quieter under the cursor instead of louder, which suits a list whose whole
+   job is legibility.
+
+   `:focus-visible` gets the same treatment, so tabbing through the index reads
+   the way hovering it does. The reduced-motion block earlier in this file
+   already collapses the duration for anyone who asked for that. */
+.v2-index:has(a:hover) a:not(:hover),
+.v2-index:has(a:focus-visible) a:not(:focus-visible) {
+  opacity: 0.38;
+}
+
+.v2-index a {
+  transition: opacity 300ms ease;
+}
