@@ -292,3 +292,35 @@ above are not repeated here.
       able to reach an enabled "Confirm booking" on a session-restored step 4
       (`BookingFlow.jsx:252` guards only the guest path). No repro found —
       confirm before changing anything.
+
+### Round 1 follow-ups (raised while fixing, not yet done)
+
+- [ ] **Your call — the list row's photo moved.** Fixing the invalid ARIA meant
+      the photo button had to stop being a child of the row's control, so it is
+      now the row's first element where the checkbox used to be
+      (`ServicesStep.jsx`, `LookRow`). Keeping the old order — checkbox, photo,
+      name, price — with valid semantics needs either an absolutely-positioned
+      row button behind the content or `display:contents`, which strips button
+      semantics in some browsers. Say if the old order matters and it is worth
+      the complexity.
+- [ ] `LookCard` (the grid view) still flips its accessible name between
+      "Add X" and "Remove X" while also setting `aria-pressed`
+      (`ServicesStep.jsx:85`), so a screen reader announces "Remove X, pressed".
+      `LookRow` was fixed to keep a stable name; the grid should match. It is
+      left alone for now because `addBarrelTwistAndPickTime` and several tests
+      locate that button by the "Add …" name.
+- [ ] **Your call — what is the contrast floor on mustard?** DESIGN.md §18
+      rule 6 says never apply opacity to text on mustard, full stop. The two
+      values that actually failed AA are fixed (ink/60 at 3.74:1, ink/55 at
+      3.29:1), but four `text-ink/70` paragraphs remain in `ClosingCta.jsx` and
+      `CoachingClosingCta.jsx` and they measure 4.88:1, which passes. Either the
+      rule should name a floor instead of forbidding opacity outright, or those
+      four should go full-strength too.
+- [ ] `"Gels on Nails "` carries a trailing space in `services.json`. Harmless
+      where names are rendered, but it makes exact-match lookups and test
+      locators fragile. Check the catalogue for others.
+- [ ] Visual and layout checking cannot be delegated: a spawned agent has no
+      permission to reach `localhost`, and viewport metrics read as zero
+      whenever the browser pane is hidden, which silently turns every layout
+      assertion into nonsense. Screenshot passes have to run in the foreground
+      session with the pane visible.
