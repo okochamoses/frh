@@ -19,12 +19,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { getBooking, cancelBooking, rescheduleBooking } from "@/lib/firebase/bookingService";
 import {
+  daysBetween,
   formatDuration,
   fromInstant,
   longDate,
   naira,
   parseKey,
   toInstant,
+  toMinutes,
 } from "@/lib/booking/schedule";
 import { SALON_ADDRESS, SALON_MAPS_URL, whatsappUrl } from "@/lib/booking/calendarLinks";
 import TimeStep from "./TimeStep";
@@ -109,7 +111,17 @@ export default function ManageBooking() {
 
   const start = useMemo(() => (booking ? fromInstant(booking.startTime) : null), [booking]);
   const end = useMemo(() => (booking ? fromInstant(booking.endTime) : null), [booking]);
-  const duration = booking?.totalDuration ?? null;
+  // Older bookings predate `totalDuration`; derive it the same way the
+  // server does (the span between the stored start and end) rather than
+  // let a missing value collapse to a zero-minute appointment.
+  const duration = useMemo(() => {
+    if (Number.isFinite(booking?.totalDuration)) return booking.totalDuration;
+    if (start && end) {
+      const minutes = daysBetween(start.key, end.key) * 1440 + (toMinutes(end.time) - toMinutes(start.time));
+      if (Number.isFinite(minutes)) return minutes;
+    }
+    return null;
+  }, [booking, start, end]);
 
   // Open the calendar on the month the appointment is currently in.
   useEffect(() => {

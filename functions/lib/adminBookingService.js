@@ -1,4 +1,5 @@
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
+const {watDate} = require("./time");
 
 function db() {
     return getFirestore();
@@ -122,10 +123,14 @@ async function createBooking(data) {
  * automatic single-field index — the date and status are filtered here.
  */
 async function countUpcomingBookings(field, value, nowIso) {
+    const now = watDate(nowIso);
     const snapshot = await db().collection("bookings").where(field, "==", value).get();
     return snapshot.docs
         .map((d) => d.data())
-        .filter((b) => b.status !== "cancelled" && b.status !== "completed" && b.startTime > nowIso)
+        .filter((b) => {
+            const start = watDate(b.startTime);
+            return b.status !== "cancelled" && b.status !== "completed" && !!start && !!now && start > now;
+        })
         .length;
 }
 
