@@ -63,17 +63,25 @@ function initials(user) {
   return (a + b || (user?.email ?? "?").charAt(0)).toUpperCase();
 }
 
-function Field({ id, label, optional, hint, error, ...input }) {
+function Field({ id, label, optional, required, hint, error, ...input }) {
+  // The hint/error <p> only renders when there's an error or a hint, so
+  // aria-describedby must not point at it otherwise — a dangling reference
+  // to nothing. The error case still needs to describe the field once it
+  // appears.
+  const describedBy = error || hint ? `${id}-hint` : undefined;
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-xs font-semibold">
         {label}
         {optional && <span className="font-medium text-ink-soft"> (optional)</span>}
+        {required && <span className="font-medium text-ink-soft"> (required)</span>}
       </label>
       <input
         id={id}
+        required={required || undefined}
+        aria-required={required ? "true" : undefined}
         aria-invalid={error ? true : undefined}
-        aria-describedby={`${id}-hint`}
+        aria-describedby={describedBy}
         className={cn(
           "h-12 w-full rounded-v2-lg border bg-cream-100 px-3.5 text-sm font-medium text-ink outline-none focus:border-ink",
           error ? "border-red-600" : "border-latte"
@@ -165,6 +173,7 @@ export function DetailsStep({
           <Field
             id="guest-name"
             label="Your name"
+            required
             autoComplete="given-name"
             value={guest.firstName}
             onChange={(e) => onGuest({ firstName: e.target.value })}
@@ -174,6 +183,7 @@ export function DetailsStep({
           <Field
             id="guest-phone"
             label="Phone number"
+            required
             type="tel"
             inputMode="tel"
             autoComplete="tel"

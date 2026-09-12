@@ -153,11 +153,13 @@ test.describe("browsing services", () => {
     await page.getByRole("button", { name: "Nails", exact: true }).click();
     const nails = page.getByRole("region", { name: "Nails" });
     await expect(nails.getByRole("heading", { name: "Acrylic Set" })).toBeVisible();
-    // Nail services have no catalogue photo yet, so they fall back to a tile.
-    await expect(nails.getByText("No photo yet").first()).toBeVisible();
+    // Nail services have no catalogue photo yet, so they fall back to the
+    // lettered tile. That tile is aria-hidden and carries no caption any more
+    // (see ServicePhoto), so the thing to assert is that no photo loaded.
+    await expect(nails.locator("img")).toHaveCount(0);
 
     await page.getByRole("button", { name: "List", exact: true }).click();
-    await expect(nails.getByRole("checkbox", { name: "Gels on Nails" })).toBeVisible();
+    await expect(nails.getByRole("button", { name: "Gels on Nails", exact: true })).toBeVisible();
 
     // The chosen view is remembered on this device.
     await page.reload();
@@ -168,13 +170,16 @@ test.describe("browsing services", () => {
     await openBooking(page);
     await page.getByRole("button", { name: "List", exact: true }).click();
 
-    const row = page.getByRole("checkbox", { name: "Barrel Twist" });
+    // The row is a real button with `aria-pressed`, not a checkbox: it sits
+    // beside the photo button rather than wrapping it, so neither nests inside
+    // the other. `exact` keeps this off the photo's "See photo: …" button.
+    const row = page.getByRole("button", { name: "Barrel Twist", exact: true });
     await row.click();
-    await expect(row).toHaveAttribute("aria-checked", "true");
+    await expect(row).toHaveAttribute("aria-pressed", "true");
     await expect(slip(page).getByText("Barrel Twist")).toBeVisible();
 
     await row.press(" ");
-    await expect(row).toHaveAttribute("aria-checked", "false");
+    await expect(row).toHaveAttribute("aria-pressed", "false");
     await expect(slip(page).getByText("Services you pick appear here.")).toBeVisible();
   });
 

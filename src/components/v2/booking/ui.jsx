@@ -64,25 +64,58 @@ export function useV2PortalContainer() {
 /** A transient message with an optional Undo, announced politely. */
 export function useToast() {
   const [toast, setToast] = useState(null);
-  const timer = useRef(null);
 
   const show = useCallback((message, undo = null) => {
-    clearTimeout(timer.current);
     setToast({ message, undo, id: Date.now() });
-    timer.current = setTimeout(() => setToast(null), 4500);
   }, []);
 
   const hide = useCallback(() => {
-    clearTimeout(timer.current);
     setToast(null);
   }, []);
-
-  useEffect(() => () => clearTimeout(timer.current), []);
 
   return { toast, show, hide };
 }
 
+const TOAST_DURATION = 4500;
+
+/**
+ * The auto-dismiss timer lives here rather than in `useToast`, and is paused
+ * for as long as the toast has mouse hover or focus anywhere inside it — a
+ * keyboard or screen-reader user who is still on the way to Undo should never
+ * lose it to a fixed clock (WCAG 2.2.1). Losing hover/focus restarts the full
+ * 4500ms window rather than resuming the remainder, which is simpler and
+ * still generous: whoever is still around when it's simplest to reason about
+ * gets a fresh, full look at Undo.
+ */
 export function Toast({ toast, onHide }) {
+  const timer = useRef(null);
+  const paused = useRef({ hover: false, focus: false });
+  const toastId = toast?.id;
+
+  const clear = useCallback(() => clearTimeout(timer.current), []);
+
+  const arm = useCallback(() => {
+    clear();
+    timer.current = setTimeout(onHide, TOAST_DURATION);
+  }, [clear, onHide]);
+
+  useEffect(() => {
+    paused.current = { hover: false, focus: false };
+    if (!toastId) return undefined;
+    arm();
+    return clear;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toastId]);
+
+  const pause = (key) => {
+    paused.current[key] = true;
+    clear();
+  };
+  const resume = (key) => {
+    paused.current[key] = false;
+    if (!paused.current.hover && !paused.current.focus) arm();
+  };
+
   return (
     <div
       role="status"
@@ -94,7 +127,15 @@ export function Toast({ toast, onHide }) {
       )}
     >
       {toast && (
-        <div className="pointer-events-auto flex max-w-full items-center gap-4 rounded-full bg-obsidian py-3 pl-5 pr-4 text-sm font-semibold text-white ring-1 ring-white/20">
+        <div
+          onMouseEnter={() => pause("hover")}
+          onMouseLeave={() => resume("hover")}
+          onFocus={() => pause("focus")}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget)) resume("focus");
+          }}
+          className="pointer-events-auto flex max-w-full items-center gap-4 rounded-full bg-obsidian py-3 pl-5 pr-4 text-sm font-semibold text-white ring-1 ring-white/20"
+        >
           <span>{toast.message}</span>
           {toast.undo && (
             <button

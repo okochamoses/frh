@@ -105,58 +105,60 @@ function LookRow({ look, selected, history, onToggle, onOpenSheet }) {
   const current = on && look.hasVariants ? chosen[0] : null;
   const activate = () => (look.hasVariants ? onOpenSheet(look.id) : onToggle(look.options[0]));
 
+  /*
+   * The row used to be a `role="checkbox"` div with a real <button> (the
+   * photo) nested inside it — invalid ARIA (a button can't live inside a
+   * checkbox) and two ambiguous tab stops per row. The photo is now a
+   * sibling, not a child, so there is nothing to nest, and the row's own
+   * activation target is a real <button>: `aria-pressed` when it's a plain
+   * toggle, and no checkbox/pressed semantics at all when it opens the
+   * variant-picker dialog instead of toggling anything.
+   */
   return (
     <div
-      role="checkbox"
-      tabIndex={0}
-      aria-checked={on}
-      aria-label={look.name}
-      onClick={activate}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === " " || e.key === "Enter") {
-          e.preventDefault();
-          activate();
-        }
-      }}
       className={cn(
-        "grid cursor-pointer grid-cols-[22px_56px_minmax(0,1fr)_auto] items-start gap-3.5 rounded-v2-xl border p-4 transition-colors",
+        "flex items-start gap-3.5 rounded-v2-xl border p-4 transition-colors",
         on ? "border-ink bg-white" : "border-transparent bg-cream-100 hover:border-latte"
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "mt-0.5 flex h-[22px] w-[22px] items-center justify-center rounded-[7px] border-[1.5px]",
-          on ? "border-ink bg-ink text-white" : "border-ash bg-white text-transparent"
-        )}
-      >
-        {CHECK_ICON}
-      </span>
       <ServicePhoto
         look={look}
         as="button"
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenSheet(look.id);
-        }}
+        onClick={() => onOpenSheet(look.id)}
         aria-label={`See photo: ${look.name}`}
-        className="h-[70px] w-14 cursor-zoom-in rounded-v2-lg text-[13px]"
+        className="h-[70px] w-14 shrink-0 cursor-zoom-in rounded-v2-lg text-[13px]"
       />
-      <div className="min-w-0">
-        <p className="font-body text-[15px] font-semibold leading-snug text-ink">
-          {look.name}
-          {current && <span className="text-ink-soft"> · {current.label}</span>}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-ink-soft">
-          <span>{current ? formatDuration(current.duration) : durationLabel(look)}</span>
-          {tags}
+      <button
+        type="button"
+        aria-pressed={look.hasVariants ? undefined : on}
+        aria-label={look.hasVariants ? `Choose an option for ${look.name}` : look.name}
+        onClick={activate}
+        className="grid w-full flex-1 cursor-pointer grid-cols-[22px_minmax(0,1fr)_auto] items-start gap-3.5 text-left"
+      >
+        <span
+          aria-hidden="true"
+          className={cn(
+            "mt-0.5 flex h-[22px] w-[22px] items-center justify-center rounded-[7px] border-[1.5px]",
+            on ? "border-ink bg-ink text-white" : "border-ash bg-white text-transparent"
+          )}
+        >
+          {CHECK_ICON}
+        </span>
+        <div className="min-w-0">
+          <p className="font-body text-[15px] font-semibold leading-snug text-ink">
+            {look.name}
+            {current && <span className="text-ink-soft"> · {current.label}</span>}
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-ink-soft">
+            <span>{current ? formatDuration(current.duration) : durationLabel(look)}</span>
+            {tags}
+          </div>
         </div>
-      </div>
-      <p className="font-body text-[15px] font-bold tabular-nums text-ink">
-        {current ? naira(current.price) : priceLabel(look)}
-      </p>
+        <p className="font-body text-[15px] font-bold tabular-nums text-ink">
+          {current ? naira(current.price) : priceLabel(look)}
+        </p>
+      </button>
     </div>
   );
 }
