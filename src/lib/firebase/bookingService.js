@@ -62,29 +62,61 @@ async function call(name, payload, fallback) {
  * durations from its own copy of the catalogue, derives the customer's email
  * and name from the auth token, and computes `endTime` itself.
  *
+ * A guest (anonymous session, no profile) sends `guest` instead, and the server
+ * validates it: `{ firstName, mobileNumber, email? }`.
+ *
+ * `notes` is the client's own free text — relaxed or transitioning hair, a
+ * child coming in, extensions they're bringing. The server trims and caps it.
+ *
  * @param {object} params
  * @param {Array<{title: string}>} params.services  Selected service objects
  * @param {string} params.startTime                 ISO datetime string
+ * @param {{firstName: string, mobileNumber: string, email?: string|null}} [params.guest]
+ * @param {string} [params.notes]
  * @returns {Promise<{bookingId: string, startTime: string, endTime: string, totalAmount: number}>}
  */
-export async function createBooking({ services, startTime }) {
+export async function createBooking({ services, startTime, guest, notes }) {
   return call(
     "createBooking",
-    { serviceTitles: services.map((s) => s.title), startTime },
+    {
+      serviceTitles: services.map((s) => s.title),
+      startTime,
+      ...(guest ? { guest } : {}),
+      ...(notes?.trim() ? { notes: notes.trim() } : {}),
+    },
     "Booking failed. Please try again."
   );
 }
 
-/** Cancels one of the signed-in user's own bookings. */
-export async function cancelBooking(bookingId) {
-  return call("cancelBooking", { bookingId }, "We couldn't cancel that booking. Please try again.");
+/**
+ * Reads one booking through its signed link.
+ *
+ * This is the guest's way in: they have no account, so the confirmation email
+ * carries a `token` that stands in for one. A signed-in owner can call it with
+ * no token at all.
+ */
+export async function getBooking(bookingId, token) {
+  return call(
+    "getBooking",
+    { bookingId, ...(token ? { token } : {}) },
+    "We couldn't find that booking. Please check the link, or ask the salon."
+  );
 }
 
-/** Moves one of the signed-in user's own bookings to a new start time. */
-export async function rescheduleBooking(bookingId, startTime) {
+/** Cancels a booking, as its signed-in owner or through a signed link. */
+export async function cancelBooking(bookingId, token) {
+  return call(
+    "cancelBooking",
+    { bookingId, ...(token ? { token } : {}) },
+    "We couldn't cancel that booking. Please try again."
+  );
+}
+
+/** Moves a booking to a new start time, as its owner or through a signed link. */
+export async function rescheduleBooking(bookingId, startTime, token) {
   return call(
     "rescheduleBooking",
-    { bookingId, startTime },
+    { bookingId, startTime, ...(token ? { token } : {}) },
     "We couldn't move that booking. Please try again."
   );
 }

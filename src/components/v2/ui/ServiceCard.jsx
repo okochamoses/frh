@@ -31,7 +31,7 @@ export default function ServiceCard({
         className="mt-0.5"
       />
       {icon && (
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-v2-md bg-latte text-gold">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-v2-md bg-latte text-slat">
           {icon}
         </span>
       )}

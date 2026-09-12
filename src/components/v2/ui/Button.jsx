@@ -8,6 +8,11 @@ import { cn } from "@/lib/utils";
 const VARIANTS = {
   primary:
     "bg-deep text-white hover:bg-deep/90 h-12 px-6 rounded-full text-sm font-semibold",
+  // Mustard is reserved for booking actions — the one bright colour on the
+  // page, so "Book" is findable everywhere. Always ink text: white on mustard
+  // is 1.7:1.
+  book:
+    "bg-mustard text-ink hover:bg-mustard-deep h-12 px-6 rounded-full text-sm font-semibold",
   secondary:
     "bg-transparent border border-ink text-ink hover:bg-ink/5 h-12 px-6 rounded-full text-sm font-semibold",
   tertiary:

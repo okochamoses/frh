@@ -18,7 +18,7 @@ const About = () => {
 
         {/* ── Left: Portrait ── */}
         <ParallaxImage
-          src="/ceo.png"
+          src="/founder-portrait.webp"
           alt="Mariam Okocha Ijeoma — Founder & Hair Coach"
           sizes="(max-width: 768px) 100vw, 50vw"
           strength={55}

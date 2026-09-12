@@ -20,7 +20,7 @@ export default function TestimonialCard({
       )}
     >
       <div className="min-w-0 flex-1">
-        <span aria-hidden className="font-display text-v2-h2 leading-none text-gold">
+        <span aria-hidden className="font-display text-v2-h2 leading-none text-slat">
           &ldquo;
         </span>
         <blockquote
@@ -38,7 +38,7 @@ export default function TestimonialCard({
               aria-hidden
               className={cn(
                 "h-4 w-4",
-                i < rating ? "fill-gold text-gold" : "text-ink-soft/40"
+                i < rating ? "fill-slat text-slat" : "text-ink-soft/40"
               )}
             />
           ))}

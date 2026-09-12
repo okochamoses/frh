@@ -7,10 +7,12 @@
 # enough — the JVM has to go too.
 set -uo pipefail
 
-PORTS=(8080 9099 4000 4400 4500 9150 5050)
+# 1025/1080 belong to MailDev, the local mail catcher dev:local runs alongside.
+PORTS=(8080 9099 4000 4400 4500 9150 5050 1025 1080)
 
 pkill -9 -f 'cloud-firestore-emulator' 2>/dev/null
 pkill -9 -f 'firebase emulators' 2>/dev/null
+pkill -9 -f 'bin/maildev' 2>/dev/null
 
 for port in "${PORTS[@]}"; do
   pids=$(lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null || true)

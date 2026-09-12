@@ -16,7 +16,13 @@ const TARGET = process.env.E2E_TARGET === "export" ? "export" : "dev";
 
 // 5050, not Firebase's default 5000 — macOS ControlCenter (AirPlay Receiver)
 // listens on 5000 and the Hosting emulator refuses to start.
-const DEFAULT_URL = TARGET === "export" ? "http://127.0.0.1:5050" : "http://127.0.0.1:3000";
+//
+// The dev target runs on 3100, not 3000. Playwright reuses whatever already
+// answers on the URL, and 3000 is where `npm run dev` — pointed at the live
+// Firebase project — usually sits. Reusing that would run the suite against
+// production. 3100 is only ever the emulator-backed server started below.
+const E2E_DEV_PORT = 3100;
+const DEFAULT_URL = TARGET === "export" ? "http://127.0.0.1:5050" : `http://127.0.0.1:${E2E_DEV_PORT}`;
 const BASE_URL = process.env.E2E_BASE_URL || DEFAULT_URL;
 
 const emulatorCommand =
@@ -30,7 +36,9 @@ const appServer =
     ? []
     : [
         {
-          command: "npm run dev:emulator",
+          // Own port and own build folder, so it never collides with (or is
+          // mistaken for) a normal dev server on 3000.
+          command: `NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true NEXT_DIST_DIR=.next-e2e npx next dev --turbopack -p ${E2E_DEV_PORT}`,
           url: BASE_URL,
           reuseExistingServer: !isCI,
           timeout: 180_000,

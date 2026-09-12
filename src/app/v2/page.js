@@ -5,11 +5,8 @@ import SectionIntro from "@/components/v2/sections/SectionIntro";
 import ThreeCardSplit from "@/components/v2/sections/ThreeCardSplit";
 import ServicesOverview from "@/components/v2/sections/ServicesOverview";
 import HowAVisitGoes from "@/components/v2/sections/HowAVisitGoes";
-import WhyChooseUs from "@/components/v2/sections/WhyChooseUs";
-import CoachingSection from "@/components/v2/sections/CoachingSection";
-import SpaceSection from "@/components/v2/sections/SpaceSection";
-import Testimonials from "@/components/v2/sections/Testimonials";
 import NewsletterSection from "@/components/v2/sections/NewsletterSection";
+import Testimonials from "@/components/v2/sections/Testimonials";
 import VisitUs from "@/components/v2/sections/VisitUs";
 import FaqSection from "@/components/v2/sections/FaqSection";
 import ClosingCta from "@/components/v2/sections/ClosingCta";
@@ -25,7 +22,7 @@ export default function V2HomePage() {
         <Hero />
         <HeroCollage />
         {/* Sits on the collage's bottom edge: crossing it behind the sticky
-            bar is what fades the hero and nav from mustard to white. */}
+            bar is what fades the hero and nav from glow to the wall colour. */}
         <TopBandFade />
       </div>
 
@@ -39,19 +36,15 @@ export default function V2HomePage() {
         <ThreeCardSplit />
       </div>
 
-      {/* What we sell, then how we do it, then why that is different. */}
+      {/* What we sell, the lowest-commitment way to stay in touch, then how a
+          visit goes. */}
       <ServicesOverview />
+      <NewsletterSection />
       <HowAVisitGoes />
-      <WhyChooseUs />
-
-      {/* The second offer, for clients who want a routine rather than a style. */}
-      <CoachingSection />
-      <SpaceSection />
 
       <Testimonials />
 
-      {/* Lowest-commitment entry point, then the practical details. */}
-      <NewsletterSection />
+      {/* The practical details, then the close. */}
       <VisitUs />
       <FaqSection />
       <ClosingCta />

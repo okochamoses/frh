@@ -45,14 +45,14 @@ const PILLARS = [
 ];
 
 const COLORS = [
-  { name: "Sand", hex: "#FBF6F0" },
-  { name: "Cream", hex: "#F2EDE6" },
-  { name: "Latte", hex: "#E8DFD0" },
-  { name: "Gold", hex: "#C89A5B" },
-  { name: "Deep Green", hex: "#1E2A27" },
-  { name: "Charcoal", hex: "#222323" },
-  { name: "Stone", hex: "#6E6E6E" },
-  { name: "White", hex: "#FFFFFF" },
+  { name: "Wall", hex: "#F8F5EF" },
+  { name: "Linen", hex: "#F1ECE4" },
+  { name: "Line", hex: "#E6DDD1" },
+  { name: "Glow", hex: "#F3E3CC" },
+  { name: "Slat", hex: "#C08250" },
+  { name: "Mustard", hex: "#FBB91C" },
+  { name: "Espresso", hex: "#2B211A" },
+  { name: "Fixture", hex: "#1A1A1A" },
 ];
 
 const ICONS = [
@@ -160,9 +160,9 @@ export default function DesignSystemPage() {
       <div className="grid gap-12 border-b border-latte pb-14 lg:grid-cols-[0.85fr_1fr_1.35fr] lg:gap-10">
         <div className="lg:border-r lg:border-latte lg:pr-10">
           <h1 className="font-display text-display-xl text-ink">
-            Flourish Roots<span className="text-gold">.</span>
+            Flourish Roots<span className="text-slat">.</span>
           </h1>
-          <p className="mt-2 text-v2-label font-semibold uppercase tracking-[0.18em] text-gold">
+          <p className="mt-2 text-v2-label font-semibold uppercase tracking-[0.18em] text-slat-ink">
             Design System
           </p>
           <p className="mt-6 max-w-[38ch] text-v2-body-sm text-ink-soft">
@@ -173,7 +173,7 @@ export default function DesignSystemPage() {
           <ul className="mt-8 flex flex-wrap gap-8 border-t border-latte pt-8">
             {PILLARS.map(({ icon: Icon, label }) => (
               <li key={label} className="flex flex-col items-center gap-2 text-center">
-                <Icon aria-hidden className="h-7 w-7 text-gold" strokeWidth={1.5} />
+                <Icon aria-hidden className="h-7 w-7 text-slat" strokeWidth={1.5} />
                 <span className="text-v2-label uppercase tracking-wider text-ink-soft">
                   {label}
                 </span>

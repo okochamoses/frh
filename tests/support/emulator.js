@@ -146,6 +146,24 @@ export async function getIdToken({ email, password }) {
 }
 
 /**
+ * Signs in anonymously against the emulator — what the v2 booking page does
+ * for a guest — and returns `{ uid, idToken }`.
+ */
+export async function anonymousSession() {
+  const res = await fetch(
+    `${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-api-key`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ returnSecureToken: true }),
+    }
+  );
+  const body = await res.json();
+  if (!res.ok) throw new Error(`Failed to sign in anonymously: ${JSON.stringify(body)}`);
+  return { uid: body.localId, idToken: body.idToken };
+}
+
+/**
  * Performs a Firestore REST write as a signed-in user, so security rules apply.
  * Returns the HTTP status rather than throwing, so specs can assert on it.
  */
@@ -301,6 +319,92 @@ export async function seedUser({
   const uid = await createAuthUser({ email, password });
   await writeUserProfile(uid, { firstName, lastName, email, mobileNumber });
   return { uid, email, password, firstName, lastName, mobileNumber };
+}
+
+/**
+ * Writes a booking straight into the emulator (admin access, rules bypassed) —
+ * for giving a client a history: a past visit to rebook, or an upcoming one.
+ *
+ * `services` is a list of `{title, price, duration, category}` as the
+ * `createBooking` callable stores them. Returns the new document id.
+ */
+export async function seedBooking({ uid, email, services, startTime, status = "completed" }) {
+  const totalAmount = services.reduce((sum, s) => sum + s.price, 0);
+  const totalDuration = services.reduce((sum, s) => sum + s.duration, 0);
+  const endTime = new Date(new Date(startTime).getTime() + totalDuration * 60_000).toISOString();
+
+  const res = await fetch(
+    `${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents/bookings`,
+    {
+      method: "POST",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({
+        fields: {
+          userId: { stringValue: uid },
+          userEmail: { stringValue: email },
+          services: {
+            arrayValue: {
+              values: services.map((s) => ({
+                mapValue: {
+                  fields: {
+                    title: { stringValue: s.title },
+                    price: { integerValue: String(s.price) },
+                    duration: { integerValue: String(s.duration) },
+                    category: { stringValue: s.category ?? "" },
+                  },
+                },
+              })),
+            },
+          },
+          servicesText: { stringValue: services.map((s) => s.title).join(" | ") },
+          totalAmount: { integerValue: String(totalAmount) },
+          totalDuration: { integerValue: String(totalDuration) },
+          startTime: { stringValue: startTime },
+          endTime: { stringValue: endTime },
+          status: { stringValue: status },
+          reminderSent: { booleanValue: true },
+        },
+      }),
+    }
+  );
+  if (!res.ok) throw new Error(`Failed to seed booking: ${res.status} ${await res.text()}`);
+  const body = await res.json();
+  return body.name.split("/").pop();
+}
+
+/** Every booking belonging to a user, read with admin access. */
+export async function listBookingsFor(uid) {
+  return listBookingsWhere("userId", uid);
+}
+
+/** Every booking whose `field` equals `value`, read with admin access. */
+export async function listBookingsWhere(field, value) {
+  const res = await fetch(
+    `${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents:runQuery`,
+    {
+      method: "POST",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: "bookings" }],
+          where: {
+            fieldFilter: { field: { fieldPath: field }, op: "EQUAL", value: { stringValue: value } },
+          },
+        },
+      }),
+    }
+  );
+  if (!res.ok) throw new Error(`Failed to list bookings: ${res.status} ${await res.text()}`);
+  const rows = await res.json();
+  return rows
+    .filter((r) => r.document)
+    .map((r) => ({
+      id: r.document.name.split("/").pop(),
+      ...unwrapFields(r.document.fields ?? {}),
+      services: (r.document.fields?.services?.arrayValue?.values ?? []).map((v) =>
+        unwrapFields(v.mapValue?.fields ?? {})
+      ),
+    }));
 }
 
 /** Turns Firestore REST `fields` into a plain object (only the types we use). */

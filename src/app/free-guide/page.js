@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { merriweather, Bagelan, figtree } from "@/app/layout"
+import { merriweather, Bagelan } from "@/app/layout"
 import { Check, ArrowRight, Star, MapPin, Video } from "lucide-react"
 
 // ─── Brand tokens ──────────────────────────────────────────────────────────────

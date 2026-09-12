@@ -1,17 +1,20 @@
 /* V2 design-system tokens (see docs/design-v2/DESIGN.md).
    Scoped to .v2-root so V1 styling is untouched. */
 .v2-root {
-  --color-brand-primary: #1a0000;
-  --color-brand-accent: #98bbf4;
+  --color-brand-primary: #1a1a1a;
+  --color-brand-accent: #f3e3cc;   /* glow */
+  --color-brand-mustard: #fbb91c;  /* booking actions only */
+  --color-brand-slat: #c08250;     /* wood accent: icons, rings, marks */
+  --color-brand-slat-ink: #8b5e34; /* slat for text on light grounds */
 
-  --color-surface-sand: #ffffff;
-  --color-surface-cream: #f2f2f2;
-  --color-surface-latte: #ededec;
-  --color-surface-obsidian: #221919;
+  --color-surface-sand: #f8f5ef;
+  --color-surface-cream: #f1ece4;
+  --color-surface-latte: #e6ddd1;
+  --color-surface-obsidian: #2b211a;
 
-  --color-text-primary: #1a0000;
-  --color-text-secondary: #514f4c;
-  --color-text-tertiary: #aeaea6;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b665f;
+  --color-text-tertiary: #a39a8e;
 
   --space-xs: 4px;  --space-sm: 8px;  --space-md: 16px; --space-lg: 24px;
   --space-xl: 32px; --space-2xl: 40px; --space-3xl: 48px; --space-4xl: 64px;
@@ -45,13 +48,13 @@
   .v2-root { --collage-inset: 40vw; }
 }
 
-/* Film-grain overlay for the two mustard bands — the hero at the top of the
-   page and the closing call at the foot of it. The mustard underneath comes
+/* Film-grain overlay for the two grained bands — the glow hero at the top of the
+   page and the mustard closing call at the foot of it. The colour underneath comes
    from the section's own background utility; this rule only adds the texture,
    so the page opens and closes on the same surface.
 
    The tile is an SVG fractal noise, desaturated to mono and blended in
-   `overlay` so it darkens and lightens the mustard rather than laying grey
+   `overlay` so it darkens and lightens the band rather than laying grey
    dots on top of it. `isolation: isolate` keeps that blend inside the hero
    instead of reaching the page background, and stitchTiles makes the 180px
    repeat seamless. */
@@ -82,6 +85,37 @@
 .v2-root :focus-visible {
   outline: 2px solid var(--color-brand-primary);
   outline-offset: 2px;
+}
+
+/* Skip link. Off-screen rather than `display: none` so it stays in the tab
+   order, and it lands as a normal pill once focused — the same shape as every
+   other button here, so it reads as part of the site rather than a browser
+   artefact. `:focus` and not `:focus-visible`: this control exists only for
+   keyboard users, and it must appear the moment it takes focus. */
+.v2-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+
+.v2-skip-link:focus {
+  left: var(--space-md);
+  top: var(--space-md);
+  padding: 12px 20px;
+  border-radius: 9999px;
+  background: var(--color-brand-primary);
+  color: #fff;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* The skip target is focusable only so focus actually moves there; it must
+   never draw a ring of its own. */
+.v2-root #v2-main:focus {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -156,15 +190,15 @@
 
 /* Top-band colour. On the homepage the page ground, the hero and the sticky
    nav bar all paint with this one token, so everything above the collage is a
-   single block of mustard — and when the reader scrolls past that collage it
-   washes out to white in one motion, rather than several elements changing at
+   single block of glow — and when the reader scrolls past that collage it
+   washes out to the wall colour in one motion, rather than several elements changing at
    slightly different times.
 
    `TopBandFade` flips the data attribute from a sentinel sitting at the bottom
    edge of the collage; everything else here is CSS, so the swap costs no
    re-render. */
 .v2-root {
-  --v2-topband: #fbb91c;
+  --v2-topband: var(--color-brand-accent);
 }
 
 .v2-root[data-past-hero="true"] {
@@ -177,9 +211,9 @@
 }
 
 /* The page ground joins the band only on a route that actually has a hero —
-   matched off the sentinel `TopBandFade` plants, so the homepage is mustard
+   matched off the sentinel `TopBandFade` plants, so the homepage is glow
    on the very first frame with no flash of white before hydration. Routes
-   without a hero keep their `bg-sand` ground under a mustard bar, which is
+   without a hero keep their `bg-sand` ground under a glow bar, which is
    how they have always looked. */
 .v2-root:has([data-topband-sentinel]) {
   background-color: var(--v2-topband);
@@ -206,4 +240,76 @@
 
 .v2-index a {
   transition: opacity 300ms ease;
+}
+
+/* Full-bleed bands are built by pulling a section out to `100vw` from inside
+   the page container. On a desktop with a classic scrollbar `100vw` is wider
+   than the content box, which left the page scrollable a few pixels sideways.
+   `clip` rather than `hidden` because `hidden` would turn this element into a
+   scroll container and break the sticky header inside it. */
+.v2-root {
+  overflow-x: clip;
+}
+
+/* ── Scroll entrance ─────────────────────────────────────────────────────────
+   Paired with the `Reveal` component. The hidden state lives inside the
+   no-preference query and nowhere else, so a reader who has asked for reduced
+   motion — or anyone whose JS has not run — sees the finished page rather than
+   a blank one waiting for an observer that will never fire. */
+@media (prefers-reduced-motion: no-preference) {
+  .v2-reveal {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+    transition:
+      opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .v2-reveal[data-revealed="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Marquee ─────────────────────────────────────────────────────────────────
+   -50% is exactly one copy of the duplicated list, which is what closes the
+   loop. Linear, because any easing would show as a pulse at the seam. */
+.v2-marquee {
+  overflow: hidden;
+}
+
+.v2-marquee-track {
+  animation: v2-marquee var(--v2-marquee-duration, 40s) linear infinite;
+  will-change: transform;
+}
+
+@keyframes v2-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-marquee-track { animation: none; }
+}
+
+/* ── Accordion ───────────────────────────────────────────────────────────────
+   Native <details> cannot transition its own height, so the answer is wrapped
+   in a grid row that animates from 0fr to 1fr — the row resolves to the
+   content's real height at each end, so nothing has to be measured and the
+   panel stays open to in-page search and to a reader with JS off.
+
+   `interpolate-size` lets browsers that support it animate the disclosure
+   itself; the grid handles the rest. */
+.v2-faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 450ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.v2-faq-panel > * {
+  overflow: hidden;
+}
+
+details[open] > .v2-faq-panel {
+  grid-template-rows: 1fr;
 }

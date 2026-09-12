@@ -1,115 +1,137 @@
-import Image from "next/image";
+import { Fragment } from "react";
+import { Clock, MapPin, Phone } from "lucide-react";
 import Button from "@/components/v2/ui/Button";
-
-/* A maps search for the salon's own address — no place ID to go stale, and it
-   resolves the same way on a phone as on a laptop. */
-const DIRECTIONS =
-  "https://www.google.com/maps/search/?api=1&query=" +
-  encodeURIComponent(
-    "Flourish Roots Hair Co, Shop 303 Destiny Plaza, Ago Palace Way, Isolo, Lagos",
-  );
-
-const DETAILS = [
-  {
-    term: "Opening hours",
-    /* TODO: confirm exact opening and closing times. */
-    detail: "Monday to Saturday. Closed on Sundays.",
-  },
-  {
-    term: "Walk-ins",
-    detail:
-      "Welcome when we have space, but clients who booked come first. Longer styles almost always need booking ahead.",
-  },
-];
+import Reveal from "@/components/v2/ui/Reveal";
+import SectionHeader from "@/components/v2/sections/SectionHeader";
+import { MAPS_URL } from "@/components/v2/location";
+import SalonMap from "@/components/v2/ui/SalonMap";
+import { OPENING_HOURS } from "@/components/v2/salon";
 
 /**
- * The practical close: where we are, when we are open, and the three ways to
- * reach us.
+ * The practical close: where we are, when we are open, and how to reach us.
  *
- * Everything a reader needs in order to actually turn up sits in one card — the
- * address, the hours, the phone number and the directions link — because this
- * is the point at which a decided reader is looking for a detail, not for more
- * persuasion. The map is a real link rather than a picture of a map: on a phone
- * it opens the maps app already pointed at Isolo.
+ * Two panels of equal height inside the page column — the details on cream,
+ * the map beside them — rather than a panel floated over a full-bleed map,
+ * which on wide screens grew taller than the map it sat on and broke out of
+ * the top of it.
+ *
+ * The map itself is the directions link — on a phone it opens the maps app
+ * already pointed at Isolo — so the largest target on the section does the
+ * useful thing. The printed address opens the same pin.
  */
 export default function VisitUs() {
   return (
     <section aria-labelledby="visit-us-heading">
-      <div className="overflow-hidden rounded-v2-4xl bg-cream-100 lg:grid lg:grid-cols-2 lg:items-stretch">
-        <div className="p-8 md:p-12 lg:flex lg:flex-col lg:justify-center lg:p-14">
-          <p className="type-eyebrow">Isolo, Lagos</p>
-          <h2
-            id="visit-us-heading"
-            className="mt-5 max-w-[12ch] font-display text-[clamp(2rem,1.5rem+2vw,3.25rem)] uppercase leading-[0.95] text-ink"
-          >
-            Come and see us
-          </h2>
+      <SectionHeader
+        id="visit-us-heading"
+        eyebrow="Isolo, Lagos"
+        title="Come and see us"
+        lede="Walk-ins are welcome when we have space, but clients who booked come first. Longer styles almost always need booking ahead."
+      />
 
-          <address className="mt-6 not-italic text-v2-body leading-[1.6] text-ink">
-            Flourish Roots Hair Co.
-            <br />
-            Shop 303, Destiny Plaza
-            <br />
-            Ago Palace Way, Isolo, Lagos
-          </address>
-
-          <dl className="mt-8 grid gap-5">
-            {DETAILS.map(({ term, detail }) => (
-              <div key={term} className="border-t border-ink/12 pt-4">
-                <dt className="type-eyebrow">{term}</dt>
-                <dd className="mt-2 max-w-[42ch] text-v2-body text-ink-soft">
-                  {detail}
-                </dd>
-              </div>
-            ))}
-
-            <div className="border-t border-ink/12 pt-4">
-              <dt className="type-eyebrow">Phone and WhatsApp</dt>
-              <dd className="mt-2">
-                <a
-                  href="tel:+2348110215014"
-                  className="font-display text-v2-h3 uppercase tabular-nums text-ink underline decoration-ink/25 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-ink"
+      <div className="mt-12 grid gap-4 md:mt-16 lg:grid-cols-12">
+        <Reveal className="lg:col-span-5">
+          <div className="flex h-full flex-col rounded-v2-4xl bg-cream-100 p-8 md:p-10">
+            <ul className="grid gap-7">
+              <li className="flex gap-4">
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-ink"
                 >
-                  0811 021 5014
-                </a>
-              </dd>
+                  <MapPin className="h-[1.125rem] w-[1.125rem]" />
+                </span>
+                <div>
+                  <p className="type-eyebrow">Address</p>
+                  <a
+                    href={MAPS_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 block text-v2-body leading-[1.55] text-ink underline decoration-ink/20 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-ink"
+                  >
+                    <address className="not-italic">
+                      Flourish Roots Hair Co.
+                      <br />
+                      Shop 303, Destiny Plaza
+                      <br />
+                      Ago Palace Way, Isolo, Lagos
+                    </address>
+                    <span className="sr-only"> (opens Google Maps)</span>
+                  </a>
+                </div>
+              </li>
+
+              <li className="flex gap-4">
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-ink"
+                >
+                  <Clock className="h-[1.125rem] w-[1.125rem]" />
+                </span>
+                <div>
+                  <p className="type-eyebrow">Opening hours</p>
+                  {/* Derived from the booking engine's own schedule, which is
+                      what actually decides whether a slot can be booked. */}
+                  <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1">
+                    {OPENING_HOURS.map(({ day, hours, closed }) => (
+                      <Fragment key={day}>
+                        <dt
+                          className={`text-v2-body-sm ${
+                            closed ? "text-ash" : "text-ink"
+                          }`}
+                        >
+                          {day}
+                        </dt>
+                        <dd
+                          className={`text-v2-body-sm tabular-nums ${
+                            closed ? "text-ash" : "text-ink-soft"
+                          }`}
+                        >
+                          {hours}
+                        </dd>
+                      </Fragment>
+                    ))}
+                  </dl>
+                </div>
+              </li>
+
+              <li className="flex gap-4">
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-ink"
+                >
+                  <Phone className="h-[1.125rem] w-[1.125rem]" />
+                </span>
+                <div>
+                  <p className="type-eyebrow">Phone and WhatsApp</p>
+                  <a
+                    href="tel:+2348110215014"
+                    className="mt-2 inline-block font-display text-v2-h2 uppercase leading-none tabular-nums text-ink transition-opacity duration-200 ease-out hover:opacity-70"
+                  >
+                    0811 021 5014
+                  </a>
+                </div>
+              </li>
+            </ul>
+
+            <div className="mt-10 flex flex-wrap gap-3 border-t border-ink/10 pt-8 lg:mt-auto">
+              <Button variant="book" withArrow href="/v2/booking">
+                Book a salon visit
+              </Button>
+              <Button
+                variant="secondary"
+                href="https://wa.me/2348110215014"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Chat on WhatsApp
+              </Button>
             </div>
-          </dl>
-
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Button withArrow href="/v2/booking">
-              Book a salon visit
-            </Button>
-            <Button
-              variant="secondary"
-              href="https://wa.me/2348110215014"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Chat on WhatsApp
-            </Button>
           </div>
-        </div>
+        </Reveal>
 
-        {/* The map fills the other half of the card and is the directions link
-            itself, so the largest, most obvious target does the useful thing. */}
-        <a
-          href={DIRECTIONS}
-          target="_blank"
-          rel="noreferrer"
-          className="group relative block aspect-[4/3] lg:aspect-auto lg:min-h-[34rem]"
-        >
-          <Image
-            src="/map.webp"
-            alt="Map showing Flourish Roots Hair Co. at Shop 303, Destiny Plaza, Ago Palace Way, Isolo, Lagos"
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-          />
-          <span className="absolute bottom-6 left-6 inline-flex items-center gap-2 rounded-full bg-deep px-5 py-3 text-v2-body-sm font-semibold text-white">
-            Get directions
-          </span>
-        </a>
+        <Reveal delay={120} className="lg:col-span-7">
+          <SalonMap className="h-[22rem] md:h-[28rem] lg:h-full lg:min-h-[32rem]" />
+        </Reveal>
       </div>
     </section>
   );

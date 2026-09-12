@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { FaInstagram, FaFacebook, FaWhatsapp, FaTiktok } from "react-icons/fa";
+import Button from "@/components/v2/ui/Button";
+import { MAPS_URL } from "@/components/v2/location";
+import { HOURS_SUMMARY } from "@/components/v2/salon";
 
 const SOCIALS = [
   {
@@ -32,85 +35,137 @@ const COLUMNS = [
       { label: "About us", href: "/v2/about" },
       { label: "Gallery", href: "/v2/gallery" },
       { label: "Contact", href: "/v2/contact" },
+      { label: "Free hair guide", href: "/v2/free-guide" },
     ],
-  },
-  {
-    title: "Resources",
-    links: [{ label: "Free hair guide", href: "/v2/free-guide" }],
   },
 ];
 
+const linkClass =
+  "text-v2-body text-white/75 transition-colors duration-200 ease-out hover:text-white";
+
+/**
+ * The page's full stop.
+ *
+ * Obsidian, directly under the mustard closing band, so the page ends on the
+ * strongest contrast it has. The brand name is set in the hero's own display
+ * serif at the foot of the footer, in slat (the salon.s wood) — the page opens and
+ * closes on the same word.
+ *
+ * The wordmark is sized from the viewport to fit the column on one line and is
+ * never clipped: it used to sit in a fixed-height box with its lower third cut
+ * away, which read as a rendering fault rather than a crop.
+ */
 export default function Footer() {
   return (
-    <footer className="bg-gold text-ink">
-      <div className="mx-auto max-w-[var(--v2-container)] px-4 pt-16 md:px-8 md:pt-20">
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="sm:col-span-2 lg:col-span-2">
-            <p className="font-display text-v2-h2">Flourish Roots.</p>
-            <p className="mt-3 text-v2-body text-ink/70">
-              Roots. Ritual. Radiance.
-            </p>
-            <p className="mt-4 max-w-[34ch] text-v2-body-sm text-ink/60">
+    <footer className="bg-obsidian text-white">
+      <div className="mx-auto max-w-[var(--v2-container)] px-4 pt-20 md:px-8 md:pt-24">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-5">
+            {/* A div, not a <p>: `.v2-root p` sets the paragraph face at a
+                specificity `font-display` cannot reach. */}
+            <div className="font-display text-[clamp(2rem,1.5rem+2vw,3rem)] font-bold uppercase leading-[0.95] text-white">
+              Roots. Ritual.
+              <br />
+              Radiance.
+            </div>
+            <p className="mt-5 max-w-[34ch] text-v2-body text-white/60">
               Care for today. Growth for tomorrow. You&apos;re in good hands.
             </p>
 
-            <ul className="mt-8 flex gap-3">
-              {SOCIALS.map(({ icon: Icon, label, href }) => (
-                <li key={label}>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-ink/70 transition-colors duration-200 ease-out hover:border-ink hover:text-ink"
-                  >
-                    <Icon aria-hidden className="h-4 w-4" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {COLUMNS.map((col) => (
-            <nav key={col.title} aria-label={col.title}>
-              <h2 className="text-v2-label font-semibold uppercase tracking-[0.14em] text-ink/50">
-                {col.title}
-              </h2>
-              <ul className="mt-5 flex flex-col gap-3">
-                {col.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-v2-body text-ink/80 transition-colors duration-200 ease-out hover:text-ink"
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button
+                variant="book"
+                withArrow
+                href="/v2/booking"
+              >
+                Book a salon visit
+              </Button>
+              <ul className="flex gap-2">
+                {SOCIALS.map(({ icon: Icon, label, href }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Flourish Roots on ${label}`}
+                      className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-white/75 transition-colors duration-200 ease-out hover:border-white hover:bg-white hover:text-ink"
                     >
-                      {link.label}
-                    </Link>
+                      <Icon aria-hidden className="h-4 w-4" />
+                    </a>
                   </li>
                 ))}
               </ul>
-            </nav>
-          ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:col-span-7">
+            {COLUMNS.map((col) => (
+              <nav key={col.title} aria-label={col.title}>
+                <h2 className="type-eyebrow !text-white/55">{col.title}</h2>
+                <ul className="mt-5 flex flex-col gap-3">
+                  {col.links.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className={linkClass}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+
+            <div className="col-span-2 sm:col-span-1">
+              <h2 className="type-eyebrow !text-white/55">Find us</h2>
+              <ul className="mt-5 flex flex-col gap-3">
+                <li>
+                  <a
+                    href={MAPS_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={linkClass}
+                  >
+                    <address className="not-italic">
+                      Shop 303, Destiny Plaza
+                      <br />
+                      Ago Palace Way, Isolo, Lagos
+                    </address>
+                    <span className="sr-only"> (opens Google Maps)</span>
+                  </a>
+                </li>
+                <li className="text-v2-body text-white/55">{HOURS_SUMMARY}</li>
+                <li>
+                  <a href="tel:+2348110215014" className={`${linkClass} tabular-nums`}>
+                    0811 021 5014
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="mailto:flourishnaturalsinfo@gmail.com"
+                    className={`${linkClass} break-all`}
+                  >
+                    flourishnaturalsinfo@gmail.com
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-ink/10 pt-8 text-v2-body-sm text-ink/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-8 text-v2-body-sm text-white/55 sm:flex-row sm:items-center sm:justify-between md:mt-20">
           <p>
-            © {new Date().getFullYear()} Flourish Roots Hair Co. All rights
+            &copy; {new Date().getFullYear()} Flourish Roots Hair Co. All rights
             reserved.
           </p>
-          <a
-            href="mailto:flourishnaturalsinfo@gmail.com"
-            className="transition-colors duration-200 ease-out hover:text-ink"
-          >
-            flourishnaturalsinfo@gmail.com
-          </a>
+          <p>4C natural hair salon &middot; Isolo, Lagos</p>
         </div>
-      </div>
 
-      <div
-        aria-hidden="true"
-        className="mt-10 h-[10vw] max-h-40 overflow-hidden select-none"
-      >
-        <p className="translate-y-[18%] text-center font-display text-[16vw] font-bold leading-none tracking-tight text-ink/90 md:text-[13vw]">
+        {/* Presentational: the brand is already named in the legal line above
+            and in the header. `whitespace-nowrap` plus a width-derived size
+            keeps it on one line at every viewport without clipping. */}
+        <p
+          aria-hidden="true"
+          className="type-display select-none whitespace-nowrap pb-6 pt-10 text-center text-[clamp(2rem,10.6vw,10.5rem)] uppercase leading-[1] text-slat md:pb-10 md:pt-14"
+        >
           Flourish Roots
         </p>
       </div>

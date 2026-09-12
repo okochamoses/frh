@@ -10,16 +10,35 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInAnonymously,
   signInWithRedirect,
   getRedirectResult,
   sendPasswordResetEmail,
   sendEmailVerification,
   signOut,
   deleteUser,
+  linkWithCredential,
+  linkWithPopup,
+  EmailAuthProvider,
   GoogleAuthProvider,
+  browserPopupRedirectResolver,
 } from "firebase/auth";
 import { auth } from "./config";
 import { createUserProfile, getUserProfile } from "./userService";
+import {
+  captureGuestToken,
+  claimGuestBookings,
+  stashGuestToken,
+  takeStashedGuestToken,
+} from "./guestClaim";
+
+/**
+ * `auth` is deliberately created without a popup/redirect resolver so that no
+ * page pays for the gapi iframe before anyone tries to sign in (see
+ * `config.js`). Every popup/redirect call therefore has to hand the resolver
+ * in itself — that first call is what loads the chain.
+ */
+const resolver = browserPopupRedirectResolver;
 
 const googleProvider = new GoogleAuthProvider();
 // Always let the user pick an account rather than silently reusing the last one.
@@ -27,13 +46,55 @@ googleProvider.setCustomParameters({ prompt: "select_account" });
 
 // ── Email / password ──────────────────────────────────────────────────────────
 
+/** True when the account this credential belongs to already exists. */
+const ALREADY_EXISTS = new Set([
+  "auth/credential-already-in-use",
+  "auth/email-already-in-use",
+  "auth/provider-already-linked",
+  "auth/account-exists-with-different-credential",
+]);
+
 /**
  * Signs the user in with email and password.
  * Returns the Firebase user object on success.
  * Throws a Firebase AuthError on failure (caller handles the message).
+ *
+ * A guest signing in to an account they already have cannot have their
+ * anonymous session linked to it — the account exists — so the bookings they
+ * made as a guest are carried across afterwards instead.
  */
 export async function signInWithEmail(email, password) {
+  const guestToken = await captureGuestToken();
   const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
+  await claimGuestBookings(guestToken);
+  return user;
+}
+
+/**
+ * Creates the account this credential belongs to.
+ *
+ * A guest who is signing up already has an anonymous session holding the
+ * bookings they made, so the credential is *linked* to it rather than starting
+ * a fresh account: the uid survives, and with it every booking, the "booked
+ * before" tags and the rebook card. `linkWithCredential` also returns a
+ * `deleteUser`-able user, so the rollback in the caller still holds.
+ *
+ * If that account turns out to exist already the link is refused, and the
+ * caller gets the same `auth/email-already-in-use` it would have got anyway.
+ */
+async function createAccount(email, password) {
+  const current = auth.currentUser;
+  if (current?.isAnonymous) {
+    try {
+      const { user } = await linkWithCredential(current, EmailAuthProvider.credential(email, password));
+      return user;
+    } catch (error) {
+      if (!ALREADY_EXISTS.has(error.code)) throw error;
+      // Fall through: this email has an account, so sign-up is the wrong door.
+      throw Object.assign(new Error(error.message), { code: "auth/email-already-in-use" });
+    }
+  }
+  const { user } = await createUserWithEmailAndPassword(auth, email, password);
   return user;
 }
 
@@ -50,7 +111,7 @@ export async function signInWithEmail(email, password) {
  */
 export async function signUpWithEmail({ firstName, lastName, email, phone, password }) {
   const normalisedEmail = email.trim();
-  const { user } = await createUserWithEmailAndPassword(auth, normalisedEmail, password);
+  const user = await createAccount(normalisedEmail, password);
 
   try {
     const profile = await createUserProfile(user.uid, {
@@ -118,15 +179,35 @@ async function profileForGoogleUser(user) {
  * Returns the Firestore profile document.
  */
 export async function signInWithGoogle() {
+  const current = auth.currentUser;
+  const guestToken = await captureGuestToken();
+
   try {
-    const { user } = await signInWithPopup(auth, googleProvider);
-    return await profileForGoogleUser(user);
+    // A guest's anonymous session is upgraded in place where Google allows it,
+    // so their bookings keep the same owner. When the Google account already
+    // exists the link is refused and this falls back to a plain sign-in, where
+    // the bookings are carried across instead.
+    if (current?.isAnonymous) {
+      try {
+        const { user } = await linkWithPopup(current, googleProvider, resolver);
+        return await profileForGoogleUser(user);
+      } catch (error) {
+        if (!ALREADY_EXISTS.has(error.code)) throw error;
+      }
+    }
+
+    const { user } = await signInWithPopup(auth, googleProvider, resolver);
+    const profile = await profileForGoogleUser(user);
+    await claimGuestBookings(guestToken);
+    return profile;
   } catch (error) {
     if (
       error.code === "auth/popup-blocked" ||
       error.code === "auth/operation-not-supported-in-this-environment"
     ) {
-      await signInWithRedirect(auth, googleProvider);
+      // The page is about to unload, so the guest token has to survive the trip.
+      stashGuestToken(guestToken);
+      await signInWithRedirect(auth, googleProvider, resolver);
       return null; // navigating away
     }
     throw error;
@@ -138,9 +219,34 @@ export async function signInWithGoogle() {
  * Returns the profile when the page was reached via a redirect, else null.
  */
 export async function completeGoogleRedirect() {
-  const result = await getRedirectResult(auth);
-  if (!result?.user) return null;
-  return profileForGoogleUser(result.user);
+  const result = await getRedirectResult(auth, resolver);
+  if (!result?.user) {
+    // No redirect happened, but a stale stash would otherwise outlive the tab.
+    takeStashedGuestToken();
+    return null;
+  }
+  const profile = await profileForGoogleUser(result.user);
+  await claimGuestBookings(takeStashedGuestToken());
+  return profile;
+}
+
+// ── Guests ────────────────────────────────────────────────────────────────────
+
+/**
+ * Makes sure there is *a* Firebase session before a guest books.
+ *
+ * The v2 booking page lets people book with just a name and phone number. The
+ * booking callable still needs a caller, so a guest gets a silent anonymous
+ * session: no account, no password, but a stable id that owns the booking and
+ * lets this device show it again. A signed-in user is returned unchanged.
+ *
+ * Anonymous sign-in must be enabled for the project (Authentication → Sign-in
+ * method → Anonymous). The emulator allows it by default.
+ */
+export async function ensureGuestSession() {
+  if (auth.currentUser) return auth.currentUser;
+  const { user } = await signInAnonymously(auth);
+  return user;
 }
 
 // ── Sign out ──────────────────────────────────────────────────────────────────

@@ -26,6 +26,10 @@ export function AuthProvider({ children }) {
   const [user, setUser]               = useState(null);
   const [hydrated, setHydrated]       = useState(false); // true once the initial auth check completes
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  // A guest who booked without an account holds an anonymous session. They are
+  // not "signed in" as far as the UI is concerned, but their id still owns the
+  // bookings they made on this device.
+  const [guestUid, setGuestUid]       = useState(null);
   const [authMode, setAuthMode]       = useState(AUTH_MODES.SIGN_IN);
 
   // Shared across the sign-in / sign-up / reset views so switching between
@@ -48,6 +52,15 @@ export function AuthProvider({ children }) {
     // Firebase calls this immediately with the current session (or null),
     // then on every subsequent sign-in / sign-out.
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser?.isAnonymous) {
+        hasProfileRef.current = false;
+        setUser(null);
+        setGuestUid(firebaseUser.uid);
+        setHydrated(true);
+        return;
+      }
+      setGuestUid(null);
+
       if (firebaseUser) {
         // Merge the Firestore profile (name, phone, etc.) with the UID
         const profile = await getUserProfile(firebaseUser.uid);
@@ -137,6 +150,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
+        guestUid,
         updateUser,
         isAuthenticated,
         hydrated,

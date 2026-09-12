@@ -13,11 +13,11 @@ export default function AppointmentCard({
     <div className={cn("rounded-v2-xl border border-latte bg-white p-6", className)}>
       <ul className="flex flex-col gap-4">
         <li className="flex items-center gap-3">
-          <Calendar aria-hidden className="h-4 w-4 text-gold" />
+          <Calendar aria-hidden className="h-4 w-4 text-slat" />
           <span className="text-v2-body text-ink">{date}</span>
         </li>
         <li className="flex items-center gap-3">
-          <Clock aria-hidden className="h-4 w-4 text-gold" />
+          <Clock aria-hidden className="h-4 w-4 text-slat" />
           <span className="text-v2-body text-ink">{time}</span>
           {duration && (
             <span className="text-v2-body-sm text-ink-soft">
@@ -26,7 +26,7 @@ export default function AppointmentCard({
           )}
         </li>
         <li className="flex items-center gap-3">
-          <MapPin aria-hidden className="h-4 w-4 text-gold" />
+          <MapPin aria-hidden className="h-4 w-4 text-slat" />
           <span className="text-v2-body text-ink">{location}</span>
         </li>
       </ul>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Button from "@/components/v2/ui/Button";
 import Arrow from "@/components/v2/ui/Arrow";
+import SectionHeader from "@/components/v2/sections/SectionHeader";
 
 /**
  * Homepage summary of the four service families, set as a price index rather
@@ -38,20 +39,20 @@ const FAMILIES = [
     alt: "Sculpted braided updo photographed in hard afternoon light",
   },
   {
-    title: "African threading and KiKo",
-    price: "₦7,000",
-    body: "Stretches your hair without a single degree of heat. The gentlest full rest we offer, and lovely on children's hair.",
-    href: "/v2/services#threading",
-    image: "/long-hair.webp",
-    alt: "Natural hair stretched out full and loose, without heat",
+    title: "Locs",
+    price: "₦12,000",
+    body: "Starter locs, sister locs and interlocking retwists, kept neat at the root without being pulled tight.",
+    href: "/v2/services#locs",
+    image: "/hair-wash.webp",
+    alt: "Locs being lathered by hand during a wash",
   },
   {
     title: "Treatments and loosening",
     price: "₦1,500",
     body: "Deep conditioning, scalp care and careful take-down, because most breakage happens on the way out of a style rather than in it.",
     href: "/v2/services#treatments",
-    image: "/hair-wash.webp",
-    alt: "Locs being lathered by hand during a wash",
+    image: "/scalp-issues.webp",
+    alt: "Stylist checking a client's scalp and roots in the salon",
   },
 ];
 
@@ -134,42 +135,24 @@ export default function ServicesOverview() {
 
   return (
     <section aria-labelledby="services-overview-heading">
-      {/* Asymmetric masthead: the statement holds the left seven columns, the
-          qualifier and the way through sit in the right three, so the eye
-          drops into the index rather than reading straight across. */}
-      <div className="grid gap-x-8 gap-y-10 md:grid-cols-12">
-        <div className="md:col-span-7">
-          <p className="type-eyebrow">Services — four families</p>
-          <h2
-            id="services-overview-heading"
-            className="mt-5 max-w-[14ch] font-display text-display-fluid uppercase text-ink"
-          >
-            Protective styling, done properly
-          </h2>
-        </div>
-
-        <div className="md:col-span-4 md:col-start-9 md:self-end">
-          <p className="max-w-[38ch] text-v2-body text-ink-soft">
-            Every service starts with a look at your scalp, edges and ends, and
-            finishes with a plan for keeping the results.
-          </p>
-          <Button
-            variant="tertiary"
-            withArrow
-            href="/v2/services"
-            className="mt-6"
-          >
+      <SectionHeader
+        id="services-overview-heading"
+        eyebrow="Services — four families"
+        title="Protective styling, done properly"
+        lede="Every consultation starts with a look at your scalp, edges and ends, and finishes with a plan for keeping the results."
+        action={
+          <Button variant="tertiary" withArrow href="/v2/services">
             See all services and prices
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* The frame is the positioning context for the trailing card, and the
           surface the pointer is measured against. */}
       <div
         ref={frameRef}
         onPointerMove={handlePointerMove}
-        className="relative mt-14 md:mt-20"
+        className="relative mt-12 md:mt-16"
       >
         <ol className="v2-index border-t border-ink/15">
           {FAMILIES.map(({ title, price, body, href, image, alt }, i) => (
@@ -178,7 +161,7 @@ export default function ServicesOverview() {
                 href={href}
                 onPointerEnter={enter(i)}
                 onPointerLeave={leave}
-                className="group relative grid items-baseline py-8 md:grid-cols-[4rem_minmax(0,1.15fr)_minmax(0,1fr)_auto] md:gap-x-10 md:py-11 lg:gap-x-14"
+                className="group relative grid items-baseline py-8 md:grid-cols-[4rem_minmax(0,1.15fr)_minmax(0,1fr)_10.5rem] md:gap-x-10 md:py-11 lg:gap-x-14"
               >
                 {/* The row's own rule, drawn left to right over the static
                     divider, so the hovered row is underlined by the movement
@@ -206,10 +189,10 @@ export default function ServicesOverview() {
                   {/* Price rides under the title on small screens, where there
                       is no column of its own to hang it in, and takes the
                       arrow with it so the row still ends on a way through. */}
-                  <p className="mt-3 flex items-center justify-between gap-4 font-display text-v2-h3 uppercase tabular-nums text-ink-soft md:hidden">
+                  <div className="mt-3 flex items-center justify-between gap-4 font-display text-v2-h3 uppercase tabular-nums text-ink-soft md:hidden">
                     From {price}
                     <Arrow className="h-4 w-5 shrink-0 text-ink" />
-                  </p>
+                  </div>
                 </div>
 
                 <div className="mt-4 md:col-start-3 md:mt-0">
@@ -231,12 +214,12 @@ export default function ServicesOverview() {
                 </div>
 
                 <div className="col-start-4 mt-1 hidden items-center gap-6 md:flex md:justify-end">
-                  <p className="font-display text-[1.75rem] uppercase leading-none tabular-nums text-ink">
+                  <div className="font-display text-[1.75rem] uppercase leading-none tabular-nums text-ink">
                     <span className="type-eyebrow mr-2 align-middle text-ash">
                       From
                     </span>
                     {price}
-                  </p>
+                  </div>
                   <Arrow className="h-4 w-5 shrink-0 text-ink transition-transform duration-500 ease-out group-hover:translate-x-1.5" />
                 </div>
               </Link>

@@ -151,7 +151,7 @@ export default function Home() {
             </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 w-full h-full">
-            <ServiceCard image="/hair-coaching.jpeg" url={"/consultation"} title="Hair coaching services" />
+            <ServiceCard image="/consultation.webp" url={"/consultation"} title="Hair coaching services" />
             {/*<ServiceCard image="/starter.webp" title="Curated Starter Kit" />*/}
             <ServiceCard image="/salon.webp" title="Salon Services" />
           </section>

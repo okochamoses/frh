@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-e2e/
 /out/
 
 # production
@@ -51,3 +52,9 @@ firebase-debug.log
 ui-debug.log
 /out-e2e/
 firebase.e2e.json.local
+
+# Untouched image masters. Optimised copies live in public/; see scripts/optimise-images.mjs.
+/assets-src/
+
+# Before/after recordings kept for rollback reference, not source.
+/.cap-video/

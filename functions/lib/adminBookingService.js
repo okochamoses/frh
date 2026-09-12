@@ -74,12 +74,59 @@ async function rescheduleBooking(id, {startTime, endTime}) {
     });
 }
 
+/**
+ * Moves every booking owned by `fromUid` to `toUid`.
+ *
+ * This is what a guest's history is made of. Bookings made without an account
+ * belong to an anonymous uid, so a client who books twice as a guest and then
+ * finally signs up would otherwise arrive at an account that has never seen
+ * them — no "booked before", no rebook card, nothing on `/bookings`. The
+ * contact fields move to the account's, because that is where the salon should
+ * write from now on.
+ *
+ * Returns how many bookings moved.
+ */
+async function reassignBookings(fromUid, toUid, contact = {}) {
+    const snapshot = await db().collection("bookings").where("userId", "==", fromUid).get();
+    if (snapshot.empty) return 0;
+
+    // One batch: 500 writes is far beyond what one guest can hold, and a
+    // half-moved history is worse than none.
+    const batch = db().batch();
+    for (const doc of snapshot.docs) {
+        batch.update(doc.ref, {
+            userId: toUid,
+            guest: false,
+            claimedAt: FieldValue.serverTimestamp(),
+            ...(contact.userEmail ? {userEmail: contact.userEmail} : {}),
+            ...(contact.userFirstName ? {userFirstName: contact.userFirstName} : {}),
+            ...(contact.userMobileNumber ? {userMobileNumber: contact.userMobileNumber} : {}),
+        });
+    }
+    await batch.commit();
+    return snapshot.size;
+}
+
 async function createBooking(data) {
     const ref = await db().collection("bookings").add({
         ...data,
         createdAt: FieldValue.serverTimestamp(),
     });
     return ref.id;
+}
+
+/**
+ * How many live, still-to-come bookings have `field == value`.
+ *
+ * A single equality filter (no range, no order) so it runs on Firestore's
+ * automatic single-field index — the date and status are filtered here.
+ */
+async function countUpcomingBookings(field, value, nowIso) {
+    const snapshot = await db().collection("bookings").where(field, "==", value).get();
+    return snapshot.docs
+        .map((d) => d.data())
+        .filter((b) => b.status !== "cancelled" && b.status !== "completed" && b.startTime > nowIso)
+        .length;
 }
 
 async function getUserProfile(uid) {
@@ -103,6 +150,8 @@ async function claimAdminDigest(dateKey) {
 
 module.exports = {
     createBooking,
+    reassignBookings,
+    countUpcomingBookings,
     getUserProfile,
     getBookingById,
     cancelBooking,

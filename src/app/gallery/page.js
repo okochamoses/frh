@@ -3,11 +3,11 @@ import { Bagelan, merriweather } from "@/app/layout"
 
 const IMAGES = [
   { src: "/gallery/IMG_6324.webp", alt: "Hair transformation",       width: 800, height: 1000 },
-  { src: "/gallery/IMG_6327.webp", alt: "Hair styling",              width: 800, height: 1000 },
+  { src: "/gallery/salon.webp", alt: "Hair styling",              width: 800, height: 1000 },
   { src: "/gallery/IMG_6938.webp", alt: "Hair care session",         width: 800, height: 600  },
   { src: "/gallery/IMG_7317.webp", alt: "Hair consultation",         width: 800, height: 1000 },
   { src: "/gallery/IMG_7537.webp", alt: "Hair treatment",            width: 800, height: 1000 },
-  { src: "/gallery/img.png",       alt: "Portfolio showcase",         width: 800, height: 600  },
+  { src: "/gallery/img.webp",       alt: "Portfolio showcase",         width: 800, height: 450  },
 ]
 
 export default function GalleryPage() {

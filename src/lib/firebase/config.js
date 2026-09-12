@@ -1,6 +1,13 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import {
+  getAuth,
+  initializeAuth,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  indexedDBLocalPersistence,
+  connectAuthEmulator,
+} from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 /**
@@ -40,7 +47,16 @@ const liveConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const firebaseConfig = USE_EMULATOR ? emulatorConfig : liveConfig;
+/**
+ * Analytics is optional, so `measurementId` is deliberately kept out of
+ * `liveConfig`: everything in there is treated as required below, and a site
+ * with no GA4 property must still build and run.
+ */
+const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
+
+const firebaseConfig = USE_EMULATOR
+  ? emulatorConfig
+  : { ...liveConfig, ...(measurementId ? { measurementId } : {}) };
 
 // Fail loudly at startup rather than surfacing a confusing auth error later.
 if (!USE_EMULATOR) {
@@ -65,7 +81,44 @@ if (!USE_EMULATOR) {
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
-export const auth = getAuth(app);
+
+/**
+ * Auth, initialised *without* a popup/redirect resolver.
+ *
+ * `getAuth()` hands Firebase the browser popup resolver up front, and
+ * initialising that resolver loads `apis.google.com/js/api.js`, the
+ * `<authDomain>/__/auth/iframe` frame and a `getProjectConfig` call — three
+ * third-party origins, on every page, before anyone has asked to sign in. On a
+ * throttled mobile connection that chain competes with the hero image for
+ * bandwidth and pushes LCP out by seconds.
+ *
+ * `initializeAuth` lets us pick the persistence chain (the same one `getAuth`
+ * would have used) and leave the resolver out. Sign-in with Google passes
+ * `browserPopupRedirectResolver` explicitly at the call site instead, so the
+ * gapi chain loads on the click that needs it and nowhere else — see
+ * `authService.js`.
+ */
+function createAuth() {
+  // No window during the static export: `initializeAuth` would reject the
+  // browser persistences, and nothing signs in server-side anyway.
+  if (typeof window === "undefined") return getAuth(app);
+
+  try {
+    return initializeAuth(app, {
+      persistence: [
+        indexedDBLocalPersistence,
+        browserLocalPersistence,
+        browserSessionPersistence,
+      ],
+    });
+  } catch {
+    // Fast refresh re-evaluates this module against an app that already has an
+    // auth instance; `initializeAuth` throws `auth/already-initialized` there.
+    return getAuth(app);
+  }
+}
+
+export const auth = createAuth();
 
 // us-central1 is the default region and matches where the booking callables
 // and FUNCTION_BASE in functions/index.js are deployed.

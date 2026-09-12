@@ -14,11 +14,16 @@ import { Barlow, Barlow_Condensed, Manrope } from "next/font/google";
  * specimen sheet itself uses above the character grid.
  *
  * Barlow loads 400/500/600 rather than 400 alone: some paragraphs are marked
- * `font-semibold`, and without the real cut the browser would synthesise it.
+ * `font-semibold` or `font-medium`, and without the real cut the browser would
+ * synthesise it. Barlow has no variable release on Google Fonts, so those are
+ * three files; Manrope does, so it is one.
  */
 
 export const displaySerif = localFont({
-  src: "./fonts/icarus-nocturne-regular.ttf",
+  // WOFF2, not the .ttf it was licensed as: same 74 glyphs, 66 KB down to 21 KB.
+  // It is preloaded on every V2 page, so it was the single heaviest font on
+  // the homepage and the only one not already compressed.
+  src: "./fonts/icarus-nocturne-regular.woff2",
   weight: "400",
   style: "normal",
   display: "swap",
@@ -39,9 +44,13 @@ export const paragraph = Barlow({
   variable: "--font-paragraph",
 });
 
+/*
+ * Manrope is a variable face, so no `weight`: one file covers 400-700 and the
+ * four static instances we used to request (four preloads, four round trips)
+ * collapse into it.
+ */
 export const body = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-body",
 });

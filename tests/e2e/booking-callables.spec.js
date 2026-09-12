@@ -7,6 +7,7 @@ import {
   createAsUser,
   callFunction,
   readBooking,
+  anonymousSession,
 } from "../support/emulator.js";
 
 /**
@@ -27,9 +28,10 @@ function nextOpenSlot(daysAhead = 2) {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() + daysAhead);
   d.setUTCHours(9, 0, 0, 0);
-  // Monday is the salon's day off. WAT is UTC+1 year round, so 09:00Z is
-  // always the same calendar day in Lagos.
-  while (d.getUTCDay() === 1) d.setUTCDate(d.getUTCDate() + 1);
+  // Monday is the salon's day off, and Sunday only opens at 1pm, so a 10:00
+  // slot needs Tuesday–Saturday. WAT is UTC+1 year round, so 09:00Z is always
+  // the same calendar day in Lagos.
+  while (d.getUTCDay() === 1 || d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1);
   return d.toISOString();
 }
 
@@ -170,6 +172,113 @@ test.describe("createBooking callable", () => {
     );
 
     expect(error?.message).toContain("mobile number");
+  });
+});
+
+test.describe("guest bookings (anonymous session, no account)", () => {
+  test.beforeEach(async () => {
+    await resetEmulators();
+  });
+
+  const GUEST = { firstName: "Chioma", mobileNumber: "08031234567" };
+
+  test("a guest must say who they are", async () => {
+    const { idToken } = await anonymousSession();
+
+    const missing = await callFunction(
+      "createBooking",
+      { serviceTitles: [SERVICE], startTime: nextOpenSlot() },
+      idToken
+    );
+    expect(missing.error?.status).toBe("INVALID_ARGUMENT");
+
+    const badPhone = await callFunction(
+      "createBooking",
+      { serviceTitles: [SERVICE], startTime: nextOpenSlot(), guest: { firstName: "Chioma", mobileNumber: "0803" } },
+      idToken
+    );
+    expect(badPhone.error?.message).toContain("full mobile number");
+
+    const badEmail = await callFunction(
+      "createBooking",
+      { serviceTitles: [SERVICE], startTime: nextOpenSlot(), guest: { ...GUEST, email: "nope" } },
+      idToken
+    );
+    expect(badEmail.error?.message).toContain("email");
+  });
+
+  test("a guest booking stores their details, priced by the server", async () => {
+    const { uid, idToken } = await anonymousSession();
+
+    const { result, error } = await callFunction(
+      "createBooking",
+      {
+        serviceTitles: [SERVICE],
+        startTime: nextOpenSlot(),
+        guest: { firstName: "  Chioma ", mobileNumber: "0803 123 4567", email: "Chioma@Example.com" },
+      },
+      idToken
+    );
+    expect(error).toBeUndefined();
+
+    const booking = await readBooking(result.bookingId);
+    expect(booking.userId).toBe(uid);
+    expect(booking.guest).toBe(true);
+    expect(booking.userFirstName).toBe("Chioma");
+    expect(booking.userMobileNumber).toBe("+2348031234567");
+    expect(booking.userEmail).toBe("chioma@example.com");
+    expect(booking.totalAmount).toBe(10000);
+  });
+
+  test("a guest can book with no email at all", async () => {
+    const { idToken } = await anonymousSession();
+    const { result, error } = await callFunction(
+      "createBooking",
+      { serviceTitles: [SERVICE], startTime: nextOpenSlot(), guest: GUEST },
+      idToken
+    );
+    expect(error).toBeUndefined();
+    expect((await readBooking(result.bookingId)).userEmail).toBeNull();
+  });
+
+  test("one phone number cannot hold more than three upcoming visits", async () => {
+    // Fresh anonymous sessions each time: the cap must follow the phone
+    // number, not just the device.
+    for (let i = 0; i < 3; i++) {
+      const { idToken } = await anonymousSession();
+      const { error } = await callFunction(
+        "createBooking",
+        { serviceTitles: [SERVICE], startTime: nextOpenSlot(2 + i), guest: GUEST },
+        idToken
+      );
+      expect(error).toBeUndefined();
+    }
+
+    const { idToken } = await anonymousSession();
+    const { error } = await callFunction(
+      "createBooking",
+      { serviceTitles: [SERVICE], startTime: nextOpenSlot(6), guest: GUEST },
+      idToken
+    );
+    expect(error?.status).toBe("RESOURCE_EXHAUSTED");
+  });
+
+  test("a guest can cancel their own booking from the same session", async () => {
+    const { idToken } = await anonymousSession();
+    const { result } = await callFunction(
+      "createBooking",
+      { serviceTitles: [SERVICE], startTime: nextOpenSlot(), guest: GUEST },
+      idToken
+    );
+
+    const { error } = await callFunction("cancelBooking", { bookingId: result.bookingId }, idToken);
+    expect(error).toBeUndefined();
+    expect((await readBooking(result.bookingId)).status).toBe("cancelled");
+
+    // A different guest session cannot touch it.
+    const other = await anonymousSession();
+    const again = await callFunction("cancelBooking", { bookingId: result.bookingId }, other.idToken);
+    expect(again.error?.status).toBe("NOT_FOUND");
   });
 });
 

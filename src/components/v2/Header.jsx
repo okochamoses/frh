@@ -56,11 +56,6 @@ const NAV_LINKS = [
               description: "Shape-ups, silk press, blow-outs",
               href: "/v2/services#styling",
             },
-            {
-              label: "Wash & go",
-              description: "Cleanse, condition, define",
-              href: "/v2/services#wash",
-            },
           ],
         },
         {
@@ -70,11 +65,6 @@ const NAV_LINKS = [
               label: "Scalp treatments",
               description: "Exfoliating and ayurvedic care",
               href: "/v2/services#treatments",
-            },
-            {
-              label: "Deep conditioning",
-              description: "Protein and moisture rebuilds",
-              href: "/v2/services#conditioning",
             },
             {
               label: "Products",
@@ -107,11 +97,6 @@ const NAV_LINKS = [
           title: "THE SPACE",
           items: [
             {
-              label: "Inside the salon",
-              description: "What a visit actually looks like",
-              href: "/v2/salon",
-            },
-            {
               label: "Opening hours",
               description: "Tuesday to Sunday, by appointment",
               href: "/v2/salon#hours",
@@ -136,11 +121,6 @@ const NAV_LINKS = [
               description: "Deposits, changes, cancellations",
               href: "/v2/salon#policy",
             },
-            {
-              label: "Contact the salon",
-              description: "Call, WhatsApp or email",
-              href: "/v2/contact",
-            },
           ],
         },
       ],
@@ -157,39 +137,37 @@ const NAV_LINKS = [
         image: "/coaching.webp",
         cta: { label: "Book a consultation", href: "/v2/consultation" },
       },
+      /* Labels and prices match the cards on the coaching page one for one —
+         a menu that renames the thing it links to makes the page look like a
+         different offer when the reader lands on it. */
       columns: [
         {
-          title: "PROGRAMMES",
+          title: "SESSIONS & GUIDES",
           items: [
             {
-              label: "Single consultation",
-              description: "One session, full routine review",
+              label: "Build-Your-Routine",
+              description: "One session, ₦20,000",
+              href: "/v2/consultation#builder",
+            },
+            {
+              label: "Scalp care consultation",
+              description: "The cause, not the symptom, ₦30,000",
+              href: "/v2/consultation#scalp",
+            },
+            {
+              label: "1-on-1 hair coaching",
+              description: "Full assessment and routine, ₦50,000",
               href: "/v2/consultation#single",
             },
             {
-              label: "Coaching plan",
-              description: "Ongoing check-ins over months",
+              label: "Intensive programme",
+              description: "Three months of coaching, ₦150,000",
               href: "/v2/consultation#plan",
             },
-            {
-              label: "Scalp diagnosis",
-              description: "Get to the cause, not the symptom",
-              href: "/v2/consultation#scalp",
-            },
-          ],
-        },
-        {
-          title: "LEARN",
-          items: [
             {
               label: "Hair journal",
               description: "Guides from our stylists",
               href: "/v2/journal",
-            },
-            {
-              label: "Routine builder",
-              description: "Answer a few questions, get a routine",
-              href: "/v2/consultation#builder",
             },
           ],
         },
@@ -236,11 +214,6 @@ function Wordmark({ className, ...props }) {
         priority
         className="h-9 w-auto lg:h-10"
       />
-      {/* The mark carries the brand on its own at phone widths, where it sits
-          centered in the bar; the wordmark joins it once there is room. */}
-      <span className="hidden font-display text-2xl leading-none text-ink lg:inline">
-        Flourish Roots<span className="text-gold">.</span>
-      </span>
     </Link>
   );
 }
@@ -317,7 +290,14 @@ function MegaPanel({ panel, id, open }) {
           </Link>
         </div>
 
-        <div className="grid gap-x-10 gap-y-8 p-8 sm:grid-cols-2">
+        {/* Two columns only when there are two to fill. A lone column in a
+            two-column grid leaves half the panel empty. */}
+        <div
+          className={cn(
+            "grid gap-x-10 gap-y-8 p-8",
+            panel.columns.length > 1 ? "sm:grid-cols-2" : "max-w-xl"
+          )}
+        >
           {panel.columns.map((column) => (
             <div key={column.title}>
               <p className="text-v2-label font-semibold tracking-[0.12em] text-ash">
@@ -587,11 +567,15 @@ export default function Header() {
                       onFocus={() =>
                         setOpenPanel(link.panel ? link.label : null)
                       }
+                      /* The weight is fixed across every state on purpose.
+                         Swapping normal -> semibold on hover re-measured the
+                         label (+2.6px on "Services") and shunted every item
+                         to its right, so the bar twitched under the pointer.
+                         State is carried by colour and the rule below, both
+                         of which cost no width. */
                       className={cn(
-                        "relative flex items-center gap-1 py-2 text-v2-body-sm transition-colors duration-200 ease-out hover:text-ink",
-                        active || isOpen
-                          ? "font-semibold text-ink"
-                          : "text-ink-soft"
+                        "relative flex items-center gap-1 py-2 text-[0.9375rem] font-medium tracking-[0.01em] transition-colors duration-200 ease-out",
+                        active || isOpen ? "text-ink" : "text-ink/70 hover:text-ink"
                       )}
                     >
                       {link.label}
@@ -604,12 +588,15 @@ export default function Header() {
                           )}
                         />
                       )}
-                      {active && (
-                        <span
-                          aria-hidden
-                          className="absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-ink"
-                        />
-                      )}
+                      {/* Always mounted so it cannot change the item's box;
+                          it scales in from the left instead. */}
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "absolute inset-x-0 -bottom-0.5 h-0.5 origin-left rounded-full bg-ink transition-transform duration-200 ease-out",
+                          active || isOpen ? "scale-x-100" : "scale-x-0"
+                        )}
+                      />
                     </Link>
                   </li>
                 );
@@ -637,6 +624,7 @@ export default function Header() {
             )}
 
             <Button
+              variant="book"
               withArrow
               href="/v2/booking"
               className="hidden lg:inline-flex"
@@ -802,6 +790,7 @@ export default function Header() {
         {/* Sticky action rail — stays reachable however long the list gets. */}
         <div className="border-t border-latte bg-sand px-4 pb-6 pt-4">
           <Button
+            variant="book"
             withArrow
             href="/v2/booking"
             className="w-full"

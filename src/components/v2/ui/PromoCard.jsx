@@ -19,7 +19,7 @@ export default function PromoCard({
         className
       )}
     >
-      {icon && <div className="mb-4 text-gold">{icon}</div>}
+      {icon && <div className="mb-4 text-slat">{icon}</div>}
       <h3 className="font-display text-v2-h2">{title}</h3>
       {body && (
         <p className={cn("mt-3 max-w-[38ch] text-v2-body", dark ? "text-white/70" : "text-ink-soft")}>

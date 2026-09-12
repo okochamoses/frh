@@ -49,17 +49,28 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			ink: '#1a0000',
-  			'ink-soft': '#514f4c',
-  			deep: '#1a0000',
-  			gold: '#98bbf4',
+  			ink: '#1a1a1a',
+  			'ink-soft': '#6b665f',
+  			deep: '#1a1a1a',
+  			gold: '#f3e3cc',
   			mustard: '#fbb91c',
-  			sand: '#ffffff',
-  			'cream-100': '#f2f2f2',
-  			latte: '#ededec',
-  			ash: '#aeaea6',
-  			bronze: '#3a3a3a',
-  			obsidian: '#221919'
+  			'mustard-deep': '#e8a60d',
+  			slat: '#c08250',
+  			'slat-ink': '#8b5e34',
+  			sand: '#f8f5ef',
+  			'cream-100': '#f1ece4',
+  			latte: '#e6ddd1',
+  			// Tertiary text. Dark enough for AA (4.5:1) on every ground it runs
+  			// on — white, sand and cream-100. It will not clear AA on `latte`;
+  			// nor does `ink-soft` (4.23:1), so latte is not a text ground for
+  			// anything below primary ink.
+  			ash: '#736a5e',
+  			// The old, lighter ash, kept for disabled controls only — WCAG 1.4.3
+  			// exempts them, and a disabled slot that matches live tertiary text
+  			// stops reading as disabled.
+  			'ash-disabled': '#a39a8e',
+  			bronze: '#3a2f27',
+  			obsidian: '#2b211a'
   		},
   		// ── V2 design system — namespaced, does not touch V1 ──
   		fontFamily: {

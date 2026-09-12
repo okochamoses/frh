@@ -294,7 +294,7 @@ export default function Consultation() {
           <Reveal>
             <div className="overflow-hidden rounded-xl" style={{ border: `1px solid ${GOLD}30` }}>
               <img
-                src="/ceo.png"
+                src="/ceo-portrait.webp"
                 alt="Mariam — hair coach"
                 className="h-full min-h-[300px] w-full object-cover transition-transform duration-700 hover:scale-105"
               />

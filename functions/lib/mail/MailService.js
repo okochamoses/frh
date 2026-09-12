@@ -3,15 +3,18 @@ const { MAIL_CONFIG } = require("./config");
 const { templates } = require("./templates");
 
 function createTransporter() {
+  const { host, port, secure, user, pass } = MAIL_CONFIG;
   return nodemailer.createTransport({
-    host: MAIL_CONFIG.host,
-    port: MAIL_CONFIG.port,
-    secure: MAIL_CONFIG.secure,
-    auth: { user: MAIL_CONFIG.user, pass: MAIL_CONFIG.pass },
+    host,
+    port,
+    secure,
+    // The local MailDev catcher has no accounts, so only authenticate when we
+    // actually hold credentials.
+    ...(user && pass ? { auth: { user, pass } } : {}),
   });
 }
 
-const from = () => `"${MAIL_CONFIG.fromName}" <${MAIL_CONFIG.user}>`;
+const from = () => `"${MAIL_CONFIG.fromName}" <${MAIL_CONFIG.fromAddress}>`;
 
 class MailService {
   async sendEmail({ to, subject, html }) {

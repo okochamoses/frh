@@ -1,4 +1,6 @@
+import { MapPin } from "lucide-react";
 import Button from "@/components/v2/ui/Button";
+import { MAPS_URL } from "@/components/v2/location";
 
 export default function Hero() {
   return (
@@ -34,15 +36,11 @@ export default function Hero() {
         </div>
 
         <p className="mt-6 text-v2-body font-semibold uppercase tracking-[0.14em] text-ink/75">
-          4C natural hair salon &middot; Isolo, Lagos
-        </p>
-
-        <p className="mt-5 max-w-[40ch] text-pretty text-v2-body leading-[1.35] text-ink/80">
-          Twists, braids and threading, done at a tension you can sleep in, so
-          your hair leaves healthier than it came in.
+          4C natural hair salon
         </p>
 
         <Button
+          variant="book"
           withArrow
           href="/v2/booking"
           className="mt-9"
@@ -50,9 +48,16 @@ export default function Hero() {
           Book a salon visit
         </Button>
 
-        <p className="mt-6 text-v2-body-sm text-ink/60">
-          Shop 303, Destiny Plaza, Ago Palace Way &middot; Open Mon to Sat
-        </p>
+        <a
+          href={MAPS_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-6 inline-block max-w-[34ch] text-balance text-v2-body-sm text-ink/70 underline decoration-ink/25 underline-offset-4 transition-colors duration-200 ease-out hover:text-ink hover:decoration-ink"
+        >
+          <MapPin aria-hidden className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px align-middle" />
+          Shop 303, Destiny Plaza, Ago Palace Way &middot; Open Tue to Sun
+          <span className="sr-only"> (opens Google Maps)</span>
+        </a>
       </div>
     </section>
   );
