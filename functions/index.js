@@ -50,12 +50,52 @@ const SITE_BASE =
     process.env.SITE_BASE ||
     (process.env.FUNCTIONS_EMULATOR === "true" ? DEV_SITE_BASE : "https://flourish-roots.web.app");
 
-function bookingToken(bookingId, secret) {
-    return crypto.createHmac("sha256", secret).update(bookingId).digest("hex");
+// A fixed, published-in-source key used only under the emulator, so local
+// dev keeps working without anyone having to set a secret by hand. It must
+// never be reachable in production — `resolveBookingSecret` only returns it
+// when `FUNCTIONS_EMULATOR === "true"`.
+const DEV_BOOKING_SECRET = "dev-only-booking-secret-do-not-use-in-prod";
+let warnedAboutDevBookingSecret = false;
+
+/**
+ * The key `bookingToken`/`verifyToken` sign with, resolved once per call.
+ *
+ * `BOOKING_SECRET` has never actually been set, so every token minted so far
+ * was signed with an empty string — worthless as a secret, since anyone who
+ * knows the algorithm can reproduce it from the booking id alone. Rather than
+ * silently signing with `""`, this fails closed: no configured secret means
+ * no valid tokens, except under the emulator where a fixed dev key keeps
+ * local booking flows usable.
+ */
+function resolveBookingSecret() {
+    const configured = process.env.BOOKING_SECRET;
+    if (typeof configured === "string" && configured) {
+        return configured;
+    }
+    if (process.env.FUNCTIONS_EMULATOR === "true") {
+        if (!warnedAboutDevBookingSecret) {
+            logger.warn("BOOKING_SECRET is unset; using a fixed development key under the emulator.");
+            warnedAboutDevBookingSecret = true;
+        }
+        return DEV_BOOKING_SECRET;
+    }
+    return null;
+}
+
+/**
+ * `purpose` scopes the token to the one power it grants: a "manage" token
+ * only ever authorises the customer's own view/cancel/reschedule flow, and a
+ * "complete" token only ever authorises the owner's mark-complete flow. The
+ * two must never verify against each other — that ambiguity is the flaw this
+ * scoping removes.
+ */
+function bookingToken(bookingId, purpose, secret) {
+    return crypto.createHmac("sha256", secret).update(`${bookingId}:${purpose}`).digest("hex");
 }
 
 function makeCompleteUrl(bookingId, review, secret) {
-    const token = bookingToken(bookingId, secret);
+    if (!secret) return null;
+    const token = bookingToken(bookingId, "complete", secret);
     return `${FUNCTION_BASE}/completeBooking?id=${bookingId}&token=${token}&review=${review}`;
 }
 
@@ -69,11 +109,13 @@ function makeCompleteUrl(bookingId, review, secret) {
  * and wait for someone to answer.
  */
 function makeManageUrl(bookingId, secret) {
-    return `${SITE_BASE}/v2/booking/manage?ref=${bookingId}&t=${bookingToken(bookingId, secret)}`;
+    if (!secret) return null;
+    return `${SITE_BASE}/v2/booking/manage?ref=${bookingId}&t=${bookingToken(bookingId, "manage", secret)}`;
 }
 
-function verifyToken(bookingId, token, secret) {
-    const expected = crypto.createHmac("sha256", secret).update(bookingId).digest("hex");
+function verifyToken(bookingId, purpose, token, secret) {
+    if (!secret) return false;
+    const expected = bookingToken(bookingId, purpose, secret);
     try {
         return crypto.timingSafeEqual(Buffer.from(token, "hex"), Buffer.from(expected, "hex"));
     } catch {
@@ -159,11 +201,18 @@ exports.onBookingCreated = onDocumentCreated(
     async (event) => {
         const booking = event.data.data();
         const bookingId = event.params.bookingId;
-        const secret = process.env.BOOKING_SECRET || "";
+        const secret = resolveBookingSecret();
 
         if (booking.status === "cancelled") {
             logger.info("onBookingCreated: booking created cancelled, no mail", {bookingId});
             return;
+        }
+
+        if (!secret) {
+            logger.error(
+                "[onBookingCreated] BOOKING_SECRET is unset; omitting manage/complete links.",
+                {bookingId}
+            );
         }
 
         const completeUrl = makeCompleteUrl(bookingId, false, secret);
@@ -280,7 +329,7 @@ async function authoriseBooking(request) {
     const booking = await getBookingById(bookingId);
 
     if (typeof token === "string" && token) {
-        if (!verifyToken(bookingId, token, process.env.BOOKING_SECRET || "")) {
+        if (!verifyToken(bookingId, "manage", token, resolveBookingSecret())) {
             throw new HttpsError("not-found", "That booking could not be found.");
         }
         return requireLiveBooking(booking, booking?.userId ?? null);
@@ -371,16 +420,21 @@ exports.createBooking = onCall(
 
         logger.info("Booking created", {bookingId, uid, guest: anonymous});
 
+        // The caller just created this booking, so handing them its manage
+        // link now is what lets a guest keep hold of it — they have no
+        // account to sign back into, and the email only reaches them if
+        // they gave one.
+        const manageUrl = makeManageUrl(bookingId, resolveBookingSecret());
+        if (!manageUrl) {
+            logger.error("[createBooking] BOOKING_SECRET is unset; omitting manage link.", {bookingId});
+        }
+
         return {
             bookingId,
             startTime: slot.start.toISOString(),
             endTime: slot.end.toISOString(),
             totalAmount: priced.totalPrice,
-            // The caller just created this booking, so handing them its manage
-            // link now is what lets a guest keep hold of it — they have no
-            // account to sign back into, and the email only reaches them if
-            // they gave one.
-            manageUrl: makeManageUrl(bookingId, process.env.BOOKING_SECRET || ""),
+            manageUrl,
         };
     }
 );
@@ -622,9 +676,9 @@ exports.completeBooking = onRequest(
         const id = source.id || "";
         const token = source.token || "";
         const review = String(source.review) === "true";
-        const secret = process.env.BOOKING_SECRET || "";
+        const secret = resolveBookingSecret();
 
-        if (!verifyToken(id, token, secret)) {
+        if (!verifyToken(id, "complete", token, secret)) {
             return htmlPage(res, "Invalid Link", "This link is invalid or has expired.", true);
         }
 
