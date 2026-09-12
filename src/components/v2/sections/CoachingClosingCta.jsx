@@ -19,7 +19,7 @@ export default function CoachingClosingCta() {
       <div className="relative z-10 px-4 py-20 text-center md:px-8 md:py-28">
         <div className="mx-auto flex max-w-[var(--v2-container)] flex-col items-center">
           <Reveal>
-            <p className="type-eyebrow !text-ink/60">
+            <p className="type-eyebrow !text-ink">
               Isolo, Lagos &middot; Video calls anywhere
             </p>
             <h2

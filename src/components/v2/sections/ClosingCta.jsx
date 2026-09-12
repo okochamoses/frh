@@ -34,7 +34,7 @@ export default function ClosingCta() {
       <div className="relative z-10 px-4 pb-16 pt-24 text-center md:px-8 md:pb-20 md:pt-32">
         <div className="mx-auto flex max-w-[var(--v2-container)] flex-col items-center">
           <Reveal>
-            <p className="type-eyebrow !text-ink/60">
+            <p className="type-eyebrow !text-ink">
               Isolo, Lagos &middot; By appointment
             </p>
 
@@ -80,7 +80,7 @@ export default function ClosingCta() {
       <Marquee
         items={CLOSING_RULES}
         duration={50}
-        className="relative z-10 border-t border-ink/20 py-5 font-display text-[clamp(0.9rem,0.8rem+0.4vw,1.125rem)] uppercase tracking-[0.16em] text-ink/55"
+        className="relative z-10 border-t border-ink/20 py-5 font-display text-[clamp(0.9rem,0.8rem+0.4vw,1.125rem)] uppercase tracking-[0.16em] text-ink"
       />
     </section>
   );

@@ -36,6 +36,7 @@ import TimeSlot from "@/components/v2/ui/TimeSlot";
 import ProgressStepper from "@/components/v2/ui/ProgressStepper";
 import SummaryBox from "@/components/v2/ui/SummaryBox";
 import { SpecSection, SpecLabel, Swatch } from "@/components/v2/SpecSection";
+import { ADDRESS_ONE_LINE } from "@/components/v2/salon";
 
 const PILLARS = [
   { icon: Leaf, label: "Natural" },
@@ -355,7 +356,7 @@ export default function DesignSystemPage() {
                 date="Tue, 13 May 2025"
                 time="10:00 AM"
                 duration="2 hrs"
-                location="Flourish Roots Studio, Ikoyi Lagos"
+                location={`Flourish Roots Hair Co., ${ADDRESS_ONE_LINE}`}
                 directionsHref="#"
               />
             </div>
