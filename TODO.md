@@ -173,3 +173,122 @@ already promises in public on `/v2/services` and `/v2/salon`.
 - [ ] Nothing tells clients what to bring. The FAQ knows (clean, pre-stretched
       extensions; beads +₦500); the confirmation screen and email are the place
       to say it.
+
+## Continuous-iteration round 1 (2026-09-13)
+
+Findings from a parallel audit of the v2 build: booking flow, page/section
+layer, accessibility, and cross-cutting code health. Items already listed
+above are not repeated here.
+
+### Security — booking links
+
+- [ ] **One token authorises two different powers.** `bookingToken()`
+      (`functions/index.js:53`) is `HMAC(secret, bookingId)` with no purpose in
+      the input, and the same value is handed to the client as their manage
+      link (`makeManageUrl`, `:71`) and to the salon as the "mark complete"
+      link (`makeCompleteUrl`, `:57`). `verifyToken` (`:75`) is equally
+      purpose-blind, so a client's own link will mark their appointment
+      completed and fire the review request before the appointment happens, and
+      anyone holding a forwarded owner link can cancel or move that client's
+      booking.
+      → put the purpose in the HMAC input (`${bookingId}:manage` vs
+      `${bookingId}:complete`) and pass it at every mint and verify site.
+      Nothing needs to keep working across the change: `BOOKING_SECRET` is
+      still unset, so every token in existence is signed with the empty key.
+
+- [ ] **An unset `BOOKING_SECRET` silently downgrades to no security.** All five
+      sites read `process.env.BOOKING_SECRET || ""` (`functions/index.js:162`,
+      `:283`, `:383`, `:625`), so a deploy that forgets the secret still mints
+      and accepts tokens — signed with a key anyone can reproduce, making every
+      manage and complete link forgeable from the booking id alone.
+      → fail closed in production (refuse to verify, omit the link rather than
+      send a worthless one) and fall back to a fixed dev value only under
+      `FUNCTIONS_EMULATOR`.
+
+### Correctness
+
+- [ ] Reschedule offers slots that cannot fit. `getBooking` returns
+      `totalDuration: … ?? null` (`functions/index.js:564`) and
+      `ManageBooking.jsx:112` passes `duration={duration ?? 0}` to `TimeStep`
+      (`:310`), so a booking predating `totalDuration` picks times as if the
+      appointment took no time at all. The server does fall back to
+      `endTime - startTime` (`functions/index.js:429`), so the slot the client
+      chose is refused only after they press "Move my booking".
+      → mirror the server's fallback client-side.
+
+- [ ] `countUpcomingBookings` (`functions/lib/adminBookingService.js:124`)
+      compares `b.startTime > nowIso` as raw strings while the rest of the
+      backend anchors through `watDate()`. For bookings stored in the older
+      naive-WAT form the comparison is an hour out, so the guest cap can count a
+      past booking as upcoming (or the reverse) near the boundary.
+
+### Dead code hiding real problems
+
+- [ ] Delete the legacy Google-Sheets backend: `src/lib/services/sheetsImpl/**`
+      and `src/lib/repositories/**` have no importers outside themselves — and
+      they are where *all* of the TypeScript errors currently suppressed by
+      `typescript.ignoreBuildErrors` (`next.config.mjs:31`) live. With the tree
+      gone, that flag can probably come off, which means v2 code starts getting
+      type-checked instead of silently not.
+
+- [ ] Delete `src/lib/mail/**`. `functions/index.js:11` imports
+      `./lib/mail/MailService`; the `src/` copy is reachable only from the dead
+      Sheets tree above. The two have diverged badly (different SMTP ports and
+      TLS, four send methods missing, a whole pre-v2 template set), so the
+      standing risk is someone editing the copy that never runs.
+
+### Accessibility
+
+- [ ] Toast "Undo" vanishes on a fixed 4.5s timer that nothing pauses
+      (`src/components/v2/booking/ui.jsx:69`). Undo is not focused when it
+      appears, so reaching it by keyboard inside the window is a race.
+      WCAG 2.2.1.
+- [ ] `LookRow` nests a real `<button>` inside a `role="checkbox"` div
+      (`ServicesStep.jsx:108`) — invalid ARIA, two ambiguous tab stops per row.
+      (Related to the existing `LookRow` note under "Small" above.)
+- [ ] Guest name and phone are mandatory but carry no `required` /
+      `aria-required` and no visible cue (`Steps.jsx:165`); only the optional
+      field is labelled. The requirement is discoverable only by failing.
+- [ ] `Field` always sets `aria-describedby="…-hint"` but only renders that
+      paragraph when there is a hint or error (`Steps.jsx:66`), so the
+      reference usually points at nothing.
+
+- [ ] **Needs a product decision:** the desktop mega-menu opens on focus, but
+      each panel sits after every other nav control in the DOM
+      (`Header.jsx:651`), so tabbing from the trigger moves to the next trigger
+      and closes the panel — its links are visible but unreachable by keyboard.
+      Fixing it means either moving each panel to directly after its own
+      trigger, or switching to click-to-open with a focus trap and Escape. The
+      second changes how the nav feels for everyone, so it is not a fix to make
+      silently.
+
+### Design system and content
+
+- [ ] `/v2/design-system` is a shipped route and calls the business
+      "Flourish Roots Studio, Ikoyi Lagos" (`page.js:358`). It is
+      Flourish Roots Hair Co., in Isolo, everywhere else.
+- [ ] Mustard sections apply opacity to text, which `docs/design-v2/DESIGN.md`
+      §18 rule 6 forbids outright: `ClosingCta.jsx:37` and `:83`,
+      `CoachingClosingCta.jsx:22` — about 3.3:1, under AA.
+- [ ] `src/components/v2/ui/Card.jsx` has no importers; every card on the site
+      goes through one of the five specific card components.
+- [ ] The numbered index-card block is copy-pasted verbatim in four places
+      (`BookingTerms.jsx`, `HowAVisitGoes.jsx`, `CoachingHowItWorks.jsx`, and
+      inline in `src/app/v2/shop/page.js`).
+- [ ] Unresolved: `!text-ink/45` on `bg-gold` (`NewsletterSection.jsx:66,82,89`,
+      `CoachingWhatYouGet.jsx:36,59`). DESIGN.md tolerates `ink/55` on Glow at
+      3.64:1 but says nothing about `ink/45`, which is lower still. Needs a call
+      on what the floor actually is.
+
+### Tooling
+
+- [ ] There is no root ESLint config and no `eslint` dependency, so
+      `npm run lint` drops into the interactive setup prompt and would hang a
+      CI run. Either restore a config or drop the script.
+- [ ] `/admin` has no UI test. The Firestore rule is covered
+      (`tests/e2e/firestore-rules.spec.js`), but nothing asserts an admin can
+      actually sign in and see bookings and customers.
+- [ ] Unverified: a signed-in user whose profile has no `mobileNumber` may be
+      able to reach an enabled "Confirm booking" on a session-restored step 4
+      (`BookingFlow.jsx:252` guards only the guest path). No repro found —
+      confirm before changing anything.
