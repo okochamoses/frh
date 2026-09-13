@@ -42,9 +42,9 @@
 
 ## Bugs
 
-- [ ] `gallery/page.js` still references `/ceo.webp` — update to `/ceo.png` to match `about.js`
+- [x] ~~`gallery/page.js` still references `/ceo.webp`~~ Stale: no file under `src/` references a missing image; checked every `/x.webp|png|jpg|svg` literal against `public/`. `/ceo.webp` exists and is used by `HeroSection.js` — update to `/ceo.png` to match `about.js`
 
-- [ ] `src/lib/mail/MailService.js` missing `sendNewsletterWelcome` — `functions/lib` version has it; low risk since newsletter welcome is Firestore-triggered (not called from Next.js), but keep in sync
+- [x] ~~`src/lib/mail/MailService.js` missing `sendNewsletterWelcome`~~ Moot: `src/lib/mail/**` is deleted; the functions copy is the only one — `functions/lib` version has it; low risk since newsletter welcome is Firestore-triggered (not called from Next.js), but keep in sync
 
 ## Nice to have
 
