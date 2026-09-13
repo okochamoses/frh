@@ -11,6 +11,15 @@ import VisitUs from "@/components/v2/sections/VisitUs";
 import FaqSection from "@/components/v2/sections/FaqSection";
 import ClosingCta from "@/components/v2/sections/ClosingCta";
 
+// The most-shared page on the site, so it says what the salon is and where it
+// is rather than inheriting the layout's one-liner.
+export const metadata = {
+  title: "Flourish Roots Hair Co. — 4C natural hair salon in Isolo, Lagos",
+  description:
+    "A natural hair salon in Isolo, Lagos for 4C hair: twists, braids, threading, locs, treatments and take-down. Every price listed, and gentle hands on your scalp.",
+  alternates: { canonical: "/v2" },
+};
+
 // No bottom padding on <main>: the closing band is full-bleed and meets the
 // footer directly, the way the hero meets the top of the page.
 export default function V2HomePage() {
