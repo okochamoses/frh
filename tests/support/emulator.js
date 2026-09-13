@@ -5,6 +5,9 @@
  * wipe state and seed users without pulling firebase-admin into the test run.
  */
 
+import { spawn } from "node:child_process";
+import path from "node:path";
+
 export const EMULATOR_PROJECT_ID = "demo-flourish";
 export const AUTH_EMULATOR = "http://127.0.0.1:9099";
 export const FIRESTORE_EMULATOR = "http://127.0.0.1:8080";
@@ -370,6 +373,174 @@ export async function seedBooking({ uid, email, services, startTime, status = "c
   if (!res.ok) throw new Error(`Failed to seed booking: ${res.status} ${await res.text()}`);
   const body = await res.json();
   return body.name.split("/").pop();
+}
+
+/**
+ * Writes a booking straight into the emulator for the appointment-reminder
+ * scheduler tests (`schedulerMessages`).
+ *
+ * `seedBooking` above is built for a client's history — it defaults to an
+ * already-completed, already-reminded visit. The scheduler tests need the
+ * opposite default: a live appointment nobody has been reminded about yet, at
+ * whatever `startTime` (and storage format — naive WAT or true UTC instant)
+ * the test is pinning. Returns the new document id.
+ */
+export async function seedReminderBooking({
+  email,
+  firstName = "Ada",
+  startTime,
+  status = "pending",
+  reminderSent = false,
+}) {
+  const res = await fetch(
+    `${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}/databases/(default)/documents/bookings`,
+    {
+      method: "POST",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({
+        fields: {
+          userId: { stringValue: "guest" },
+          userEmail: { stringValue: email },
+          userFirstName: { stringValue: firstName },
+          servicesText: { stringValue: "Barrel Twist" },
+          startTime: { stringValue: startTime },
+          status: { stringValue: status },
+          reminderSent: { booleanValue: reminderSent },
+        },
+      }),
+    }
+  );
+  if (!res.ok) throw new Error(`Failed to seed reminder booking: ${res.status} ${await res.text()}`);
+  const body = await res.json();
+  return body.name.split("/").pop();
+}
+
+/**
+ * Invokes the `schedulerMessages` HTTP endpoint — the same one the 15-minute
+ * cron POSTs — with the `secure` header it checks. Returns the HTTP status and
+ * parsed JSON body (`{sent, failed, digest}`) rather than throwing, so specs
+ * can assert on a rejected/malformed response too.
+ */
+export async function callScheduler(secret) {
+  const res = await fetch(
+    `${FUNCTIONS_EMULATOR}/${EMULATOR_PROJECT_ID}/${FUNCTIONS_REGION}/schedulerMessages`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", secure: secret },
+      body: "{}",
+    }
+  );
+  const body = await res.json().catch(() => ({}));
+  return { status: res.status, body };
+}
+
+// ── MailDev ───────────────────────────────────────────────────────────────
+//
+// `npm run dev:local` runs MailDev in its own terminal, but Playwright's e2e
+// `webServer` config only starts the auth/firestore/functions emulators and
+// the Next dev server — nothing catches SMTP. Without a real listener on
+// 127.0.0.1:1025, `functions/lib/mail/MailService.js`'s `sendMail` call
+// throws (connection refused), and `schedulerMessages` treats that exactly
+// like any other send failure: it rolls `reminderSent` back to `false` before
+// the assertions below ever run. So the scheduler spec needs a real MailDev
+// instance up, not just its API queried optimistically.
+
+const MAILDEV_WEB = "http://127.0.0.1:1080";
+const MAILDEV_SMTP_PORT = 1025;
+
+let maildevProcess = null;
+let maildevReadyPromise = null;
+
+async function maildevIsUp() {
+  try {
+    const res = await fetch(`${MAILDEV_WEB}/healthz`);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Ensures a MailDev instance is listening on 127.0.0.1:1025/1080, starting
+ * one (the same binary `npm run maildev` uses) if nothing already answers.
+ * Memoised like `ensureEmulatorsReady`, so only the first caller in a run
+ * actually starts it.
+ */
+export function ensureMailDevReady() {
+  maildevReadyPromise ??= (async () => {
+    if (await maildevIsUp()) return; // something is already serving MailDev's API
+
+    const bin = path.join(process.cwd(), "node_modules", ".bin", "maildev");
+    maildevProcess = spawn(
+      bin,
+      ["--ip", "127.0.0.1", "--smtp", String(MAILDEV_SMTP_PORT), "--web", "1080", "--silent"],
+      { stdio: "ignore" }
+    );
+    maildevProcess.on("error", (err) => {
+      throw new Error(`Failed to start MailDev: ${err.message}`);
+    });
+
+    const deadline = Date.now() + 20_000;
+    while (!(await maildevIsUp())) {
+      if (Date.now() > deadline) {
+        throw new Error(
+          "MailDev did not become ready on 127.0.0.1:1080 within 20s. " +
+            "Is port 1025 or 1080 already held by something that isn't MailDev?"
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  })();
+
+  return maildevReadyPromise;
+}
+
+/** Stops the MailDev instance this process started, if any (a no-op if we only found one already running). */
+export function stopMailDevIfStarted() {
+  if (maildevProcess) {
+    maildevProcess.kill();
+    maildevProcess = null;
+  }
+}
+
+/** Deletes every message in the MailDev inbox. */
+export async function clearMailbox() {
+  const res = await fetch(`${MAILDEV_WEB}/email/all`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Failed to clear MailDev inbox: ${res.status}`);
+}
+
+/** Every message MailDev has caught, newest emulator-friendly shape. */
+export async function getMailboxMessages() {
+  const res = await fetch(`${MAILDEV_WEB}/email`);
+  if (!res.ok) throw new Error(`Failed to read MailDev inbox: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Polls the MailDev inbox until at least `count` messages matching `toAddress`
+ * (and, if given, `subjectContains`) have arrived, or times out. Sending
+ * happens after `schedulerMessages` returns but the SMTP round-trip to
+ * MailDev is not part of that response, so callers need a short poll rather
+ * than an immediate read.
+ *
+ * `subjectContains` matters here: creating a booking document — even by
+ * seeding it directly, as the scheduler specs do — fires `onBookingCreated`,
+ * which mails the same address a booking *confirmation*. Filtering only by
+ * recipient would conflate that with the reminder under test.
+ */
+export async function waitForMailTo(toAddress, { count = 1, timeoutMs = 5000, subjectContains = null } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const messages = await getMailboxMessages();
+    const matches = messages.filter(
+      (m) =>
+        (m.envelope?.to ?? []).some((t) => t.address === toAddress) &&
+        (subjectContains === null || (m.subject ?? "").includes(subjectContains))
+    );
+    if (matches.length >= count) return matches;
+    if (Date.now() > deadline) return matches;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
 }
 
 /** Every booking belonging to a user, read with admin access. */

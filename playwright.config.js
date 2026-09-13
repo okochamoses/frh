@@ -86,6 +86,15 @@ export default defineConfig({
       // Functions are in the list because bookings are created, cancelled and
       // rescheduled by callables — nothing writes that collection directly.
       command: emulatorCommand,
+      // `SCHEDULER_SECRET` is a `defineSecret` with no emulator fallback, so
+      // the Functions emulator only sees it if it was in the environment that
+      // started it — and `schedulerMessages` rejects every call without it.
+      // Supplying it here is what lets `npm run test:e2e` run the scheduler
+      // spec; the spec falls back to this same value. A real secret in the
+      // shell still wins.
+      env: {
+        SCHEDULER_SECRET: process.env.SCHEDULER_SECRET || "e2e-test-scheduler-secret",
+      },
       // Probe the Auth emulator: it comes up after Firestore, so waiting on it
       // covers both. resetEmulators() re-checks anyway.
       url: "http://127.0.0.1:9099/",
