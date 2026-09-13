@@ -119,6 +119,20 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
 const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
+ * A look's name reduced to a URL-safe word, e.g. "Barrel twists" -> "barrel-twists".
+ *
+ * Diacritics are folded rather than dropped so a name that carries one still
+ * yields the letter under it instead of losing it from the slug.
+ */
+const slugify = (s) =>
+  clean(s)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/**
  * Only direct image links are worth rendering. `pin.it` short links are share
  * pages, not images, and would show as broken pictures.
  */
@@ -157,6 +171,17 @@ export const SERVICE_BY_TITLE = new Map();
 /** Every look, keyed by id. */
 export const LOOK_BY_ID = new Map();
 
+/**
+ * Looks by the slug that addresses them in a URL — `/v2/booking?look=barrel-twists`.
+ *
+ * The `look-N` ids are ordinals over the salon's export order, so inserting one
+ * row upstream renumbers every look after it. That is harmless while the id
+ * never leaves the bundle, but a link carrying it would quietly point at a
+ * different style after the next `sync:services`. A slug taken from the name
+ * moves with the look instead, and reads as the style in the address bar.
+ */
+export const LOOK_BY_SLUG = new Map();
+
 function buildLooks() {
   const groups = new Map();
   for (const s of bookable) {
@@ -167,6 +192,17 @@ function buildLooks() {
 
   const looks = [];
   let n = 0;
+
+  // Two looks can reduce to the same slug ("Wash & go" in two categories, say).
+  // The first keeps the bare word and the rest are numbered, so a slug always
+  // addresses exactly one look.
+  const taken = new Set();
+  const uniqueSlug = (base) => {
+    let slug = base;
+    for (let i = 2; taken.has(slug); i += 1) slug = `${base}-${i}`;
+    taken.add(slug);
+    return slug;
+  };
   for (const rows of groups.values()) {
     n += 1;
     const first = rows[0];
@@ -205,6 +241,7 @@ function buildLooks() {
 
     const look = {
       id: `look-${n}`,
+      slug: uniqueSlug(slugify(baseName) || `look-${n}`),
       name: baseName,
       category: first.category,
       image,
@@ -223,6 +260,7 @@ function buildLooks() {
 
     for (const o of options) o.lookId = look.id;
     LOOK_BY_ID.set(look.id, look);
+    LOOK_BY_SLUG.set(look.slug, look);
     looks.push(look);
   }
 

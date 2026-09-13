@@ -121,7 +121,7 @@ export default function ServiceMenu() {
                 {looks.map((look) => (
                   <li key={look.id} className="border-b border-ink/15">
                     <Link
-                      href="/v2/booking"
+                      href={`/v2/booking?look=${look.slug}`}
                       className="group relative grid gap-x-8 py-7 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_11rem] md:py-8 lg:gap-x-12"
                     >
                       <span

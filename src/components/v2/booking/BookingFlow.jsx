@@ -16,7 +16,7 @@ import { AUTH_MODES, VALIDATION } from "@/lib/auth/constants";
 import { ensureGuestSession } from "@/lib/firebase/authService";
 import { createBooking, subscribeUserBookings } from "@/lib/firebase/bookingService";
 import { updateMobileNumber } from "@/lib/firebase/userService";
-import { SERVICE_BY_TITLE } from "@/lib/booking/catalogue";
+import { LOOK_BY_SLUG, SERVICE_BY_TITLE } from "@/lib/booking/catalogue";
 import { track } from "@/lib/analytics";
 import {
   MAX_APPOINTMENT_MINUTES,
@@ -369,6 +369,71 @@ export default function BookingFlow() {
     },
     [showToast, refuseIfTooLong]
   );
+
+  /*
+   * `?look=<slug>` — the link every row of the public services menu carries.
+   *
+   * Someone who has read the priced menu and tapped a style has already chosen
+   * it; landing them on an empty step 1 to hunt for that same style again, in a
+   * grid that looks nothing like the list they just read, throws the decision
+   * away and makes the two pages feel like one job done twice.
+   *
+   * Waits for the cart restore above, because this tab may already hold a
+   * half-built booking. The link then adds to that cart rather than replacing
+   * it — a customer who picked two services and went back for a third would
+   * otherwise lose the first two without being told.
+   *
+   * A look with sizes opens its sheet rather than guessing a size: the price on
+   * the menu was a "from", so the size is still an open question. Either way the
+   * step goes back to the services grid first, so the sheet is not left floating
+   * over a restored calendar.
+   *
+   * Runs once, and strips the parameter either way, so a reload does not re-add
+   * a service the customer has since removed.
+   */
+  const lookParamRead = useRef(false);
+  useEffect(() => {
+    if (!restored || lookParamRead.current) return;
+    lookParamRead.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("look");
+    if (!slug) return;
+
+    params.delete("look");
+    const qs = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+
+    // An unknown slug — a stale bookmark, or a style the salon has retired —
+    // leaves them at step 1, which is where they would have been anyway.
+    const look = LOOK_BY_SLUG.get(slug);
+    if (!look) return;
+
+    track("look_deeplink", { look: slug, variants: look.hasVariants });
+
+    if (look.hasVariants) {
+      setStep(1);
+      setSheetLook(look.id);
+      return;
+    }
+
+    const option = look.options[0];
+    if (selectedRef.current.includes(option.title)) {
+      setStep(1);
+      return;
+    }
+    if (refuseIfTooLong(option)) {
+      setStep(1);
+      return;
+    }
+    setSelected((prev) => [...prev, option.title]);
+
+    // A cart that was empty means they came straight from the menu with one
+    // style in mind, so the calendar is the next question. A cart that already
+    // had something stays on the grid, where the new card is visibly added
+    // next to what they picked before.
+    setStep(selectedRef.current.length === 0 ? 2 : 1);
+  }, [restored, refuseIfTooLong]);
 
   const goTo = (n) => {
     // The whole point of the funnel: which step people leave from.
