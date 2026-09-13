@@ -518,21 +518,37 @@ export default function Header() {
         {/* `relative z-50` keeps the bar (and the account dropdown it owns)
             painting above the mega panels, which follow it in the DOM. */}
         <div className="relative z-50 mx-auto flex h-16 max-w-[var(--v2-container)] v2-topband items-center justify-between gap-6 border-b border-ink/10 px-4 md:px-8 lg:h-20">
-          {/* Auth state lives on the left of the mobile bar, opposite the menu
-              button, with the mark centered between them. */}
+          {/*
+            The left of the mobile bar, opposite the menu button, with the mark
+            centered between them.
+
+            A signed-out visitor gets Book here, not Log in. Booking needs no
+            account — `BookingFlow` takes a name and a phone number from a guest
+            and signs them in anonymously at the moment they confirm — and the
+            one place an account actually pays off, reusing saved details, is
+            offered in context at the Details step. So a Log in pill was the only
+            always-visible button on a phone while the mustard Book button was
+            `hidden lg:inline-flex`, which left "the one bright colour on the
+            page, so Book is findable everywhere" findable nowhere below `lg`.
+            Worse, it implied booking needed an account.
+
+            Log in keeps its full-width button in the drawer's action rail, so
+            nothing is lost; a client who is already signed in still gets their
+            account menu here, since they are not the one being converted.
+
+            "Book now" rather than the desktop "Book an appointment": the mark is
+            centered and the menu button holds the right, which leaves this slot
+            about 150px on a 375px bar.
+          */}
           <div className="flex items-center lg:hidden">
             {!hydrated ? (
               <span aria-hidden className="h-11 w-11 rounded-full bg-latte" />
             ) : isAuthenticated ? (
               <AccountMenu compact user={user} onLogout={logout} />
             ) : (
-              <button
-                type="button"
-                onClick={() => openAuthModal({ mode: AUTH_MODES.SIGN_IN })}
-                className="inline-flex h-11 items-center rounded-full bg-ink px-5 text-v2-body-sm font-semibold text-white transition-colors duration-200 ease-out hover:bg-ink/90"
-              >
-                Log in
-              </button>
+              <Button variant="book" href="/v2/booking" className="h-11 px-5">
+                Book now
+              </Button>
             )}
           </div>
 
