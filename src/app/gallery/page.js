@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Bagelan, merriweather } from "@/app/layout"
+import { Bagelan, merriweather } from "@/app/fonts"
 
 const IMAGES = [
   { src: "/gallery/IMG_6324.webp", alt: "Hair transformation",       width: 800, height: 1000 },

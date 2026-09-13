@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { merriweather, Bagelan } from "@/app/layout";
+import { merriweather, Bagelan } from "@/app/fonts";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { updateUserProfile } from "@/lib/firebase/userService";
 import { Button } from "@/components/ui/button";

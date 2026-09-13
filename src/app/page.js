@@ -1,7 +1,7 @@
 'use client'
 import { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Bagelan, merriweather } from "@/app/layout";
+import { Bagelan, merriweather } from "@/app/fonts";
 import ServiceCard from "../components/serviceCard";
 import Marquee from "react-fast-marquee";
 import Button from "../components/button";

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { FaInstagram, FaFacebook, FaWhatsapp, FaTiktok } from "react-icons/fa6";
-import { merriweather, Bagelan } from "@/app/layout";
+import { merriweather, Bagelan } from "@/app/fonts";
 import Link from "next/link";
 
 const socials = [

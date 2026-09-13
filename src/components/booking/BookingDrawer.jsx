@@ -14,7 +14,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faAngleRight, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { CiCalendar, CiClock2 } from "react-icons/ci";
-import { merriweather } from "@/app/layout";
+import { merriweather } from "@/app/fonts";
 import {
   useBooking,
   dayCapacityMinutes,

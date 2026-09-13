@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { merriweather, Bagelan } from "@/app/layout"
+import { merriweather, Bagelan } from "@/app/fonts"
 import { motion, AnimatePresence, useInView } from "framer-motion"
 import Link from "next/link"
 import { ChevronDown, ChevronLeft, ChevronRight, Check } from "lucide-react"

@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { SplitMenu } from "@/components/SplitMenu"
 import { useAuth } from "@/app/contexts/AuthContext"
-import { merriweather } from "@/app/layout"
+import { merriweather } from "@/app/fonts"
 
 export function Header() {
     const [isVisible, setIsVisible] = useState(true)

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
-import { merriweather } from "@/app/layout";
+import { merriweather } from "@/app/fonts";
 import { subscribeAllBookings } from "@/lib/firebase/adminService";
 
 const STATUS_STYLES = {

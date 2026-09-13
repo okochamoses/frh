@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import Link from "next/link"
-import { merriweather, Bagelan } from "@/app/layout"
+import { merriweather, Bagelan } from "@/app/fonts"
 import ParallaxImage from "./ParallaxImage"
 
 const STEPS = [

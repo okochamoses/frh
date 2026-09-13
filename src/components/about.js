@@ -1,6 +1,6 @@
 "use client"
 
-import { Bagelan, merriweather } from "@/app/layout";
+import { Bagelan, merriweather } from "@/app/fonts";
 import Link from "next/link";
 import ParallaxImage from "./ParallaxImage";
 

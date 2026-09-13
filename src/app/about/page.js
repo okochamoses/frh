@@ -2,7 +2,7 @@
 
 import About from "@/components/about"
 import ParallaxImage from "@/components/ParallaxImage"
-import { Bagelan, merriweather } from "@/app/layout"
+import { Bagelan, merriweather } from "@/app/fonts"
 
 const STORY_TAGS = ["Est. Lagos, Nigeria", "Natural Hair", "Root to Tip"]
 

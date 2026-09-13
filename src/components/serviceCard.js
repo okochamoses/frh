@@ -1,6 +1,6 @@
 "use client";
 
-import {merriweather} from "@/app/layout";
+import {merriweather} from "@/app/fonts";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Button from "@/components/button";

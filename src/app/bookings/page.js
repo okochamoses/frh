@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
 import { CiClock2 } from "react-icons/ci";
-import { merriweather, Bagelan } from "@/app/layout";
+import { merriweather, Bagelan } from "@/app/fonts";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useBooking } from "@/app/contexts/BookingContext";
 import { subscribeUserBookings, cancelBooking } from "@/lib/firebase/bookingService";

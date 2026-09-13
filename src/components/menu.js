@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bagelan } from "@/app/layout";
+import { Bagelan } from "@/app/fonts";
 
 export function Menu({ showMenu, handleMenuClick }) {
   const menuItems = [

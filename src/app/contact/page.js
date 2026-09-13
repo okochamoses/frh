@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bagelan, merriweather } from "@/app/layout"
+import { Bagelan, merriweather } from "@/app/fonts"
 
 const SOCIALS = [
   {

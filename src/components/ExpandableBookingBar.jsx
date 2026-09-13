@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { useBooking } from "@/app/contexts/BookingContext";
-import { merriweather } from "@/app/layout";
+import { merriweather } from "@/app/fonts";
 
 function formatDuration(minutes) {
   const h = Math.floor(minutes / 60);

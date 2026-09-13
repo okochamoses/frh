@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { merriweather } from "@/app/layout";
+import { merriweather } from "@/app/fonts";
 import { Check } from "lucide-react";
 
 const HEADLINE = "Get The Ultimate 4C Hair Survival Guide";

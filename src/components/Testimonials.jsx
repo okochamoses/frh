@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { merriweather, Bagelan } from "@/app/layout"
+import { merriweather, Bagelan } from "@/app/fonts"
 
 const TESTIMONIALS = [
   {

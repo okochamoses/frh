@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Image from "next/image";
 import Link from "next/link";
-import { Bagelan, merriweather } from "@/app/layout";
+import { Bagelan, merriweather } from "@/app/fonts";
 
 export default function HeroSection() {
   const containerRef  = useRef(null);

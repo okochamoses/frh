@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
-import { merriweather, Bagelan } from "@/app/layout";
+import { merriweather, Bagelan } from "@/app/fonts";
 import services from "../salon/services.json";
 import { useBooking } from "@/app/contexts/BookingContext";
 import { ExpandableBookingBar } from "@/components/ExpandableBookingBar";
