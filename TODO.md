@@ -154,11 +154,10 @@ already promises in public on `/v2/services` and `/v2/salon`.
 
 ### Stale test
 
-- [ ] `v2-booking.spec.js:707` expects `₦18,000` for Barrel Twist + Finger
-      Coils, but the uncommitted pricing change took Finger Coils from ₦8,000 to
-      ₦10,000, so the pair is ₦20,000 and the mobile-safari case fails. Left
-      alone because the price edit is still in the working tree — update the
-      test when that pricing is settled.
+- [x] `v2-booking.spec.js` expected `₦18,000` for Barrel Twist + Finger Coils
+      after Finger Coils moved to ₦10,000. *Done: prices in that file now come
+      from named constants through one formatter. The other ₦18,000 a few tests
+      up was correct — that booking seeds Barrel Twist and a wash.*
 
 ### Small
 
@@ -324,3 +323,52 @@ above are not repeated here.
       whenever the browser pane is hidden, which silently turns every layout
       assertion into nonsense. Screenshot passes have to run in the foreground
       session with the pane visible.
+
+## Continuous-iteration round 2 (2026-09-13)
+
+Round 2 was cut short: the parallel audits (admin dashboard, the unattended
+cron/email paths, payload and metadata) all died on a session rate limit before
+reporting. Those three areas are still unaudited. What follows was found
+working alone.
+
+### Done
+
+- [x] **The admin allowlist let an impostor in.** `isAdmin()` matched on
+      `request.auth.token.email` without checking `email_verified`. An admin is
+      allowlisted *before* their first sign-in, and Firebase will create an
+      email/password account for any address nobody has claimed — so anyone who
+      knew or guessed an allowlisted address could register it and read every
+      customer's name, phone number and booking history. Reproduced against the
+      emulator (200 plus customer rows), then fixed and re-checked (403, while
+      a verified admin still gets 200).
+
+### Search and sharing — needs two decisions from you
+
+- [ ] **No Open Graph or Twitter tags anywhere.** `src/app/v2/layout.js` sets a
+      title and description and nothing else, so every link shared to WhatsApp
+      or Instagram — which is how this salon is actually passed around — renders
+      as a bare URL with no picture. Fixing it needs a share image (1200×630;
+      none of the current assets is that shape, so one has to be made or
+      cropped) and `metadataBase`, which needs the production domain settled —
+      `SITE_BASE` still defaults to `flourish-roots.web.app` and TODO already
+      notes the site may move.
+- [ ] No `sitemap.xml` and no `robots.txt`. Also blocked on the domain.
+- [ ] No `LocalBusiness` JSON-LD. For a salon competing on local search this is
+      the single highest-value piece of structured data — address, opening
+      hours and phone are all already centralised in
+      `src/components/v2/salon.js`, so it is mostly a matter of deciding to.
+- [ ] The v2 homepage has no `metadata` of its own, so the most-shared page on
+      the site inherits the layout's generic "Flourish Roots Hair" /
+      "Hair that flourishes from root to tip."
+
+### Still unaudited (round 2 never ran)
+
+- [ ] The admin dashboard beyond the rules: both list pages subscribe to whole
+      collections with no limit or pagination and sort in the browser.
+- [ ] The unattended paths — the 15-minute reminder cron, the daily digest
+      claim, `completeBooking` — for double sends, missed windows, and WAT
+      boundaries; plus whether customer-supplied names and notes are escaped
+      everywhere they reach an email template.
+- [ ] Payload: fonts shipped as `.ttf`/`.otf` rather than woff2, which of
+      framer-motion / gsap / swiper / react-fast-marquee each v2 route actually
+      pulls in, and whether the `V1Shell` split still keeps v1 chrome out of v2.
