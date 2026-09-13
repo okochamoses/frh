@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import dayjs from "dayjs";
 import { merriweather } from "@/app/fonts";
+import { formatWat } from "@/lib/booking/schedule";
 import { subscribeAllCustomers } from "@/lib/firebase/adminService";
 
 export default function AdminCustomersPage() {
@@ -71,7 +71,7 @@ export default function AdminCustomersPage() {
                   <td className="px-4 py-3">{c.mobileNumber || "—"}</td>
                   <td className="px-4 py-3 capitalize">{c.provider || "—"}</td>
                   <td className="whitespace-nowrap px-4 py-3">
-                    {c.createdAt?.toDate ? dayjs(c.createdAt.toDate()).format("D MMM YYYY") : "—"}
+                    {formatWat(c.createdAt, { withTime: false }) ?? "—"}
                   </td>
                 </tr>
               ))}

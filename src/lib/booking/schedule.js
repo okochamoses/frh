@@ -95,6 +95,45 @@ export function fromInstant(iso) {
   return { key: dateKeyFromParts(parts), time: fromMinutes(parts.minutes), weekday: parts.weekday };
 }
 
+/**
+ * Resolves a stored `startTime`-shaped string to the real instant it means.
+ *
+ * Mirrors `functions/lib/time.js`'s `watDate`: bookings written before the UTC
+ * migration store a naive WAT string with no zone ("2026-08-21T10:00:00"),
+ * newer ones store a true instant ("…Z"). Anchoring the naive form to +01:00
+ * before parsing means both resolve to the same wall-clock time regardless of
+ * the browser's own time zone.
+ */
+export function watInstant(iso) {
+  if (!iso) return null;
+  const hasZone = /(Z|[+-]\d{2}:\d{2})$/.test(iso);
+  const d = new Date(hasZone ? iso : `${iso}+01:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Formats a stored date as Lagos wall-clock time, independent of the viewer's
+ * browser time zone. Accepts an ISO `startTime`-shaped string (resolved via
+ * `watInstant`), a Firestore Timestamp (has `.toDate()`), or a `Date`.
+ * Returns `null` when there is nothing sensible to show.
+ */
+export function formatWat(value, { withTime = true } = {}) {
+  const date =
+    value && typeof value.toDate === "function"
+      ? value.toDate()
+      : typeof value === "string"
+        ? watInstant(value)
+        : value instanceof Date
+          ? value
+          : null;
+  if (!date || Number.isNaN(date.getTime())) return null;
+
+  const { key, time } = fromInstant(date.toISOString());
+  const { day, month, year } = parseKey(key);
+  const datePart = `${day} ${MONTHS[month - 1].slice(0, 3)} ${year}`;
+  return withTime ? `${datePart}, ${time}` : datePart;
+}
+
 export function openingMinutes(weekday) {
   return (weekday === 0 ? SUNDAY_OPEN_HOUR : OPEN_HOUR) * 60;
 }

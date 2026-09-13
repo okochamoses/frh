@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import dayjs from "dayjs";
 import { merriweather } from "@/app/fonts";
-import { subscribeAllBookings } from "@/lib/firebase/adminService";
+import { formatWat } from "@/lib/booking/schedule";
+import { BOOKING_STATUS_LABELS, subscribeAllBookings } from "@/lib/firebase/adminService";
 
 const STATUS_STYLES = {
   pending: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -86,12 +86,11 @@ export default function AdminBookingsPage() {
             </thead>
             <tbody className="divide-y divide-stone-100">
               {filtered.map((b) => {
-                const start = b.startTime ? dayjs(b.startTime) : null;
                 const status = b.status ?? "pending";
                 return (
                   <tr key={b.id}>
                     <td className="whitespace-nowrap px-4 py-3">
-                      {start ? start.format("D MMM YYYY, HH:mm") : "—"}
+                      {formatWat(b.startTime) ?? "—"}
                     </td>
                     <td className="px-4 py-3">
                       {b.userFirstName || "—"}
@@ -116,7 +115,7 @@ export default function AdminBookingsPage() {
                           STATUS_STYLES[status] ?? STATUS_STYLES.pending
                         }`}
                       >
-                        {status}
+                        {BOOKING_STATUS_LABELS[status] ?? status}
                       </span>
                     </td>
                   </tr>
