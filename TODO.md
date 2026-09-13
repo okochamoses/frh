@@ -372,3 +372,96 @@ working alone.
 - [ ] Payload: fonts shipped as `.ttf`/`.otf` rather than woff2, which of
       framer-motion / gsap / swiper / react-fast-marquee each v2 route actually
       pulls in, and whether the `V1Shell` split still keeps v1 chrome out of v2.
+
+### Round 2 findings (2026-09-13)
+
+#### Done
+
+- [x] Search and sharing. Open Graph and Twitter tags with a real 1200×630
+      share image, `HairSalon` structured data derived from the booking
+      constants, a sitemap and a robots.txt, and `src/lib/site.js` holding the
+      one origin they all need.
+- [x] **Every page's title and description were being shadowed.** The root
+      layout declared `metadata` without exporting it and hand-wrote a literal
+      `<title>` and description into `<head>`, so pages that set their own
+      emitted two of each — and the generic pair came first. Fixing it meant
+      moving the v1 fonts to `src/app/fonts.js`, because 23 client components
+      imported them from the layout and dragged it into the client graph.
+
+#### The reminder cron (fix in progress)
+
+- [ ] **Reminders fire about an hour early for every booking made since the
+      UTC migration.** The window is built as naive-WAT digits
+      (`functions/index.js:879`) and fed to a lexicographic Firestore range
+      query, but post-migration `startTime` values are true UTC. Working it
+      through, a UTC-stored booking only enters the window when it is
+      1h45m–2h15m away — so the "your appointment is in one hour" email arrives
+      roughly two hours ahead. Naive-WAT rows work by coincidence of format.
+- [ ] The send is awaited before `reminderSent` is written
+      (`functions/index.js:911`), so a failed write or a timed-out invocation
+      after the mail went out means the next tick sends it again. The digest
+      already solves this with an atomic claim.
+- [ ] A failed reminder is logged by its index into the *filtered* array
+      (`functions/index.js:930`), which does not identify the booking — so
+      nobody can tell which customer went un-reminded.
+
+#### The reminder cron (not yet)
+
+- [ ] A booking made 20–40 minutes ahead is never reminded: the window floor is
+      45 minutes out but `validateSlot` sets no minimum lead time.
+- [ ] The digest tells the owner that each booking's own email carries a
+      "mark complete" link (`templates.js:781`). When `BOOKING_SECRET` is
+      unset those links do not exist, so the digest points at a control that
+      is not there.
+
+#### Admin dashboard
+
+- [ ] **Staff and customers are shown contradictory words for the same
+      booking.** The admin badge prints the raw status — "PENDING" — while the
+      customer was told "Confirmed" (`src/app/bookings/page.js:32` maps it) and
+      the admin's own filter dropdown calls that value "Confirmed" too. Staff
+      may well treat a confirmed booking as something still to chase.
+- [ ] Both admin pages subscribe to whole collections with no limit, filter or
+      pagination (`adminService.js:63`, `:76`) and sort in the browser. At
+      5,000 bookings and 3,000 customers that is ~8,000 document reads per
+      dashboard open, per admin, per reload — several MB before the table
+      renders at all, and nothing renders until every row has arrived. A
+      bounded `orderBy("startTime","desc")` + `limit` with a cursor needs only
+      the automatic single-field index.
+- [ ] Admin dates are rendered with a bare `dayjs(b.startTime)`
+      (`admin/bookings/page.js:89`), with no equivalent of the backend's
+      `watDate`. Any legacy zone-less booking shows in the viewer's own
+      timezone rather than Lagos.
+- [ ] Signing out of the admin dashboard signs the same person out of their
+      customer session, because both use the one Firebase Auth instance. Worth
+      at least saying so in the UI.
+- [ ] A subscription error shows "Couldn't load bookings" whatever the cause,
+      so a rules regression is indistinguishable from an outage. It does not
+      masquerade as an empty list, which was the thing worth checking.
+
+#### Payload — roughly 150–250 KB a page, ~400 KB on /v2/booking
+
+- [ ] Seven font files (~123 KB) are preloaded on *every* v2 route, including
+      text-only pages, competing with the hero image for first paint. Barlow is
+      loaded at three weights and Barlow Condensed at two, none marked
+      `preload: false` (`src/app/v2/fonts.js`).
+- [ ] `/v2/booking` is 301 kB of first-load JS against 119–131 kB for every
+      other v2 page, because the Firestore listener and callable SDK are pulled
+      in at route load. It is the page with the highest intent and it is the
+      heaviest.
+- [ ] `AuthProvider` wraps every route from `src/app/structure.js`, so the
+      Firebase Auth SDK sits in the shared baseline even for a static page like
+      `/v2/about`.
+- [ ] `/v2/gallery` hand-rolls a `srcSet` against a duplicate older set of
+      files in `public/gallery/*-400|800.webp`, with the uncapped full-size
+      original as the largest candidate (`img_1.webp` is 219 KB), instead of
+      using the `_img` variant pipeline everything else uses.
+- [ ] v1 still ships `Bagelan.otf` (182 KB) and `merriweather.otf` (29 KB) as
+      OTF rather than woff2. No v2 route touches them, so this is v1's bill.
+- [ ] `src/app/figtree.ttf` (63 KB) is imported by nothing.
+
+Checked and clean, worth not re-checking: customer names, phone numbers and
+notes are escaped everywhere they reach an email template; prices and durations
+in emails are the snapshot taken when the booking was made; the `V1Shell` split
+still keeps framer-motion, gsap, swiper and react-fast-marquee out of every v2
+route; and no admin row crashes or prints NaN on missing fields.
