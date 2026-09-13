@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { resetEmulators, seedUser, uniqueEmail } from "../support/emulator.js";
 import { AuthModal } from "../support/auth-modal.js";
+import { gotoReady, retryInteraction } from "../support/hydration.js";
 
 /**
  * The whole booking round trip through the UI: book → see it under Upcoming →
@@ -29,32 +30,29 @@ function openDayLabel(daysAhead = 2) {
 }
 
 /**
- * Opens /services and waits until the page is actually interactive.
+ * Signs a seeded user in through the booking gate and lands on the date/time
+ * picker.
  *
- * `page.goto` resolves on the HTML, but this page is server-rendered and only
- * responds once React has hydrated — before that a click or a `fill` reaches
- * the DOM and nothing handles it. The search box is a controlled input, so a
- * `fill` that lands early is silently discarded and the list stays unfiltered,
- * which is what made "a day the services cannot fit says why" fail about two
- * runs in three: it clicked the first Book button on an unfiltered page, which
- * is the featured service, not the one the test is about.
- *
- * The Firebase client logs this line as soon as the client bundle runs, which
- * is the earliest reliable "the JavaScript is live" signal available — the v2
- * suite waits on the same one.
+ * The "Book" click used to fire straight after `gotoReady` resolved, which is
+ * the click-before-hydration race documented in tests/support/hydration.js —
+ * this is what made "dismissing the confirmation does not strand the success
+ * screen" fail under a full-suite run: the click landed on dead DOM, "Book
+ * Now" never appeared, and the click after it timed out waiting.
+ * `retryInteraction` redoes the click on every attempt until the sticky bar
+ * actually shows up, which only happens once hydration has really finished.
  */
-async function openServices(page) {
-  const hydrated = page.waitForEvent("console", {
-    predicate: (m) => m.text().includes("[firebase] Using emulators — project demo-flourish"),
-    timeout: 20_000,
-  });
-  await page.goto("/services");
-  await hydrated;
-}
-
 async function signInAndOpenDrawer(page, user) {
-  await openServices(page);
-  await page.getByRole("button", { name: "Book", exact: true }).first().click();
+  await gotoReady(page, "/services");
+  await retryInteraction(async () => {
+    const bookNow = page.getByRole("button", { name: "Book Now" });
+    // Guarded rather than blind: a selected card relabels "Book" to "Added",
+    // so retrying the click would land on the NEXT service instead of this
+    // one and book two things.
+    if (!(await bookNow.isVisible())) {
+      await page.getByRole("button", { name: "Book", exact: true }).first().click();
+    }
+    await expect(bookNow).toBeVisible({ timeout: 1_000 });
+  });
   await page.getByRole("button", { name: "Book Now" }).click();
 
   const modal = new AuthModal(page);
@@ -129,20 +127,19 @@ test("a day the services cannot fit says why", async ({ page }) => {
   // greys out. Struck-through days alone read as "fully booked forever".
   const user = await seedUser({ email: uniqueEmail("longservice"), mobileNumber: "+2348012345678" });
 
-  await openServices(page);
+  await gotoReady(page, "/services");
 
   // The search box is a controlled input, so a `fill` that lands before React
   // hydrates is discarded when hydration re-renders it empty — the list stays
   // unfiltered and the first Book button is the featured service, not this
-  // one. Waiting on the Firebase console line is not enough: that fires when
-  // the client bundle loads, which is earlier than hydration finishing, and
-  // under a full-suite run the gap is wide enough to lose the keystrokes. So
-  // retry the fill until the list has actually narrowed to the one match.
+  // one. See tests/support/hydration.js: `retryInteraction` redoes the fill
+  // itself on every attempt until the list has actually narrowed to the one
+  // match, rather than just re-checking a fill that already landed on dead DOM.
   const bookButtons = page.getByRole("button", { name: "Book", exact: true });
-  await expect(async () => {
+  await retryInteraction(async () => {
     await page.getByPlaceholder("Search services…").fill("Sister Locs - Long");
     await expect(bookButtons).toHaveCount(1, { timeout: 1_000 });
-  }).toPass({ timeout: 15_000 });
+  });
 
   await bookButtons.click();
   await page.getByRole("button", { name: "Book Now" }).click();

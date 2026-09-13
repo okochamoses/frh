@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { retryInteraction } from "./hydration.js";
 
 /**
  * Page object for the sign-in / sign-up modal.
@@ -33,10 +34,21 @@ export class AuthModal {
     this.error = this.dialog.locator("[role='alert'], .text-red-600, .text-red-500");
   }
 
-  /** Opens the modal from the header's "Sign in" button (desktop viewport only). */
+  /**
+   * Opens the modal from the header's "Sign in" button (desktop viewport only).
+   *
+   * Every signup/session/signin spec navigates to `/` and calls this next,
+   * which is the click-before-hydration race described in
+   * tests/support/hydration.js: a click that lands before React attaches the
+   * header's handler is a no-op, and the dialog never opens. `retryInteraction`
+   * redoes the click itself on each attempt rather than just re-polling for a
+   * dialog that a dead click will never produce.
+   */
   async openFromHeader() {
-    await this.page.getByRole("button", { name: "Sign in" }).first().click();
-    await expect(this.dialog).toBeVisible();
+    await retryInteraction(async () => {
+      await this.page.getByRole("button", { name: "Sign in" }).first().click();
+      await expect(this.dialog).toBeVisible({ timeout: 1_000 });
+    });
   }
 
   async expectSignInMode() {

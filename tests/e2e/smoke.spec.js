@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { resetEmulators } from "../support/emulator.js";
+import { gotoReady, retryInteraction } from "../support/hydration.js";
 
 /**
  * Page-level smoke tests.
@@ -37,7 +38,15 @@ test("@mobile mobile users can reach sign-in", async ({ page }) => {
   // The header's sign-in button is `hidden md:inline-flex` and the SplitMenu
   // has no auth entry, so on a phone there is no way to sign in except the
   // booking gate. This should pass once a mobile entry point exists.
-  await page.goto("/");
-  await page.getByRole("button", { name: /menu/i }).first().click();
-  await expect(page.getByRole("button", { name: /sign in/i }).first()).toBeVisible();
+  //
+  // The menu click races hydration the same way as every other
+  // click-right-after-navigate site (see tests/support/hydration.js): before
+  // hydration it is a no-op, so a plain click-then-check can find the sign-in
+  // button still hidden for reasons that have nothing to do with the
+  // product bug this test actually guards.
+  await gotoReady(page, "/");
+  await retryInteraction(async () => {
+    await page.getByRole("button", { name: /menu/i }).first().click();
+    await expect(page.getByRole("button", { name: /sign in/i }).first()).toBeVisible({ timeout: 1_000 });
+  });
 });

@@ -1,17 +1,35 @@
 import { test, expect } from "@playwright/test";
 import { resetEmulators, seedUser, uniqueEmail } from "../support/emulator.js";
 import { AuthModal } from "../support/auth-modal.js";
+import { gotoReady, retryInteraction } from "../support/hydration.js";
 
 /**
  * The booking flow on /services is the main place an anonymous visitor meets
  * the auth modal, so it is where the sign-in UX actually matters.
  */
 
-/** Selects the first bookable service so the sticky booking bar appears. */
+/**
+ * Selects the first bookable service so the sticky booking bar appears.
+ *
+ * Every test in this file goes through here, and it used to click "Book"
+ * straight after `page.goto` — exactly the click-before-hydration race
+ * described in tests/support/hydration.js: when it lost the race, "Book Now"
+ * never appeared and the next line timed out waiting for it.
+ */
 async function selectFirstService(page) {
-  await page.goto("/services");
-  await page.getByRole("button", { name: "Book", exact: true }).first().click();
-  await expect(page.getByRole("button", { name: "Book Now" })).toBeVisible();
+  await gotoReady(page, "/services");
+  await retryInteraction(async () => {
+    const bookNow = page.getByRole("button", { name: "Book Now" });
+    // Only click when the sticky bar is not already up. A selected card
+    // relabels its button from "Book" to "Added", so a blind retry would not
+    // hit the same card twice — `.first()` would fall through to the NEXT
+    // service and quietly put a second thing in the cart, changing what the
+    // test books.
+    if (!(await bookNow.isVisible())) {
+      await page.getByRole("button", { name: "Book", exact: true }).first().click();
+    }
+    await expect(bookNow).toBeVisible({ timeout: 1_000 });
+  });
 }
 
 test.beforeEach(async () => {
