@@ -18,20 +18,45 @@ async function markBookingComplete(id) {
     });
 }
 
-async function markReminderSent(id) {
-    await db().collection("bookings").doc(id).update({reminderSent: true});
+async function clearReminderSent(id) {
+    await db().collection("bookings").doc(id).update({reminderSent: false});
 }
 
 /**
- * Bookings starting in [windowStart, windowEnd] that still need a reminder.
- * Cancelled and completed appointments are excluded — reminding someone about
- * an appointment they called off is worse than sending nothing.
+ * Claims the reminder for `id` — sets `reminderSent` only if it is not
+ * already set, returning whether this caller won the claim. Mirrors
+ * `claimAdminDigest`: claim before sending so a crash or a failed write
+ * between "mail sent" and "flag written" can't leave the flag false and
+ * cause the next 15-minute tick to send the same reminder again.
  */
-async function getUnremindedBookingsInWindow(windowStart, windowEnd) {
+async function claimReminder(id) {
+    const ref = db().collection("bookings").doc(id);
+    return db().runTransaction(async (tx) => {
+        const doc = await tx.get(ref);
+        if (!doc.exists || doc.data().reminderSent === true) return false;
+        tx.update(ref, {reminderSent: true});
+        return true;
+    });
+}
+
+/**
+ * Bookings whose `startTime` falls in [coarseStart, coarseEnd) and still
+ * need a reminder. Cancelled and completed appointments are excluded —
+ * reminding someone about an appointment they called off is worse than
+ * sending nothing.
+ *
+ * `coarseStart`/`coarseEnd` are intentionally COARSE: `startTime` is stored
+ * as either a naive WAT string or a true UTC instant, and Firestore can only
+ * range-filter it as raw text, so no single tight bound is correct for both
+ * formats at once. Callers should pass a superset wide enough to catch
+ * either encoding and then narrow precisely in application code with
+ * `watDate`, which knows how to read both.
+ */
+async function getUnremindedBookingsInWindow(coarseStart, coarseEnd) {
     const snapshot = await db()
         .collection("bookings")
-        .where("startTime", ">=", windowStart)
-        .where("startTime", "<=", windowEnd)
+        .where("startTime", ">=", coarseStart)
+        .where("startTime", "<=", coarseEnd)
         .get();
 
     return snapshot.docs
@@ -162,7 +187,8 @@ module.exports = {
     cancelBooking,
     rescheduleBooking,
     markBookingComplete,
-    markReminderSent,
+    clearReminderSent,
+    claimReminder,
     getUnremindedBookingsInWindow,
     getBookingsInWindow,
     claimAdminDigest,

@@ -19,7 +19,8 @@ const {
     cancelBooking: writeCancellation,
     rescheduleBooking: writeReschedule,
     markBookingComplete,
-    markReminderSent,
+    claimReminder,
+    clearReminderSent,
     getUnremindedBookingsInWindow,
     getBookingsInWindow,
     claimAdminDigest,
@@ -776,11 +777,31 @@ function hasSchedulerSecret(req) {
         crypto.createHash("sha256").update(expected).digest()
     );
 }
-const WAT_OFFSET_MS = 60 * 60 * 1000;
+// The reminder should reach a customer between 45 and 75 minutes before their
+// appointment. This policy lives here (not in the data layer) because it is
+// business logic, not a query detail.
+const REMINDER_WINDOW_MIN_MS = 45 * 60 * 1000;
+const REMINDER_WINDOW_MAX_MS = 75 * 60 * 1000;
 
-function toWATIso(ms) {
-    return new Date(ms).toISOString().slice(0, 19);
-}
+// `startTime` is stored as either a naive WAT wall-clock string
+// ("…T10:00:00") or a true UTC instant ("…Z"), and Firestore can only
+// range-filter it as raw text — it has no idea which encoding a given row
+// uses. A bound tight enough to be correct for one format is off by ~1h for
+// the other, which is exactly bug #1 (the "in one hour" email arriving after
+// two). So the Firestore query below is a deliberately COARSE superset:
+//
+//   For a booking truly due at `now + 45m .. now + 75m`:
+//     - if it's stored as a UTC instant, its digits ARE that instant:
+//       `now+45m .. now+75m`.
+//     - if it's stored as naive WAT, its digits are that instant's WAT
+//       wall clock, i.e. +1h on top: `now+105m .. now+135m`.
+//   The union of those two ranges is `now+45m .. now+135m`. We pad well
+//   past both ends — `now` to `now+3h` — so the coarse query is correct
+//   even accounting for clock skew between this instance and Firestore's
+//   server clock, and the precise 45/75 policy is re-applied below with
+//   `watDate`, which reads either format correctly.
+const COARSE_QUERY_LOWER_MS = 0;
+const COARSE_QUERY_UPPER_MS = 3 * 60 * 60 * 1000;
 
 // The nightly admin digest rides on the same 15-minute cron: it only fires
 // during this WAT hour, and the Firestore claim keeps it to one send per day.
@@ -876,19 +897,29 @@ exports.schedulerMessages = onRequest(
             return {error: "digest failed"};
         });
 
-        const nowWAT = Date.now() + WAT_OFFSET_MS;
-        const windowStart = toWATIso(nowWAT + 45 * 60 * 1000);
-        const windowEnd = toWATIso(nowWAT + 75 * 60 * 1000);
+        const now = Date.now();
+        const coarseStart = new Date(now + COARSE_QUERY_LOWER_MS).toISOString();
+        const coarseEnd = new Date(now + COARSE_QUERY_UPPER_MS).toISOString();
 
-        logger.info("[schedulerMessages] window", {windowStart, windowEnd});
+        logger.info("[schedulerMessages] coarse query window", {coarseStart, coarseEnd});
 
-        let bookings;
+        let candidates;
         try {
-            bookings = await getUnremindedBookingsInWindow(windowStart, windowEnd);
+            candidates = await getUnremindedBookingsInWindow(coarseStart, coarseEnd);
         } catch (err) {
             logger.error("[schedulerMessages] Firestore query error:", err);
             return res.status(500).json({error: "Failed to query bookings"});
         }
+
+        // Narrow the coarse superset down to the real 45-75 minute policy,
+        // reading each `startTime` with `watDate` so naive-WAT and UTC rows
+        // are both interpreted as the real instant they represent.
+        const bookings = candidates.filter((b) => {
+            const start = watDate(b.startTime);
+            if (!start) return false;
+            const msUntil = start.getTime() - now;
+            return msUntil >= REMINDER_WINDOW_MIN_MS && msUntil <= REMINDER_WINDOW_MAX_MS;
+        });
 
         logger.info("[schedulerMessages] bookings found", {
             count: bookings.length,
@@ -910,25 +941,49 @@ exports.schedulerMessages = onRequest(
 
         const results = await Promise.allSettled(
             withEmail.map(async (booking) => {
-                await mailService.sendAppointmentReminder({
-                    to: booking.userEmail,
-                    booking: {
-                        userFirstName: booking.userFirstName,
-                        services: booking.services ?? [],
-                        servicesText: booking.servicesText,
-                        startTime: booking.startTime,
-                    },
-                });
-                await markReminderSent(booking.id);
-                return booking.id;
+                // Claim before sending (same pattern as `claimAdminDigest`): a
+                // duplicate email is a nuisance, but a missed reminder is a
+                // no-show, so we'd rather risk the former than the latter. If
+                // the send throws after we've claimed, clear the flag again
+                // so the next 15-minute tick can retry instead of silently
+                // dropping the reminder.
+                const won = await claimReminder(booking.id);
+                if (!won) return {id: booking.id, skipped: true};
+
+                try {
+                    await mailService.sendAppointmentReminder({
+                        to: booking.userEmail,
+                        booking: {
+                            userFirstName: booking.userFirstName,
+                            services: booking.services ?? [],
+                            servicesText: booking.servicesText,
+                            startTime: booking.startTime,
+                        },
+                    });
+                } catch (err) {
+                    await clearReminderSent(booking.id).catch((clearErr) => {
+                        logger.error(
+                            `[schedulerMessages] failed to clear reminderSent after send failure for booking ${booking.id}:`,
+                            clearErr
+                        );
+                    });
+                    throw Object.assign(err, {bookingId: booking.id});
+                }
+
+                return {id: booking.id};
             })
         );
 
-        const sent = results.filter((r) => r.status === "fulfilled").length;
+        const sent = results.filter(
+            (r) => r.status === "fulfilled" && !r.value.skipped
+        ).length;
         const failed = results.filter((r) => r.status === "rejected");
 
-        failed.forEach((r, i) =>
-            logger.error(`[schedulerMessages] reminder failed for booking index ${i}:`, r.reason)
+        failed.forEach((r) =>
+            logger.error(
+                `[schedulerMessages] reminder failed for booking ${r.reason?.bookingId ?? "unknown"}:`,
+                r.reason
+            )
         );
 
         return res.json({sent, failed: failed.length, digest});
