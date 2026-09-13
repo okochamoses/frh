@@ -2,7 +2,7 @@
 
 ## Blockers (do before deploy)
 
-- [ ] Commit all uncommitted changes
+- [x] Commit all uncommitted changes
   - `functions/index.js`, `functions/package*.json`
   - `src/app/contexts/BookingContext.js`
   - `src/components/about.js`
@@ -181,7 +181,7 @@ above are not repeated here.
 
 ### Security — booking links
 
-- [ ] **One token authorises two different powers.** `bookingToken()`
+- [x] **One token authorises two different powers.** `bookingToken()`
       (`functions/index.js:53`) is `HMAC(secret, bookingId)` with no purpose in
       the input, and the same value is handed to the client as their manage
       link (`makeManageUrl`, `:71`) and to the salon as the "mark complete"
@@ -195,7 +195,7 @@ above are not repeated here.
       Nothing needs to keep working across the change: `BOOKING_SECRET` is
       still unset, so every token in existence is signed with the empty key.
 
-- [ ] **An unset `BOOKING_SECRET` silently downgrades to no security.** All five
+- [x] **An unset `BOOKING_SECRET` silently downgrades to no security.** All five
       sites read `process.env.BOOKING_SECRET || ""` (`functions/index.js:162`,
       `:283`, `:383`, `:625`), so a deploy that forgets the secret still mints
       and accepts tokens — signed with a key anyone can reproduce, making every
@@ -206,7 +206,7 @@ above are not repeated here.
 
 ### Correctness
 
-- [ ] Reschedule offers slots that cannot fit. `getBooking` returns
+- [x] Reschedule offers slots that cannot fit. `getBooking` returns
       `totalDuration: … ?? null` (`functions/index.js:564`) and
       `ManageBooking.jsx:112` passes `duration={duration ?? 0}` to `TimeStep`
       (`:310`), so a booking predating `totalDuration` picks times as if the
@@ -215,7 +215,7 @@ above are not repeated here.
       chose is refused only after they press "Move my booking".
       → mirror the server's fallback client-side.
 
-- [ ] `countUpcomingBookings` (`functions/lib/adminBookingService.js:124`)
+- [x] `countUpcomingBookings` (`functions/lib/adminBookingService.js:124`)
       compares `b.startTime > nowIso` as raw strings while the rest of the
       backend anchors through `watDate()`. For bookings stored in the older
       naive-WAT form the comparison is an hour out, so the guest cap can count a
@@ -223,14 +223,14 @@ above are not repeated here.
 
 ### Dead code hiding real problems
 
-- [ ] Delete the legacy Google-Sheets backend: `src/lib/services/sheetsImpl/**`
+- [x] Delete the legacy Google-Sheets backend: `src/lib/services/sheetsImpl/**`
       and `src/lib/repositories/**` have no importers outside themselves — and
       they are where *all* of the TypeScript errors currently suppressed by
       `typescript.ignoreBuildErrors` (`next.config.mjs:31`) live. With the tree
       gone, that flag can probably come off, which means v2 code starts getting
       type-checked instead of silently not.
 
-- [ ] Delete `src/lib/mail/**`. `functions/index.js:11` imports
+- [x] Delete `src/lib/mail/**`. `functions/index.js:11` imports
       `./lib/mail/MailService`; the `src/` copy is reachable only from the dead
       Sheets tree above. The two have diverged badly (different SMTP ports and
       TLS, four send methods missing, a whole pre-v2 template set), so the
@@ -238,17 +238,17 @@ above are not repeated here.
 
 ### Accessibility
 
-- [ ] Toast "Undo" vanishes on a fixed 4.5s timer that nothing pauses
+- [x] Toast "Undo" vanishes on a fixed 4.5s timer that nothing pauses
       (`src/components/v2/booking/ui.jsx:69`). Undo is not focused when it
       appears, so reaching it by keyboard inside the window is a race.
       WCAG 2.2.1.
-- [ ] `LookRow` nests a real `<button>` inside a `role="checkbox"` div
+- [x] `LookRow` nests a real `<button>` inside a `role="checkbox"` div
       (`ServicesStep.jsx:108`) — invalid ARIA, two ambiguous tab stops per row.
       (Related to the existing `LookRow` note under "Small" above.)
-- [ ] Guest name and phone are mandatory but carry no `required` /
+- [x] Guest name and phone are mandatory but carry no `required` /
       `aria-required` and no visible cue (`Steps.jsx:165`); only the optional
       field is labelled. The requirement is discoverable only by failing.
-- [ ] `Field` always sets `aria-describedby="…-hint"` but only renders that
+- [x] `Field` always sets `aria-describedby="…-hint"` but only renders that
       paragraph when there is a hint or error (`Steps.jsx:66`), so the
       reference usually points at nothing.
 
@@ -263,13 +263,13 @@ above are not repeated here.
 
 ### Design system and content
 
-- [ ] `/v2/design-system` is a shipped route and calls the business
+- [x] `/v2/design-system` is a shipped route and calls the business
       "Flourish Roots Studio, Ikoyi Lagos" (`page.js:358`). It is
       Flourish Roots Hair Co., in Isolo, everywhere else.
-- [ ] Mustard sections apply opacity to text, which `docs/design-v2/DESIGN.md`
+- [x] Mustard sections apply opacity to text, which `docs/design-v2/DESIGN.md`
       §18 rule 6 forbids outright: `ClosingCta.jsx:37` and `:83`,
       `CoachingClosingCta.jsx:22` — about 3.3:1, under AA.
-- [ ] `src/components/v2/ui/Card.jsx` has no importers; every card on the site
+- [x] `src/components/v2/ui/Card.jsx` has no importers; every card on the site
       goes through one of the five specific card components.
 - [ ] The numbered index-card block is copy-pasted verbatim in four places
       (`BookingTerms.jsx`, `HowAVisitGoes.jsx`, `CoachingHowItWorks.jsx`, and
@@ -344,7 +344,7 @@ working alone.
 
 ### Search and sharing — needs two decisions from you
 
-- [ ] **No Open Graph or Twitter tags anywhere.** `src/app/v2/layout.js` sets a
+- [x] **No Open Graph or Twitter tags anywhere.** `src/app/v2/layout.js` sets a
       title and description and nothing else, so every link shared to WhatsApp
       or Instagram — which is how this salon is actually passed around — renders
       as a bare URL with no picture. Fixing it needs a share image (1200×630;
@@ -352,24 +352,24 @@ working alone.
       cropped) and `metadataBase`, which needs the production domain settled —
       `SITE_BASE` still defaults to `flourish-roots.web.app` and TODO already
       notes the site may move.
-- [ ] No `sitemap.xml` and no `robots.txt`. Also blocked on the domain.
-- [ ] No `LocalBusiness` JSON-LD. For a salon competing on local search this is
+- [x] No `sitemap.xml` and no `robots.txt`. Also blocked on the domain.
+- [x] No `LocalBusiness` JSON-LD. For a salon competing on local search this is
       the single highest-value piece of structured data — address, opening
       hours and phone are all already centralised in
       `src/components/v2/salon.js`, so it is mostly a matter of deciding to.
-- [ ] The v2 homepage has no `metadata` of its own, so the most-shared page on
+- [x] The v2 homepage has no `metadata` of its own, so the most-shared page on
       the site inherits the layout's generic "Flourish Roots Hair" /
       "Hair that flourishes from root to tip."
 
-### Still unaudited (round 2 never ran)
+### Still unaudited (round 2 never ran) — since audited, see below
 
-- [ ] The admin dashboard beyond the rules: both list pages subscribe to whole
+- [x] The admin dashboard beyond the rules: both list pages subscribe to whole
       collections with no limit or pagination and sort in the browser.
-- [ ] The unattended paths — the 15-minute reminder cron, the daily digest
+- [x] The unattended paths — the 15-minute reminder cron, the daily digest
       claim, `completeBooking` — for double sends, missed windows, and WAT
       boundaries; plus whether customer-supplied names and notes are escaped
       everywhere they reach an email template.
-- [ ] Payload: fonts shipped as `.ttf`/`.otf` rather than woff2, which of
+- [x] Payload: fonts shipped as `.ttf`/`.otf` rather than woff2, which of
       framer-motion / gsap / swiper / react-fast-marquee each v2 route actually
       pulls in, and whether the `V1Shell` split still keeps v1 chrome out of v2.
 
