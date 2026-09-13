@@ -388,20 +388,20 @@ working alone.
       moving the v1 fonts to `src/app/fonts.js`, because 23 client components
       imported them from the layout and dragged it into the client graph.
 
-#### The reminder cron (fix in progress)
+#### The reminder cron (done)
 
-- [ ] **Reminders fire about an hour early for every booking made since the
+- [x] **Reminders fire about an hour early for every booking made since the
       UTC migration.** The window is built as naive-WAT digits
       (`functions/index.js:879`) and fed to a lexicographic Firestore range
       query, but post-migration `startTime` values are true UTC. Working it
       through, a UTC-stored booking only enters the window when it is
       1h45m–2h15m away — so the "your appointment is in one hour" email arrives
       roughly two hours ahead. Naive-WAT rows work by coincidence of format.
-- [ ] The send is awaited before `reminderSent` is written
+- [x] The send is awaited before `reminderSent` is written
       (`functions/index.js:911`), so a failed write or a timed-out invocation
       after the mail went out means the next tick sends it again. The digest
       already solves this with an atomic claim.
-- [ ] A failed reminder is logged by its index into the *filtered* array
+- [x] A failed reminder is logged by its index into the *filtered* array
       (`functions/index.js:930`), which does not identify the booking — so
       nobody can tell which customer went un-reminded.
 
@@ -416,19 +416,19 @@ working alone.
 
 #### Admin dashboard
 
-- [ ] **Staff and customers are shown contradictory words for the same
+- [x] **Staff and customers are shown contradictory words for the same
       booking.** The admin badge prints the raw status — "PENDING" — while the
       customer was told "Confirmed" (`src/app/bookings/page.js:32` maps it) and
       the admin's own filter dropdown calls that value "Confirmed" too. Staff
       may well treat a confirmed booking as something still to chase.
-- [ ] Both admin pages subscribe to whole collections with no limit, filter or
+- [~] Both admin pages subscribe to whole collections with no limit, filter or
       pagination (`adminService.js:63`, `:76`) and sort in the browser. At
       5,000 bookings and 3,000 customers that is ~8,000 document reads per
       dashboard open, per admin, per reload — several MB before the table
       renders at all, and nothing renders until every row has arrived. A
       bounded `orderBy("startTime","desc")` + `limit` with a cursor needs only
       the automatic single-field index.
-- [ ] Admin dates are rendered with a bare `dayjs(b.startTime)`
+- [x] Admin dates are rendered with a bare `dayjs(b.startTime)`
       (`admin/bookings/page.js:89`), with no equivalent of the backend's
       `watDate`. Any legacy zone-less booking shows in the viewer's own
       timezone rather than Lagos.
@@ -465,3 +465,56 @@ notes are escaped everywhere they reach an email template; prices and durations
 in emails are the snapshot taken when the booking was made; the `V1Shell` split
 still keeps framer-motion, gsap, swiper and react-fast-marquee out of every v2
 route; and no admin row crashes or prints NaN on missing fields.
+
+### Round 3 (2026-09-13)
+
+#### Done
+
+- [x] The reminder cron now has a test — it had none, which is why the
+      timezone bug shipped. It seeds the same appointment in both storage
+      formats and requires both to be reminded at the same real moment;
+      confirmed to fail against the old arithmetic before being kept.
+      `playwright.config.js` supplies `SCHEDULER_SECRET` so it runs under a
+      plain `npm run test:e2e` rather than a special invocation.
+- [x] **The v1 suite was racing React hydration**, which is why a failure kept
+      moving between tests and read as one flaky spec. `page.goto` resolves on
+      the HTML; a click before hydration runs no handler, and a fill into a
+      controlled input is discarded when hydration re-renders it empty — so
+      "a day the services cannot fit says why" was clicking the featured
+      service instead of the one it names, and passing for the wrong reason
+      about a third of the time. `tests/support/hydration.js` now covers it.
+      Five consecutive full runs: 111 passed, 1 skipped, none failed.
+
+#### Deliberately not done
+
+- [~] Bounding the admin queries. Tried and backed out: `startTime` holds two
+      encodings, and Firestore orders a string field as text, so the naive-WAT
+      rows sort as though they were an hour later than they are — `orderBy`
+      plus `limit` does not return the newest bookings, it returns the
+      newest-looking text and picks the wrong rows for the page. `createdAt`
+      on `users` has a second problem: the rule admits a subset of fields, so
+      a profile saved without it is legal and `orderBy` drops it silently.
+      Both lists stay complete and sort in the browser with `watInstant`.
+      **The precondition for paginating is normalising `startTime` to one
+      encoding and backfilling `createdAt`** — worth doing, and it unlocks the
+      performance fix rather than trading correctness for it.
+
+#### Still open, in rough priority order
+
+- [ ] The payload work: ~123 KB of fonts preloaded on every v2 route, the
+      Firebase SDK sitting in `/v2/booking`'s 301 kB first load, Auth in the
+      shared baseline for every page, and `/v2/gallery` on its own stale image
+      pipeline with an uncapped original as the largest candidate.
+- [ ] A booking made 20-40 minutes ahead is still never reminded — the window
+      floor is 45 minutes and nothing enforces a minimum lead time.
+- [ ] The digest still tells the owner about "mark complete" links that do not
+      exist when `BOOKING_SECRET` is unset.
+- [ ] The `admins` allowlist has no UI: adding one means a Firestore console
+      visit. Fine for a handful of accounts, worth revisiting if it grows.
+- [ ] Signing out of `/admin` signs the same person out of the customer site,
+      because both share one Firebase Auth instance. At least say so in the UI.
+- [ ] The parked `test.fixme` for "similar looks" in the photo sheet — decide
+      whether to build the feature or drop the intent.
+- [ ] Trailing spaces in `services.json` titles ("Gels on Nails ",
+      "Sister Locs - Long Hair ") make exact-match lookups and test locators
+      fragile.
