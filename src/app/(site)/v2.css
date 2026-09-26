@@ -355,3 +355,22 @@ details[open] > .v2-faq-panel {
 @media (prefers-reduced-motion: reduce) {
   .v2-float-in { animation: none; }
 }
+
+/* Idle drift for the hero objects (HeroFloat.jsx): a slow figure-of-eight
+   of lift and sway. Each object sets its own period and reach through the
+   --bob-* custom properties so none move in step. */
+.v2-bob {
+  animation: v2-bob var(--bob-dur, 7s) ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes v2-bob {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25% { transform: translate3d(var(--bob-x), calc(var(--bob-y) * -1), 0) rotate(var(--bob-rot)); }
+  50% { transform: translate3d(0, calc(var(--bob-y) * -0.4), 0) rotate(0deg); }
+  75% { transform: translate3d(calc(var(--bob-x) * -1), calc(var(--bob-y) * -0.8), 0) rotate(calc(var(--bob-rot) * -1)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-bob { animation: none; }
+}

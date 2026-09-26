@@ -30,6 +30,19 @@ const TOOLS = [
   { src: "scrunchie.png", speed: -0.5, spin: 5, rot: 0, cls: "hidden lg:block lg:right-[28%] lg:bottom-[4%] lg:w-[6vw]" },
 ];
 
+/* Deterministic per-object variety: periods 5–9s, 6–16px of lift, ±2–5° of
+   sway, and a negative delay so each starts part-way through its cycle. */
+function bobStyle(i) {
+  const f = (n) => ((i * 37 + n * 17) % 100) / 100;
+  return {
+    "--bob-dur": `${(5 + f(1) * 4).toFixed(2)}s`,
+    "--bob-y": `${(6 + f(2) * 10).toFixed(1)}px`,
+    "--bob-x": `${(f(3) * 6 - 3).toFixed(1)}px`,
+    "--bob-rot": `${(2 + f(4) * 3).toFixed(1)}deg`,
+    animationDelay: `-${(f(5) * 8).toFixed(2)}s`,
+  };
+}
+
 export default function HeroFloat() {
   const layer = useRef(null);
 
@@ -63,13 +76,18 @@ export default function HeroFloat() {
 
   return (
     <div ref={layer} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      {TOOLS.map((t) => (
+      {TOOLS.map((t, i) => (
         <div
           key={t.src}
           data-speed={t.speed}
           data-spin={t.spin}
           className={cn("absolute will-change-transform", !t.phone && "hidden", t.cls)}
         >
+          {/* The idle drift lives on its own layer: the outer div belongs to
+              the scroll parallax, and the image to its entrance and tilt. Each
+              object gets its own period, reach and start point (derived from
+              its index, so server and client agree), so nothing moves in step. */}
+          <div className="v2-bob" style={bobStyle(i)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/assets/toolkit/${t.src}`}
@@ -79,6 +97,7 @@ export default function HeroFloat() {
             className="v2-float-in h-auto w-full drop-shadow-[0_18px_22px_rgba(40,24,10,0.28)]"
             style={{ rotate: `${t.rot}deg` }}
           />
+          </div>
         </div>
       ))}
     </div>
