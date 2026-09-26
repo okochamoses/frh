@@ -309,7 +309,7 @@ export default function ManageBooking() {
             Cancel it
           </PillButton>
           <a
-            href={whatsappUrl(`Hi! About my booking (reference ${booking.bookingId}):`)}
+            href={whatsappUrl(`Hi! About my booking (reference ${booking.reference || booking.bookingId}):`)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex h-12 items-center px-2 text-sm font-semibold text-ink underline underline-offset-4"

@@ -33,7 +33,7 @@ export default function AdminBookingsPage() {
     return bookings.filter((b) => {
       if (statusFilter !== "all" && (b.status ?? "pending") !== statusFilter) return false;
       if (!term) return true;
-      const haystack = [b.userFirstName, b.userEmail, b.userMobileNumber, b.servicesText]
+      const haystack = [b.reference, b.userFirstName, b.userEmail, b.userMobileNumber, b.servicesText]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -101,6 +101,9 @@ export default function AdminBookingsPage() {
                     </td>
                     <td className="px-4 py-3">
                       {b.userFirstName || "—"}
+                      {b.reference && (
+                        <span className="ml-2 font-mono text-[11px] text-stone-500">{b.reference}</span>
+                      )}
                       {b.guest && (
                         <span className="ml-2 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] uppercase text-stone-500">
                           Guest

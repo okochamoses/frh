@@ -436,7 +436,7 @@ exports.createBooking = onCall(
             };
         }
 
-        const bookingId = await writeBooking({
+        const {bookingId, reference} = await writeBooking({
             userId: uid,
             ...contact,
 
@@ -466,6 +466,7 @@ exports.createBooking = onCall(
 
         return {
             bookingId,
+            reference,
             startTime: slot.start.toISOString(),
             endTime: slot.end.toISOString(),
             totalAmount: priced.totalPrice,
@@ -557,7 +558,7 @@ exports.adminCreateBooking = onCall(
 
         const matchedAccount = guest.email ? await findVerifiedAccount(guest.email) : null;
 
-        const bookingId = await writeBooking({
+        const {bookingId, reference} = await writeBooking({
             userId: matchedAccount?.uid ?? null,
             ...(matchedAccount ? {} : {guest: true}),
 
@@ -599,6 +600,7 @@ exports.adminCreateBooking = onCall(
 
         return {
             bookingId,
+            reference,
             startTime: slot.start.toISOString(),
             endTime: slot.end.toISOString(),
             totalAmount: priced.totalPrice,
@@ -696,6 +698,7 @@ exports.rescheduleBooking = onCall(
 
         return {
             bookingId,
+            reference: booking.reference ?? null,
             startTime: slot.start.toISOString(),
             endTime: slot.end.toISOString(),
         };
@@ -816,6 +819,7 @@ exports.getBooking = onCall(
         const booking = await authoriseBooking(request);
         return {
             bookingId: booking.id,
+            reference: booking.reference ?? null,
             userFirstName: booking.userFirstName ?? null,
             services: booking.services ?? [],
             servicesText: booking.servicesText ?? null,

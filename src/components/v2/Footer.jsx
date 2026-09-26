@@ -67,9 +67,9 @@ export default function Footer() {
             {/* A div, not a <p>: `.v2-root p` sets the paragraph face at a
                 specificity `font-display` cannot reach. */}
             <div className="font-display text-[clamp(2rem,1.5rem+2vw,3rem)] font-bold uppercase leading-[0.95] text-white">
-              Roots. Ritual.
+              Promoting
               <br />
-              Radiance.
+              healthier hair
             </div>
             <p className="mt-5 max-w-[34ch] text-v2-body text-white/60">
               Care for today. Growth for tomorrow. You&apos;re in good hands.

@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const {getAuth} = require("firebase-admin/auth");
 const {watDate} = require("./time");
@@ -134,12 +135,42 @@ async function reassignBookings(fromUid, toUid, contact = {}) {
     return snapshot.size;
 }
 
+/*
+ * The reference a client reads out on the phone: two letters and four digits,
+ * like AJ7384. The Firestore id stays the key everything links by; this is only
+ * for people. I and O are left out so nobody reads a 1 or a 0 as a letter.
+ */
+const REF_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+function makeReference() {
+    const pick = () => REF_LETTERS[crypto.randomInt(REF_LETTERS.length)];
+    return `${pick()}${pick()}${String(crypto.randomInt(10000)).padStart(4, "0")}`;
+}
+
+/**
+ * Writes a booking with a short, unique `reference`.
+ *
+ * Uniqueness is held by `booking_refs/{reference}`: the booking and its claim
+ * on the code are written in one transaction, so two bookings can never share
+ * one. At 5.5 million codes a clash is rare; a few retries cover it.
+ *
+ * @returns {Promise<{bookingId: string, reference: string}>}
+ */
 async function createBooking(data) {
-    const ref = await db().collection("bookings").add({
-        ...data,
-        createdAt: FieldValue.serverTimestamp(),
-    });
-    return ref.id;
+    const store = db();
+    for (let attempt = 0; attempt < 8; attempt++) {
+        const reference = makeReference();
+        const refDoc = store.collection("booking_refs").doc(reference);
+        const bookingDoc = store.collection("bookings").doc();
+        const claimed = await store.runTransaction(async (tx) => {
+            if ((await tx.get(refDoc)).exists) return false;
+            tx.create(refDoc, {bookingId: bookingDoc.id});
+            tx.create(bookingDoc, {...data, reference, createdAt: FieldValue.serverTimestamp()});
+            return true;
+        });
+        if (claimed) return {bookingId: bookingDoc.id, reference};
+    }
+    throw new Error("Could not find a free booking reference");
 }
 
 /**

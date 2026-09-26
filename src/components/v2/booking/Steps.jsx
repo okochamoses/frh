@@ -408,6 +408,9 @@ export function ReviewStep({ options, date, time, duration, total, contact, note
 }
 
 export function SuccessView({ result, options, contact, onAgain }) {
+  // The short code (AJ7384) for people; the Firestore id only as a fallback
+  // for a booking made before references existed.
+  const ref = result.reference || result.bookingId;
   const start = fromInstant(result.startTime);
   const end = fromInstant(result.endTime);
   const duration = options.reduce((sum, o) => sum + o.duration, 0);
@@ -415,7 +418,7 @@ export function SuccessView({ result, options, contact, onAgain }) {
   const event = {
     id: result.bookingId,
     title: `Flourish Roots: ${names}`,
-    details: `${names}\nBooking reference: ${result.bookingId}`,
+    details: `${names}\nBooking reference: ${ref}`,
     startTime: result.startTime,
     endTime: result.endTime,
   };
@@ -437,7 +440,7 @@ export function SuccessView({ result, options, contact, onAgain }) {
               The salon will confirm with you on <b className="text-ink">{contact.phone}</b>.
             </>
           )}{" "}
-          Reference <span className="font-mono text-ink">{result.bookingId}</span>.
+          Reference <span className="font-semibold tracking-wider text-ink">{ref}</span>.
         </p>
       </div>
 
@@ -523,7 +526,7 @@ export function SuccessView({ result, options, contact, onAgain }) {
       <div className="flex flex-wrap gap-2.5">
         {contact.guest ? (
           <a
-            href={whatsappUrl(`Hi! I'd like to change my booking (reference ${result.bookingId}).`)}
+            href={whatsappUrl(`Hi! I'd like to change my booking (reference ${ref}).`)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex h-12 items-center rounded-full border border-ink px-6 text-sm font-semibold hover:bg-ink/5"

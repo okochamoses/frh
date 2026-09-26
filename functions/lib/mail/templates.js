@@ -39,7 +39,7 @@ const ASH = "#736a5e";
    counterpart — and a display webfont that fails to arrive takes the whole
    headline's character with it. The site's second display voice is the one that
    travels: Barlow Condensed, bold, uppercase, tracked — the footer's "Roots.
-   Ritual. Radiance." and every eyebrow on the page. That voice carries the
+   Ritual. Radiance." (now "Promoting healthier hair") and every eyebrow on the page. That voice carries the
    headlines here, and it degrades honestly, because Helvetica Condensed and
    Arial Narrow are the same kind of letter.
 
@@ -373,7 +373,7 @@ function footer() {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="width:100%;max-width:600px;">
           <tr>
             <td class="frh-pad" style="padding:44px 40px 20px;">
-              <p style="margin:0 0 28px;font-family:${DISPLAY};font-size:30px;font-weight:700;line-height:0.98;letter-spacing:0.01em;text-transform:uppercase;color:#ffffff;">Roots. Ritual.<br/>Radiance.</p>
+              <p style="margin:0 0 28px;font-family:${DISPLAY};font-size:30px;font-weight:700;line-height:0.98;letter-spacing:0.01em;text-transform:uppercase;color:#ffffff;">Promoting<br/>healthier hair</p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td class="frh-col" width="55%" valign="top" style="padding:0 20px 20px 0;">
@@ -436,6 +436,7 @@ function shell(bands, {preheader = ""} = {}) {
       .frh-h1 { font-size: 32px !important; }
       /* The footer's two columns and the label/value rows both stack, so
          nothing has to survive a 120px column. */
+      .frh-outer { padding: 0 !important; }
       .frh-col { display: block !important; width: 100% !important; box-sizing: border-box !important; padding-right: 0 !important; }
       .frh-cell { display: block !important; width: 100% !important; box-sizing: border-box !important; }
       .frh-cell-label { padding-bottom: 2px !important; border-bottom: 0 !important; }
@@ -446,8 +447,16 @@ function shell(bands, {preheader = ""} = {}) {
 </head>
 <body style="margin:0;padding:0;background:${WALL};-webkit-font-smoothing:antialiased;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">${esc(preheader)}</div>
+  <!-- One 600px card on the wall colour, not full-width bands: in a wide
+       inbox the bands stretched edge to edge and the email read as a web page. -->
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${WALL};">
-    ${bands}
+    <tr>
+      <td align="center" class="frh-outer" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="width:100%;max-width:600px;border-radius:16px;overflow:hidden;">
+          ${bands}
+        </table>
+      </td>
+    </tr>
   </table>
 </body>
 </html>`;
@@ -486,18 +495,20 @@ const templates = {
         };
     },
 
-    bookingConfirmation({userFirstName, services = [], servicesText, startTime, totalAmount, notes, manageUrl}) {
+    bookingConfirmation({userFirstName, services = [], servicesText, startTime, totalAmount, notes, manageUrl, reference}) {
         const entries = services.length ?
             services.map((s) => [esc(s.title) || "–", naira(s.price)]) :
             [[esc(servicesText) || "–", ""]];
 
         return {
-            subject: "Your booking is confirmed",
+            subject: reference ? `Your booking is confirmed · ${reference}` : "Your booking is confirmed",
             html: shell(`
         ${hero({
         kicker: "Booking confirmed",
         title: `You're booked,<br/>${esc(userFirstName) || "Queen"}`,
-        lede: "Your chair is held. Everything is in one place below.",
+        lede: reference ?
+            `Your chair is held. Your reference is <strong style="font-weight:700;letter-spacing:0.06em;">${esc(reference)}</strong>.` :
+            "Your chair is held. Everything is in one place below.",
     })}
         ${band(`
           ${moment({
@@ -708,9 +719,9 @@ const templates = {
        Working documents: Linen instead of Glow, no Mustard band, facts ahead of
        prose. Mariam reads these standing up, between clients. */
 
-    ownerNotification({userFirstName, userEmail, userMobileNumber, servicesText, startTime, totalAmount, notes, completeUrl, completeReviewUrl}) {
+    ownerNotification({userFirstName, userEmail, userMobileNumber, servicesText, startTime, totalAmount, notes, completeUrl, completeReviewUrl, reference}) {
         return {
-            subject: `New booking: ${userFirstName || userEmail} · ${servicesText || ""}`,
+            subject: `New booking${reference ? ` ${reference}` : ""}: ${userFirstName || userEmail} · ${servicesText || ""}`,
             html: shell(`
         ${hero({
         kicker: "New booking",
@@ -720,6 +731,7 @@ const templates = {
         ${band(`
           ${moment({label: "Booked for", value: watShort(startTime)})}
           ${rows([
+        ...(reference ? [["Reference", esc(reference)]] : []),
         ["Client", esc(userFirstName) || "–"],
         ["Phone", userMobileNumber ? `<a href="tel:${esc(userMobileNumber)}" style="color:${SLAT_INK};text-decoration:none;">${esc(userMobileNumber)}</a>` : "–"],
         ["Email", userEmail ? `<a href="mailto:${esc(userEmail)}" style="color:${SLAT_INK};text-decoration:none;">${esc(userEmail)}</a>` : "–"],
