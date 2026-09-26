@@ -9,7 +9,7 @@ const TRACKS = [
     body: "Pick your style and an available time.",
     image: "/hair-wash.webp",
     alt: "Stylist washing a client's hair at the salon",
-    href: "/v2/booking",
+    href: "/booking",
   },
   {
     kicker: "Coaching",
@@ -17,7 +17,7 @@ const TRACKS = [
     body: "Not sure what your hair needs? Start with a one-on-one with our founder and hair coach.",
     image: "/consultation.webp",
     alt: "Mariam talking through a hair plan with a client during a consultation",
-    href: "/v2/consultation",
+    href: "/consultation",
   },
   {
     kicker: "Our work",
@@ -25,7 +25,7 @@ const TRACKS = [
     body: "Real results from our chairs, so you can see a style before you book it.",
     image: "/story.webp",
     alt: "Finished 4C natural hair style from the Flourish Roots salon",
-    href: "/v2/gallery",
+    href: "/gallery",
   },
 ];
 

@@ -24,11 +24,11 @@ import { gotoReady, retryInteraction } from "../support/hydration.js";
  * styles, and nothing else in the suite would notice.
  */
 
-// A look with no size variants, so one click adds it. `src/app/salon/services.json`.
+// A look with no size variants, so one click adds it. `src/data/services.json`.
 const SIMPLE_SERVICE = "Barrel Twist";
 
 async function signInAsAdmin(page, admin) {
-  await gotoReady(page, "/v2/login?next=%2Fadmin%2Fbookings");
+  await gotoReady(page, "/login?next=%2Fadmin%2Fbookings");
   await retryInteraction(async () => {
     const main = page.getByRole("main");
     await main.getByLabel("Email").fill(admin.email);
@@ -62,10 +62,10 @@ test.describe("recording a walk-in", () => {
     await page.getByRole("link", { name: "New booking" }).click();
     await expect(page).toHaveURL(/\/admin\/bookings\/new$/);
 
-    // The desk opens in list view, where a look with no variants toggles
-    // straight from the row and the row's accessible name is the look itself.
+    // The desk opens in list view, where a look with no variants is added
+    // by the round button at the end of its row.
     await retryInteraction(async () => {
-      await page.getByRole("button", { name: SIMPLE_SERVICE, exact: true }).first().click();
+      await page.getByRole("button", { name: `Add ${SIMPLE_SERVICE}`, exact: true }).first().click();
       await expect(page.getByRole("button", { name: "Record visit" })).toBeEnabled({
         timeout: 3_000,
       });
@@ -96,7 +96,7 @@ test.describe("recording a walk-in", () => {
     await gotoReady(page, "/admin/bookings/new");
 
     await retryInteraction(async () => {
-      await page.getByRole("button", { name: `See photo: ${SIMPLE_SERVICE}` }).first().click();
+      await page.getByRole("button", { name: `See photo and details: ${SIMPLE_SERVICE}` }).first().click();
       await expect(page.locator('.v2-root [role="dialog"]')).toBeVisible({ timeout: 3_000 });
     });
   });

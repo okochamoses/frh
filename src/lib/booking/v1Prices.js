@@ -1,4 +1,4 @@
-import services from "@/app/salon/services.json";
+import services from "@/data/services.json";
 
 /**
  * v1's prices: the `services.json` price, unless the salon has set another in

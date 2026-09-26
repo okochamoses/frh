@@ -60,7 +60,7 @@ test.beforeEach(async () => {
   await resetEmulators();
 });
 
-async function openBooking(page, path = "/v2/booking") {
+async function openBooking(page, path = "/booking") {
   const emulatorBanner = page.waitForEvent("console", {
     predicate: (m) => m.text().includes("[firebase] Using emulators — project demo-flourish"),
     timeout: 20_000,
@@ -141,7 +141,7 @@ test.describe("nothing in the flow charges a penalty", () => {
   });
 
   test("the terms a client reads before booking name only the deposit and the extras", async ({ page }) => {
-    await openBooking(page, "/v2/services");
+    await openBooking(page, "/services");
     await expectNoPenaltyLanguage(page, "the services page");
 
     await expect(page.getByRole("heading", { name: /changing a booking costs nothing/i })).toBeVisible();
@@ -157,14 +157,14 @@ test.describe("what a client is still asked for", () => {
     await expect(page.getByText(`(${MICRO_TWISTS.depositPct}%)`, { exact: false })).toBeVisible();
     // The figure appears twice on Review — the summary row and the sentence
     // under it — which is the point, so the first is enough.
-    await expect(page.getByText(naira(owed)).first()).toBeVisible();
+    await expect(page.getByText(naira(owed)).locator("visible=true").first()).toBeVisible();
   });
 
   test("a style settled on the day asks for nothing up front", async ({ page }) => {
     await reviewAsGuest(page, BARREL.title);
 
     await expect(page.getByText(/needs a deposit/i)).toHaveCount(0);
-    await expect(page.getByText(naira(BARREL.price)).first()).toBeVisible();
+    await expect(page.getByText(naira(BARREL.price)).locator("visible=true").first()).toBeVisible();
   });
 });
 

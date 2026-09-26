@@ -3,7 +3,7 @@
 /**
  * Log in: email and password, or Google.
  *
- * Knows nothing about where it is rendered — the modal and `/v2/login` both
+ * Knows nothing about where it is rendered — the modal and `/login` both
  * mount this and differ only in what they do with `onDone`.
  */
 

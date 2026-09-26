@@ -35,7 +35,7 @@ function nextOpenSlot(daysAhead = 2) {
   return d.toISOString();
 }
 
-// Priced at ₦10,000 for 120 minutes in src/app/salon/services.json.
+// Priced at ₦10,000 for 120 minutes in src/data/services.json.
 const SERVICE = "Barrel Twist";
 
 async function signedInUser(label, overrides = {}) {

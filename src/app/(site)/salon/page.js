@@ -33,7 +33,7 @@ export default function SalonPage() {
         lede="Shop 303 runs by appointment, with a set number of clients a day. Nobody is rushed, nobody sits with a half-finished head, and no detangling gets hurried because somebody else is waiting."
         actions={
           <>
-            <Button variant="book" withArrow href="/v2/booking">
+            <Button variant="book" withArrow href="/booking">
               Book a salon visit
             </Button>
             <Button variant="secondary" href="#directions">

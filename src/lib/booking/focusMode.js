@@ -12,7 +12,7 @@ import { usePathname } from "next/navigation";
  * chrome and nothing flashes in. The one thing the route can't know is that the
  * booking has been made, so BookingFlow reports that here.
  */
-const BOOKING_PATH = "/v2/booking";
+const BOOKING_PATH = "/booking";
 
 let booked = false;
 const listeners = new Set();

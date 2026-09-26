@@ -7,7 +7,7 @@ import { AuthModal } from "./auth-modal.js";
  * same session and the same Firebase calls as V1's, so everything the base
  * class knows still holds. What differs is the copy: V1 heads the view "Log in"
  * and labels the button "Sign in"; V2 says "Log in" in both places, matching the
- * header, the footer link and `/v2/login`.
+ * header, the footer link and `/login`.
  *
  * Only the affordances whose accessible name changed are overridden here. When
  * V1 goes, this class and its parent collapse into one.

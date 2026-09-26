@@ -48,7 +48,7 @@ export default function JournalArticlePage({ params }) {
         <header className="pt-12 md:pt-16">
           <Reveal className="mx-auto max-w-[46rem]">
             <Link
-              href="/v2/journal"
+              href="/journal"
               className="type-eyebrow inline-flex items-center gap-2 text-ash transition-colors duration-200 ease-out hover:text-ink"
             >
               <Arrow className="h-3 w-4 rotate-180" />
@@ -122,7 +122,7 @@ export default function JournalArticlePage({ params }) {
               >
                 Ask on WhatsApp
               </Button>
-              <Button variant="tertiary" withArrow href="/v2/consultation">
+              <Button variant="tertiary" withArrow href="/consultation">
                 Or book a coaching session
               </Button>
             </div>
@@ -143,7 +143,7 @@ export default function JournalArticlePage({ params }) {
             {others.map(({ slug, title, kicker, summary }) => (
               <li key={slug} className="border-b border-ink/15">
                 <Link
-                  href={`/v2/journal/${slug}`}
+                  href={`/journal/${slug}`}
                   className="group relative grid items-baseline gap-x-10 py-8 md:grid-cols-[9rem_minmax(0,1.1fr)_minmax(0,1fr)_2rem]"
                 >
                   <span

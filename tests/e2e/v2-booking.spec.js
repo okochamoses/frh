@@ -11,7 +11,7 @@ import {
 import { V2AuthModal } from "../support/v2-auth-modal.js";
 
 /**
- * The v2 booking page (/v2/booking), end to end against the emulators.
+ * The v2 booking page (/booking), end to end against the emulators.
  *
  * Every test opens the page through `openBooking`, which fails unless the app
  * announces it is talking to the `demo-flourish` emulator project — so a run
@@ -24,7 +24,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-// Catalogue rows used below (src/app/salon/services.json).
+// Catalogue rows used below (src/data/services.json).
 const WASH = {
   title: "Washing, Moisturizing, Detangling with Intense Deep Conditioning (Moisturizing Treatment)",
   price: 8000,
@@ -77,7 +77,7 @@ test.afterEach(() => {
 });
 
 /** Opens the booking page and proves it is wired to the emulator project. */
-async function openBooking(page, path = "/v2/booking") {
+async function openBooking(page, path = "/booking") {
   const emulatorBanner = page.waitForEvent("console", {
     predicate: (m) => m.text().includes("[firebase] Using emulators — project demo-flourish"),
     timeout: 20_000,
@@ -134,7 +134,7 @@ async function addBarrelTwistAndPickTime(page, d) {
   await expect(page.getByRole("heading", { name: "Your details" })).toBeVisible();
 }
 
-async function acceptPolicyAndConfirm(page) {
+async function confirmBooking(page) {
   await slip(page).getByRole("button", { name: "Confirm booking" }).click();
   await expect(page.getByRole("heading", { name: /^See you/ })).toBeVisible({ timeout: 15_000 });
 }
@@ -155,7 +155,9 @@ test.describe("browsing services", () => {
 
     await page.getByRole("searchbox", { name: "Search services" }).fill("updo");
     const results = page.getByRole("region", { name: "Search results" });
-    await expect(results.getByRole("heading", { level: 3 }).first()).toHaveText("Natural hair updo");
+    await expect(results.getByRole("button", { name: /^See photo and details: / }).first()).toHaveAccessibleName(
+      "See photo and details: Natural hair updo"
+    );
 
     await page.getByRole("searchbox", { name: "Search services" }).fill("zzzz");
     await expect(page.getByText(/Nothing called .zzzz. yet/)).toBeVisible();
@@ -163,14 +165,14 @@ test.describe("browsing services", () => {
     await page.getByRole("searchbox", { name: "Search services" }).fill("");
     await page.getByRole("button", { name: "Nails", exact: true }).click();
     const nails = page.getByRole("region", { name: "Nails" });
-    await expect(nails.getByRole("heading", { name: "Acrylic Set" })).toBeVisible();
+    await expect(nails.getByRole("button", { name: "See photo and details: Acrylic Set" })).toBeVisible();
     // Nail services have no catalogue photo yet, so they fall back to the
     // lettered tile. That tile is aria-hidden and carries no caption any more
     // (see ServicePhoto), so the thing to assert is that no photo loaded.
     await expect(nails.locator("img")).toHaveCount(0);
 
     await page.getByRole("button", { name: "List", exact: true }).click();
-    await expect(nails.getByRole("button", { name: "Gels on Nails", exact: true })).toBeVisible();
+    await expect(nails.getByRole("button", { name: "Add Gels on Nails", exact: true })).toBeVisible();
 
     // The chosen view is remembered on this device.
     await page.reload();
@@ -184,10 +186,10 @@ test.describe("browsing services", () => {
     // Tapping the row body opens the sheet; the round button beside it adds.
     const row = page.getByRole("button", { name: "Add Barrel Twist" });
     await row.click();
-    await expect(page.getByRole("button", { name: "Remove Barrel Twist" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("region", { name: "Twists & coils" }).getByRole("button", { name: "Remove Barrel Twist" })).toHaveAttribute("aria-pressed", "true");
     await expect(slip(page).getByText("Barrel Twist")).toBeVisible();
 
-    await page.getByRole("button", { name: "Remove Barrel Twist" }).press(" ");
+    await page.getByRole("region", { name: "Twists & coils" }).getByRole("button", { name: "Remove Barrel Twist" }).press(" ");
     await expect(row).toHaveAttribute("aria-pressed", "false");
     await expect(slip(page).getByText("Services you pick appear here.")).toBeVisible();
   });
@@ -353,9 +355,10 @@ test.describe("booking", () => {
     await slip(page).getByRole("button", { name: "Review booking" }).click();
 
     await expect(page.getByRole("heading", { name: "Check and confirm" })).toBeVisible();
-    await expect(main(page).getByText("Chioma · +2348031234567")).toBeVisible();
+    // Shown the way people read it; stored as +234… (checked below).
+    await expect(main(page).getByText("Chioma · 0803 123 4567")).toBeVisible();
     await expect(main(page).getByText("Transitioning hair, please be gentle.")).toBeVisible();
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
     await expect(main(page).getByText("The salon will confirm with you on")).toBeVisible();
 
     // A guest has no account to come back to, so the success screen hands them
@@ -363,7 +366,7 @@ test.describe("booking", () => {
     // only way back.
     const manageLink = page.getByRole("link", { name: "Open my booking" });
     await expect(manageLink).toBeVisible();
-    await expect(manageLink).toHaveAttribute("href", /\/v2\/booking\/manage\?ref=[^&]+&t=[0-9a-f]{64}/);
+    await expect(manageLink).toHaveAttribute("href", /\/booking\/manage\?ref=[^&]+&t=[0-9a-f]{64}/);
     await expect(page.getByRole("link", { name: "Ask the salon on WhatsApp" })).toBeVisible();
 
     const [booking] = await listBookingsWhere("userMobileNumber", "+2348031234567");
@@ -386,7 +389,7 @@ test.describe("booking", () => {
     await page.getByLabel("Phone number").fill("+2348091112222");
     await page.getByLabel("Email (optional)").fill("Tolu@Example.com");
     await slip(page).getByRole("button", { name: "Review booking" }).click();
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
 
     await expect(main(page).getByText("We've sent your confirmation to")).toBeVisible();
     const [booking] = await listBookingsWhere("userMobileNumber", "+2348091112222");
@@ -426,7 +429,7 @@ test.describe("booking", () => {
     await page.getByLabel("Your name").fill("Kemi");
     await page.getByLabel("Phone number").fill("08055556666");
     await slip(page).getByRole("button", { name: "Review booking" }).click();
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
 
     await page.getByRole("button", { name: "Book something else" }).click();
     await page.reload();
@@ -435,7 +438,8 @@ test.describe("booking", () => {
     await expect(main(page).getByText(`Your next visit: ${shortLabel(d)} at 10:00`, { exact: false })).toBeVisible();
     await addBarrelTwistAndPickTime(page, openWeekday(5));
     await expect(page.getByLabel("Your name")).toHaveValue("Kemi");
-    await expect(page.getByLabel("Phone number")).toHaveValue("08055556666");
+    // Remembered in the stored +234 form.
+    await expect(page.getByLabel("Phone number")).toHaveValue("+2348055556666");
   });
 
   test("an account holder can sign in at the Details step instead", async ({ page }) => {
@@ -451,8 +455,9 @@ test.describe("booking", () => {
 
     // Signing in resumes the booking at the Confirm step.
     await expect(page.getByRole("heading", { name: "Check and confirm" })).toBeVisible();
-    await expect(slip(page).getByRole("button", { name: "Confirm booking" })).toBeDisabled();
-    await acceptPolicyAndConfirm(page);
+    // Nothing left to tick: Confirm is ready as soon as Review opens.
+    await expect(slip(page).getByRole("button", { name: "Confirm booking" })).toBeEnabled();
+    await confirmBooking(page);
 
     const [booking] = await listBookingsFor(user.uid);
     expect(booking.startTime).toBe(lagosInstant(d, 10));
@@ -507,7 +512,7 @@ test.describe("booking", () => {
     await expect(page.getByRole("heading", { name: "Check and confirm" })).toBeVisible();
     expect((await readUserProfile(user.uid)).mobileNumber).toBe("+2348031234567");
 
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
     expect(await listBookingsFor(user.uid)).toHaveLength(1);
   });
 
@@ -519,7 +524,7 @@ test.describe("booking", () => {
     const d = openWeekday(2);
     await addBarrelTwistAndPickTime(page, d);
     await slip(page).getByRole("button", { name: "Review booking" }).click();
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
 
     const start = lagosInstant(d, 10).replace(/[-:]/g, "").replace(".000", "");
     await expect(page.getByRole("link", { name: "Add to Google Calendar" })).toHaveAttribute("href", new RegExp(`dates=${start}`));
@@ -573,7 +578,7 @@ test.describe("booking from another time zone", () => {
     await addBarrelTwistAndPickTime(page, d);
     await slip(page).getByRole("button", { name: "Review booking" }).click();
     await expect(page.getByText(`${dayLabel(d)}, 10:00–12:00`)).toBeVisible();
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
 
     const [booking] = await listBookingsFor(user.uid);
     expect(booking.startTime).toBe(lagosInstant(d, 10));
@@ -618,7 +623,7 @@ test.describe("rebooking", () => {
     const next = nextSameWeekday(last);
     await card.getByRole("button", { name: `Book ${shortLabel(next)}, 10:00` }).click();
     await expect(page.getByRole("heading", { name: "Check and confirm" })).toBeVisible();
-    await acceptPolicyAndConfirm(page);
+    await confirmBooking(page);
 
     const bookings = await listBookingsFor(user.uid);
     const created = bookings.find((b) => b.status === "pending");
@@ -696,13 +701,13 @@ test.describe("rebooking", () => {
 
     await openBooking(page);
     await signInFromHeader(page, user);
-    await openBooking(page, `/v2/booking?again=${id}`);
+    await openBooking(page, `/booking?again=${id}`);
 
     await expect(page.getByRole("heading", { name: "When suits you?" })).toBeVisible();
     await expect(slip(page).getByText("Barrel Twist")).toBeVisible();
     await expect(slip(page).getByText("₦18,000")).toBeVisible();
     // The link is consumed so a refresh doesn't reset the cart.
-    await expect(page).toHaveURL(/\/v2\/booking$/);
+    await expect(page).toHaveURL(/\/booking$/);
   });
 });
 
@@ -772,7 +777,7 @@ async function bookAsGuest(page, d, { name = "Chioma", phone = "0803 123 4567", 
   await page.getByLabel("Phone number").fill(phone);
   if (notes) await page.getByLabel("Anything we should know?").fill(notes);
   await slip(page).getByRole("button", { name: "Review booking" }).click();
-  await acceptPolicyAndConfirm(page);
+  await confirmBooking(page);
   return page.getByRole("link", { name: "Open my booking" }).getAttribute("href");
 }
 

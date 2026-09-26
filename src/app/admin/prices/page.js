@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { merriweather } from "@/app/fonts";
 import { Button } from "@/components/ui/button";
-import services from "@/app/salon/services.json";
+import services from "@/data/services.json";
 import { auth } from "@/lib/firebase/config";
 import { PRICE_LISTS, savePriceList, subscribePriceList } from "@/lib/firebase/priceListService";
 

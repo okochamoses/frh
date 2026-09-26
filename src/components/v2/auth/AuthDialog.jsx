@@ -10,7 +10,7 @@
  *
  * The shell is the booking sheet's: a centred card from `sm` up, a bottom sheet
  * on phones, mounted inside `.v2-root` so it inherits v2's faces and colours.
- * The views themselves are `AuthPanel`, shared with `/v2/login` and friends.
+ * The views themselves are `AuthPanel`, shared with `/login` and friends.
  *
  * One Dialog for all three modes, not three dialogs — swapping whole dialogs
  * remounts Radix's focus trap and scroll lock on every switch, which threw away

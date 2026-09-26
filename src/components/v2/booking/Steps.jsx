@@ -532,7 +532,7 @@ export function SuccessView({ result, options, contact, onAgain }) {
           </a>
         ) : (
           <a
-            href="/v2/bookings"
+            href="/bookings"
             className="inline-flex h-12 items-center rounded-full border border-ink px-6 text-sm font-semibold hover:bg-ink/5"
           >
             Manage my bookings

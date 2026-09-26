@@ -4,7 +4,7 @@
  * The three auth views, and nothing around them.
  *
  * Both surfaces render this: the modal (`AuthDialog`) and the standalone routes
- * (`/v2/login`, `/v2/signup`, `/v2/reset-password`). They differ only in what
+ * (`/login`, `/signup`, `/reset-password`). They differ only in what
  * `onModeChange` does — swap the view in place, or navigate — and in what
  * happens after a successful sign-in.
  */

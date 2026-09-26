@@ -27,7 +27,7 @@ import {
  * No browser; these drive the emulator's callable endpoints directly.
  */
 
-// Priced at ₦10,000 for 120 minutes in src/app/salon/services.json.
+// Priced at ₦10,000 for 120 minutes in src/data/services.json.
 const SERVICE = "Barrel Twist";
 const SERVICE_PRICE = 10_000;
 const SERVICE_DURATION = 120;

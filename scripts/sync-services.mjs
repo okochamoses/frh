@@ -2,7 +2,7 @@
 /**
  * Copies the service catalogue into the Cloud Functions bundle.
  *
- * The client app owns `src/app/salon/services.json`, but a functions deploy
+ * The client app owns `src/data/services.json`, but a functions deploy
  * only uploads the `functions/` directory — so the server needs its own copy to
  * price and validate bookings without trusting the browser.
  *
@@ -15,7 +15,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const source = resolve(root, "src/app/salon/services.json");
+const source = resolve(root, "src/data/services.json");
 const target = resolve(root, "functions/lib/services.json");
 
 const raw = readFileSync(source, "utf8");

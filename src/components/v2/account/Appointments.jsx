@@ -6,13 +6,13 @@
  * V1's `/bookings` carried its own reschedule machinery — `BookingContext`,
  * `beginReschedule`, the V1 `BookingDrawer`, a cancel dialog — which is why it
  * was the heaviest page on the site. None of that is rebuilt here. V2 already
- * has one place where an appointment is moved or called off, `/v2/booking/manage`,
+ * has one place where an appointment is moved or called off, `/booking/manage`,
  * and it is where the confirmation email lands; the callables behind it take a
  * signed-in owner in place of the email's token, so this page links straight
  * there with only the booking's id. One screen for changing a visit, whether
  * the client arrived from their inbox or from their account.
  *
- * Rebooking is likewise `/v2/booking?again=<id>`, which the flow already
+ * Rebooking is likewise `/booking?again=<id>`, which the flow already
  * understands — it is what the rebook nudge on the booking page uses.
  */
 
@@ -153,7 +153,7 @@ function AppointmentCard({ booking, now }) {
           // signed-in owner instead, which is the whole point of linking here
           // rather than building a second date picker.
           <Link
-            href={`/v2/booking/manage?ref=${encodeURIComponent(booking.id)}`}
+            href={`/booking/manage?ref=${encodeURIComponent(booking.id)}`}
             className="text-v2-body-sm font-semibold text-ink underline underline-offset-4 hover:text-ink/70"
           >
             Move or cancel
@@ -161,7 +161,7 @@ function AppointmentCard({ booking, now }) {
         )}
         {repeatable && (
           <Link
-            href={`/v2/booking?again=${encodeURIComponent(booking.id)}`}
+            href={`/booking?again=${encodeURIComponent(booking.id)}`}
             className="text-v2-body-sm font-semibold text-ink underline underline-offset-4 hover:text-ink/70"
           >
             Book this again
@@ -257,7 +257,7 @@ export default function Appointments() {
               <Button type="button" onClick={() => openAuthModal({ mode: AUTH_MODES.SIGN_IN })}>
                 Log in
               </Button>
-              <Button variant="secondary" href="/v2/booking">
+              <Button variant="secondary" href="/booking">
                 Book a visit
               </Button>
             </div>
@@ -294,7 +294,7 @@ export default function Appointments() {
               </p>
             </div>
             <div>
-              <Button variant="book" withArrow href="/v2/booking">
+              <Button variant="book" withArrow href="/booking">
                 Book a visit
               </Button>
             </div>
@@ -316,7 +316,7 @@ export default function Appointments() {
                 <h2 className="type-eyebrow">Coming up</h2>
                 <div className="flex flex-wrap items-center justify-between gap-4 rounded-v2-3xl border border-dashed border-latte p-6">
                   <p className="text-v2-body-sm text-ink-soft">Nothing in the diary.</p>
-                  <Button variant="book" withArrow href="/v2/booking">
+                  <Button variant="book" withArrow href="/booking">
                     Book a visit
                   </Button>
                 </div>
@@ -337,7 +337,7 @@ export default function Appointments() {
 
         <p className="text-v2-body-sm text-ink-soft">
           <Link
-            href="/v2/settings"
+            href="/settings"
             className="font-semibold text-ink underline underline-offset-4 hover:text-ink/70"
           >
             Your details

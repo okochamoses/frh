@@ -332,7 +332,7 @@ function UpcomingNote({ booking }) {
       <span>
         <b>Your next visit:</b> {shortDate(when.key)} at {when.time} · {booking.servicesText ?? "your appointment"}
       </span>
-      <a href="/v2/bookings" className="font-semibold text-ink underline underline-offset-4">
+      <a href="/bookings" className="font-semibold text-ink underline underline-offset-4">
         Manage it
       </a>
     </div>

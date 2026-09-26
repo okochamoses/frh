@@ -52,12 +52,12 @@ export default function ClosingCta() {
             </p>
 
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Button href="/v2/booking" withArrow>
+              <Button href="/booking" withArrow>
                 Book a salon visit
               </Button>
               <Button
                 variant="secondary"
-                href="/v2/consultation"
+                href="/consultation"
                 className="border-ink/30 hover:bg-ink/5"
               >
                 Not sure what you need? Talk to Mariam

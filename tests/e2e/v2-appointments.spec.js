@@ -1,10 +1,10 @@
 /**
- * `/v2/bookings` — a client's own appointments, in v2's chrome.
+ * `/bookings` — a client's own appointments, in v2's chrome.
  *
  * The interesting claim is not that a list renders. It is that this page owns
- * no reschedule machinery: changing a visit hands off to `/v2/booking/manage`,
+ * no reschedule machinery: changing a visit hands off to `/booking/manage`,
  * the same screen the confirmation email opens, and booking the same again
- * hands off to `/v2/booking?again=`. Both of those already work and are tested
+ * hands off to `/booking?again=`. Both of those already work and are tested
  * elsewhere — what is tested here is that the handoff is real, which for the
  * manage screen meant teaching it to accept a signed-in owner with no token.
  */
@@ -62,7 +62,7 @@ test("wears v2's chrome and splits the diary in two", async ({ page }) => {
     startTime: at(-30), status: "completed",
   });
 
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
   await logInHere(page, user);
 
   await expect(page.locator(".v2-root")).toBeVisible();
@@ -74,7 +74,7 @@ test("wears v2's chrome and splits the diary in two", async ({ page }) => {
 });
 
 test("a signed-out visitor is pointed at their email, not at signing up", async ({ page }) => {
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
 
   // Most clients here booked as guests and have no account to log into. The
   // page has to say so rather than looking like a locked door.
@@ -84,7 +84,7 @@ test("a signed-out visitor is pointed at their email, not at signing up", async 
 
 test("a client with no history is asked to book, not shown an empty list", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-empty") });
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
   await logInHere(page, user);
 
   await expect(main(page).getByRole("heading", { name: "No visits booked" })).toBeVisible();
@@ -98,14 +98,14 @@ test("moving a visit hands off to the manage screen — no token needed", async 
     startTime: at(6), status: "pending",
   });
 
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
   await logInHere(page, user);
 
   await main(page).getByRole("link", { name: "Move or cancel" }).click();
 
   // The email's link carries a signed `t`; an owner needs only the id, because
   // `getBooking` takes the caller's uid in its place.
-  await expect(page).toHaveURL(new RegExp(`/v2/booking/manage\\?ref=${id}$`));
+  await expect(page).toHaveURL(new RegExp(`/booking/manage\\?ref=${id}$`));
   await expect(page.getByRole("heading", { name: /Your (booking|appointment)/i }).first()).toBeVisible();
   await expect(page.getByText("Finding your appointment…")).toBeHidden();
 });
@@ -117,7 +117,7 @@ test("cancelling from that screen really cancels the booking", async ({ page }) 
     startTime: at(6), status: "pending",
   });
 
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
   await logInHere(page, user);
   await main(page).getByRole("link", { name: "Move or cancel" }).click();
 
@@ -138,18 +138,18 @@ test("a past visit offers the same again, through the flow that already does it"
     startTime: at(-30), status: "completed",
   });
 
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
   await logInHere(page, user);
 
   const again = main(page).getByRole("link", { name: "Book this again" });
-  await expect(again).toHaveAttribute("href", `/v2/booking?again=${id}`);
+  await expect(again).toHaveAttribute("href", `/booking?again=${id}`);
   await again.click();
 
   // Not asserted on the URL: the flow consumes `?again=` and strips it with
   // `history.replaceState` the moment it has applied it, so the query is gone
   // by the time anything can look. What it leaves behind is the point — the
   // Time step, with that visit's services already in the slip.
-  await expect(page).toHaveURL(/\/v2\/booking$/);
+  await expect(page).toHaveURL(/\/booking$/);
   await expect(page.getByRole("heading", { name: "When suits you?" })).toBeVisible();
   await expect(
     page.getByRole("complementary", { name: "Your appointment" }).getByText("Barrel Twist")
@@ -163,7 +163,7 @@ test("a cancelled visit stays in the history rather than vanishing", async ({ pa
     startTime: at(6), status: "cancelled",
   });
 
-  await gotoReady(page, "/v2/bookings");
+  await gotoReady(page, "/bookings");
   await logInHere(page, user);
 
   // Future-dated but cancelled: it belongs to history, not to "coming up".
@@ -182,7 +182,7 @@ test("the manage screen still refuses a stranger with no token", async ({ page }
 
   // Signed out, id guessed: the token is what stands in for an account, and
   // without either there is nothing to open.
-  await gotoReady(page, `/v2/booking/manage?ref=${id}`);
+  await gotoReady(page, `/booking/manage?ref=${id}`);
   await expect(page.getByRole("heading", { name: "We couldn't open that booking" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Log in" }).last()).toBeVisible();
 });

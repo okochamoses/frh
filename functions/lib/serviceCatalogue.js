@@ -1,7 +1,7 @@
 /**
  * The server's copy of the service catalogue.
  *
- * Kept in sync with `src/app/salon/services.json` by `scripts/sync-services.mjs`
+ * Kept in sync with `src/data/services.json` by `scripts/sync-services.mjs`
  * (wired into the functions predeploy hook). Prices and durations are read from
  * here rather than from the request body, so a booking can never be written
  * with a price the salon did not set.

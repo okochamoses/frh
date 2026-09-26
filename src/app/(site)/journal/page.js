@@ -32,7 +32,7 @@ export default function JournalPage() {
         title="The hair journal"
         lede="What we would tell you in the chair — the things that come up in every appointment, written down so you have them at home. No miracle routines and no promises about inches — just the handling that decides how much hair you keep."
         actions={
-          <Button variant="tertiary" withArrow href="/v2/free-guide">
+          <Button variant="tertiary" withArrow href="/free-guide">
             Get the full guide by email
           </Button>
         }
@@ -42,7 +42,7 @@ export default function JournalPage() {
       <section aria-label="Latest from the journal">
         <Reveal>
           <Link
-            href={`/v2/journal/${LEAD.slug}`}
+            href={`/journal/${LEAD.slug}`}
             className="group grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12"
           >
             <figure className="relative aspect-[4/3] overflow-hidden rounded-v2-4xl bg-cream-100 lg:col-span-7">
@@ -78,7 +78,7 @@ export default function JournalPage() {
             {REST.map(({ slug, title, kicker, summary, readingMinutes, published }, i) => (
               <li key={slug} className="border-b border-ink/15">
                 <Link
-                  href={`/v2/journal/${slug}`}
+                  href={`/journal/${slug}`}
                   className="group relative grid items-baseline gap-x-10 py-8 md:grid-cols-[9rem_minmax(0,1.1fr)_minmax(0,1fr)_2rem] md:py-10"
                 >
                   <span

@@ -114,7 +114,7 @@ export default function VisitUs() {
             </ul>
 
             <div className="mt-10 flex flex-wrap gap-3 border-t border-ink/10 pt-8 lg:mt-auto">
-              <Button variant="book" withArrow href="/v2/booking">
+              <Button variant="book" withArrow href="/booking">
                 Book a salon visit
               </Button>
               <Button

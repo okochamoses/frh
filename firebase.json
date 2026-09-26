@@ -60,7 +60,19 @@
       }
     ],
     "cleanUrls": true,
-    "trailingSlash": false
+    "trailingSlash": false,
+    "redirects": [
+      {
+        "source": "/v2",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/v2/:path*",
+        "destination": "/:path",
+        "type": 301
+      }
+    ]
   },
   "emulators": {
     "auth": {

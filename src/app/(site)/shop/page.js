@@ -61,7 +61,7 @@ export default function ShopPage() {
             >
               Ask what suits your hair
             </Button>
-            <Button variant="secondary" href="/v2/consultation">
+            <Button variant="secondary" href="/consultation">
               Get a full routine
             </Button>
           </>
@@ -109,7 +109,7 @@ export default function ShopPage() {
                 >
                   Order on WhatsApp
                 </Button>
-                <Button variant="secondary" href="/v2/contact">
+                <Button variant="secondary" href="/contact">
                   Other ways to reach us
                 </Button>
               </div>

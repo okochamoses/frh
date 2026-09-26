@@ -1,7 +1,7 @@
 /**
  * The service catalogue, shaped for browsing.
  *
- * `src/app/salon/services.json` is a flat export from the salon's booking
+ * `src/data/services.json` is a flat export from the salon's booking
  * software. The v2 booking page wants something closer to how people choose a
  * hairstyle: one card per look, with the sizes or lengths of that look inside
  * it. The export already encodes that grouping — variants of one look share a
@@ -25,7 +25,7 @@
  *   variantLabel     string         Label for this row inside its look.
  */
 
-import services from "@/app/salon/services.json";
+import services from "@/data/services.json";
 
 // ── Categories ────────────────────────────────────────────────────────────────
 
@@ -211,7 +211,7 @@ export const SERVICE_BY_TITLE = new Map();
 export const LOOK_BY_ID = new Map();
 
 /**
- * Looks by the slug that addresses them in a URL — `/v2/booking?look=barrel-twists`.
+ * Looks by the slug that addresses them in a URL — `/booking?look=barrel-twists`.
  *
  * The `look-N` ids are ordinals over the salon's export order, so inserting one
  * row upstream renumbers every look after it. That is harmless while the id

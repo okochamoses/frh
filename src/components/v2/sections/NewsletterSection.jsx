@@ -41,7 +41,7 @@ export default function NewsletterSection() {
       /*
        * Imported here rather than at the top of the file. The service pulls in
        * firebase/firestore and the app init — about 145kB — and this section
-       * sits at the bottom of /v2, /v2/about, /v2/journal and /v2/shop, where
+       * sits at the bottom of /v2, /about, /journal and /shop, where
        * most visitors never touch the form. Loading it on submit keeps that
        * weight off every one of those pages.
        */

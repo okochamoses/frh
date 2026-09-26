@@ -154,7 +154,7 @@ export default function AccountSettings() {
               >
                 Log in
               </Button>
-              <Button variant="secondary" href="/v2/booking">
+              <Button variant="secondary" href="/booking">
                 Book a visit
               </Button>
             </div>
@@ -233,7 +233,7 @@ export default function AccountSettings() {
               <p className="type-eyebrow">Elsewhere</p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                 <Link
-                  href="/v2/bookings"
+                  href="/bookings"
                   className="text-v2-body-sm font-semibold text-ink underline underline-offset-4 hover:text-ink/70"
                 >
                   Your appointments

@@ -26,7 +26,7 @@ const FAMILIES = [
     title: "Twists",
     price: "₦5,000",
     body: "Barrel, mini, micro, flat and finger coils, on their own or combined with weaving. Sectioned by hand at a tension you can sleep in.",
-    href: "/v2/services#twists",
+    href: "/services#twists",
     image: "/no-scalp-issues.webp",
     alt: "Client with a soft twist-out, smiling, in the salon",
   },
@@ -34,7 +34,7 @@ const FAMILIES = [
     title: "Braids",
     price: "₦7,000",
     body: "Natural hair braids and mini braids, with or without extensions, sized to your density rather than to the clock.",
-    href: "/v2/services#braids",
+    href: "/services#braids",
     image: "/story.webp",
     alt: "Sculpted braided updo photographed in hard afternoon light",
   },
@@ -42,7 +42,7 @@ const FAMILIES = [
     title: "Locs",
     price: "₦12,000",
     body: "Starter locs, sister locs and interlocking retwists, kept neat at the root without being pulled tight.",
-    href: "/v2/services#locs",
+    href: "/services#locs",
     image: "/hair-wash.webp",
     alt: "Locs being lathered by hand during a wash",
   },
@@ -50,7 +50,7 @@ const FAMILIES = [
     title: "Treatments and loosening",
     price: "₦1,500",
     body: "Deep conditioning, scalp care and careful take-down, because most breakage happens on the way out of a style rather than in it.",
-    href: "/v2/services#treatments",
+    href: "/services#treatments",
     image: "/scalp-issues.webp",
     alt: "Stylist checking a client's scalp and roots in the salon",
   },
@@ -141,7 +141,7 @@ export default function ServicesOverview() {
         title="Protective styling, done properly"
         lede="Every consultation starts with a look at your scalp, edges and ends, and finishes with a plan for keeping the results."
         action={
-          <Button variant="tertiary" withArrow href="/v2/services">
+          <Button variant="tertiary" withArrow href="/services">
             See all services and prices
           </Button>
         }

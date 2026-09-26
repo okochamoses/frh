@@ -19,8 +19,8 @@
  * here leaves the admin dashboard's own stone/shadcn chrome untouched.
  */
 
-import "@/app/v2/v2.css";
-import { fontVariables } from "@/app/v2/fonts";
+import "@/app/(site)/v2.css";
+import { fontVariables } from "@/app/(site)/fonts";
 import WalkInBookingForm from "@/components/admin/WalkInBookingForm";
 
 export default function NewBookingPage() {

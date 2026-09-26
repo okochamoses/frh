@@ -116,7 +116,7 @@ function makeCompleteUrl(bookingId, review, secret) {
  */
 function makeManageUrl(bookingId, secret) {
     if (!secret) return null;
-    return `${SITE_BASE}/v2/booking/manage?ref=${bookingId}&t=${bookingToken(bookingId, "manage", secret)}`;
+    return `${SITE_BASE}/booking/manage?ref=${bookingId}&t=${bookingToken(bookingId, "manage", secret)}`;
 }
 
 function verifyToken(bookingId, purpose, token, secret) {

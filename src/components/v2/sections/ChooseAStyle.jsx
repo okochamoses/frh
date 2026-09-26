@@ -30,7 +30,7 @@ const ROUTES = [
   {
     situation: "I am trying to grow my edges back",
     answer: "Nothing that pulls the hairline — and a coaching session",
-    href: "/v2/consultation",
+    href: "/consultation",
   },
 ];
 

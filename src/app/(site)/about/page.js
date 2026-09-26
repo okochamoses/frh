@@ -30,10 +30,10 @@ export default function AboutPage() {
         lede="Flourish Roots Hair Co. is a natural hair salon in Isolo, Lagos. We started because too many women were losing hair in salon chairs, and we are built around one stubborn idea: a style is only good if the hair underneath it is still healthy when the style comes down."
         actions={
           <>
-            <Button variant="book" withArrow href="/v2/booking">
+            <Button variant="book" withArrow href="/booking">
               Book a salon visit
             </Button>
-            <Button variant="secondary" href="/v2/consultation">
+            <Button variant="secondary" href="/consultation">
               Talk to Mariam
             </Button>
           </>

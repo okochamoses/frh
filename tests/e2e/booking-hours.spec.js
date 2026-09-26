@@ -70,7 +70,7 @@ async function openBooking(page) {
     predicate: (m) => m.text().includes("[firebase] Using emulators — project demo-flourish"),
     timeout: 20_000,
   });
-  await page.goto("/v2/booking");
+  await page.goto("/booking");
   await emulatorBanner;
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }

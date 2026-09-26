@@ -69,7 +69,7 @@ export default function ContactPage() {
         lede="Talk to a person. Booking is quickest online, but you never have to. Message us, call us, or come and find us — Shop 303 is on the third floor of Destiny Plaza."
         actions={
           <>
-            <Button variant="book" withArrow href="/v2/booking">
+            <Button variant="book" withArrow href="/booking">
               Book a salon visit
             </Button>
             <Button
@@ -174,7 +174,7 @@ export default function ContactPage() {
               </dl>
 
               <div className="mt-auto flex flex-wrap gap-3 border-t border-ink/10 pt-8">
-                <Button variant="book" withArrow href="/v2/booking">
+                <Button variant="book" withArrow href="/booking">
                   Book a visit
                 </Button>
                 <Button

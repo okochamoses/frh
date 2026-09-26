@@ -42,7 +42,7 @@ export default function Hero() {
         <Button
           variant="book"
           withArrow
-          href="/v2/booking"
+          href="/booking"
           className="mt-9"
         >
           Book a salon visit

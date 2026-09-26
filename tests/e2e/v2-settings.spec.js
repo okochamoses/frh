@@ -1,5 +1,5 @@
 /**
- * `/v2/settings` — the account page in v2's chrome.
+ * `/settings` — the account page in v2's chrome.
  *
  * What is worth testing here is not "a form saves a field". It is the two
  * things that were actually wrong before: reaching your account from v2 threw
@@ -32,7 +32,7 @@ async function logInHere(page, user) {
 
 test("wears v2's chrome, not v1's", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-settings"), firstName: "Ada" });
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
   await logInHere(page, user);
 
   // The v2 tree, which is what carries the faces and the colour system. V1's
@@ -45,7 +45,7 @@ test("wears v2's chrome, not v1's", async ({ page }) => {
 
 test("the account menu goes here, not to v1's /settings", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-menu"), firstName: "Ada" });
-  await gotoReady(page, "/v2");
+  await gotoReady(page, "/");
 
   await retryInteraction(async () => {
     await page.getByRole("banner").getByRole("button", { name: "Log in" }).click();
@@ -58,17 +58,17 @@ test("the account menu goes here, not to v1's /settings", async ({ page }) => {
   await page.getByRole("banner").getByRole("button", { name: "Ada", exact: true }).click();
   await page.getByRole("menuitem", { name: "Account settings" }).click();
 
-  await expect(page).toHaveURL(/\/v2\/settings/);
+  await expect(page).toHaveURL(/\/settings/);
 });
 
 test("a signed-out visitor is told they can still book", async ({ page }) => {
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
 
   // Not a redirect and not a wall: an account is optional everywhere else on
   // this site, and the page should not imply otherwise.
   await expect(card(page).getByRole("heading", { name: "Log in to see your details" })).toBeVisible();
   await expect(card(page).getByRole("link", { name: "Book a visit" })).toBeVisible();
-  await expect(page).toHaveURL(/\/v2\/settings$/);
+  await expect(page).toHaveURL(/\/settings$/);
 });
 
 test("logging in fills the form in place, without leaving the page", async ({ page }) => {
@@ -78,10 +78,10 @@ test("logging in fills the form in place, without leaving the page", async ({ pa
     lastName: "Lovelace",
     mobileNumber: "+2348012345678",
   });
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
   await logInHere(page, user);
 
-  await expect(page).toHaveURL(/\/v2\/settings$/);
+  await expect(page).toHaveURL(/\/settings$/);
   await expect(page.getByLabel("First name")).toHaveValue("Ada");
   await expect(page.getByLabel("Surname")).toHaveValue("Lovelace");
   await expect(page.getByLabel("Mobile number")).toHaveValue("+2348012345678");
@@ -91,7 +91,7 @@ test("logging in fills the form in place, without leaving the page", async ({ pa
 
 test("saving writes the profile and updates the header", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-save"), firstName: "Ada" });
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
   await logInHere(page, user);
 
   await page.getByLabel("First name").fill("Adaeze");
@@ -110,7 +110,7 @@ test("saving writes the profile and updates the header", async ({ page }) => {
 
 test("a number the booking flow would refuse is refused here too", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-badphone") });
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
   await logInHere(page, user);
 
   // V1 accepted this: it starts with 0, which was the whole of its rule. The
@@ -125,7 +125,7 @@ test("a number the booking flow would refuse is refused here too", async ({ page
 
 test("a local number is stored the way everything downstream expects", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-normalise"), mobileNumber: null });
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
   await logInHere(page, user);
 
   await page.getByLabel("Mobile number").fill("0803 123 4567");
@@ -139,7 +139,7 @@ test("a local number is stored the way everything downstream expects", async ({ 
 
 test("the number can be cleared — a Google sign-up may never have had one", async ({ page }) => {
   const user = await seedUser({ email: uniqueEmail("v2-clear"), mobileNumber: "+2348012345678" });
-  await gotoReady(page, "/v2/settings");
+  await gotoReady(page, "/settings");
   await logInHere(page, user);
 
   await page.getByLabel("Mobile number").fill("");

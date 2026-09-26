@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The standalone auth routes: `/v2/login`, `/v2/signup`, `/v2/reset-password`.
+ * The standalone auth routes: `/login`, `/signup`, `/reset-password`.
  *
  * The modal is the primary surface — see `AuthDialog`. These exist for the
  * cases a modal cannot serve: a link in an email or a text message, a client
@@ -22,12 +22,12 @@ import { AUTH_MODES } from "@/lib/auth/constants";
 import AuthPanel from "./AuthPanel";
 
 const ROUTE_FOR = {
-  [AUTH_MODES.SIGN_IN]: "/v2/login",
-  [AUTH_MODES.SIGN_UP]: "/v2/signup",
-  [AUTH_MODES.RESET]: "/v2/reset-password",
+  [AUTH_MODES.SIGN_IN]: "/login",
+  [AUTH_MODES.SIGN_UP]: "/signup",
+  [AUTH_MODES.RESET]: "/reset-password",
 };
 
-const DEFAULT_NEXT = "/v2";
+const DEFAULT_NEXT = "/";
 
 /**
  * A same-site path, or the default.
@@ -84,7 +84,7 @@ export default function AuthPage({ mode }) {
         <p className="mt-6 text-center text-v2-body-sm text-ink-soft">
           You don&apos;t need an account to book.{" "}
           <Link
-            href="/v2/booking"
+            href="/booking"
             className="font-semibold text-ink underline underline-offset-4 hover:text-ink/70"
           >
             Book a visit

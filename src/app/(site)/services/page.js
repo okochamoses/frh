@@ -29,7 +29,7 @@ export default function ServicesPage() {
         lede="Twists, braids, threading, locs, treatments and take-down — every style chosen for what it does for your hair, priced in full below, done at a tension you can sleep in, and finished with a plan for keeping the results."
         actions={
           <>
-            <Button variant="book" withArrow href="/v2/booking">
+            <Button variant="book" withArrow href="/booking">
               Book a salon visit
             </Button>
             <Button variant="secondary" href={ASK} target="_blank" rel="noreferrer">

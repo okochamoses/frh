@@ -4,7 +4,7 @@
  * The split is deliberate and the tests are written around it. The modal is the
  * surface a client actually meets — booking needs no account, so auth is always
  * an interruption of something else, and the page behind it has to survive.
- * `/v2/login` and friends exist for the cases a modal cannot serve: a link in an
+ * `/login` and friends exist for the cases a modal cannot serve: a link in an
  * email, a bookmark, the return leg of a Google redirect. Both render the same
  * forms, so what is worth testing on each is what differs — the chrome, and
  * where the client ends up afterwards.
@@ -40,7 +40,7 @@ async function signIn(scope, { email, password }) {
 test.describe("the modal", () => {
   test("opens over the page a client was already on, and leaves it there", async ({ page }) => {
     const user = await seedUser({ email: uniqueEmail("v2-modal"), firstName: "Ada" });
-    await gotoReady(page, "/v2/services");
+    await gotoReady(page, "/services");
 
     await retryInteraction(async () => {
       await header(page).getByRole("button", { name: "Log in" }).click();
@@ -51,13 +51,13 @@ test.describe("the modal", () => {
 
     await expect(dialog(page)).toBeHidden();
     // The whole point of the modal: no navigation happened.
-    await expect(page).toHaveURL(/\/v2\/services$/);
+    await expect(page).toHaveURL(/\/services$/);
     // The header's account button, which carries the client's first name.
     await expect(page.getByRole("button", { name: "Ada", exact: true })).toBeVisible();
   });
 
   test("is v2's own, not v1's — and is named for a screen reader", async ({ page }) => {
-    await gotoReady(page, "/v2");
+    await gotoReady(page, "/");
 
     await retryInteraction(async () => {
       await header(page).getByRole("button", { name: "Log in" }).click();
@@ -82,7 +82,7 @@ test.describe("the modal", () => {
   });
 
   test("switches to sign-up in place, keeping the email already typed", async ({ page }) => {
-    await gotoReady(page, "/v2");
+    await gotoReady(page, "/");
 
     await retryInteraction(async () => {
       await header(page).getByRole("button", { name: "Log in" }).click();
@@ -95,28 +95,28 @@ test.describe("the modal", () => {
     await expect(dialog(page).getByRole("heading", { name: "Create account" })).toBeVisible();
     await expect(dialog(page).getByLabel("Email")).toHaveValue("kemi@example.com");
     // Still a modal, still no navigation.
-    await expect(page).toHaveURL(/\/v2$/);
+    await expect(page).toHaveURL(/\/$/);
   });
 });
 
 test.describe("the standalone routes", () => {
-  test("signing in on /v2/login lands on the v2 home", async ({ page }) => {
+  test("signing in on /login lands on the v2 home", async ({ page }) => {
     const user = await seedUser({ email: uniqueEmail("v2-page") });
-    await gotoReady(page, "/v2/login");
+    await gotoReady(page, "/login");
 
     await retryInteraction(async () => {
       await signIn(page.getByRole("main"), user);
-      await expect(page).toHaveURL(/\/v2$/, { timeout: 2_000 });
+      await expect(page).toHaveURL(/\/$/, { timeout: 2_000 });
     });
   });
 
   test("?next= sends the client where they were going", async ({ page }) => {
     const user = await seedUser({ email: uniqueEmail("v2-next") });
-    await gotoReady(page, "/v2/login?next=%2Fv2%2Fbooking");
+    await gotoReady(page, "/login?next=%2Fbooking");
 
     await retryInteraction(async () => {
       await signIn(page.getByRole("main"), user);
-      await expect(page).toHaveURL(/\/v2\/booking/, { timeout: 2_000 });
+      await expect(page).toHaveURL(/\/booking/, { timeout: 2_000 });
     });
   });
 
@@ -125,20 +125,20 @@ test.describe("the standalone routes", () => {
     // and this one is meant to be linked from emails. "//evil.example" is the
     // interesting case: it starts with a slash but is another origin.
     const user = await seedUser({ email: uniqueEmail("v2-evil") });
-    await gotoReady(page, "/v2/login?next=%2F%2Fevil.example%2Fpwned");
+    await gotoReady(page, "/login?next=%2F%2Fevil.example%2Fpwned");
 
     await retryInteraction(async () => {
       await signIn(page.getByRole("main"), user);
-      await expect(page).toHaveURL(/\/v2$/, { timeout: 2_000 });
+      await expect(page).toHaveURL(/\/$/, { timeout: 2_000 });
     });
   });
 
   test("switching to sign-up navigates, and carries ?next= with it", async ({ page }) => {
-    await gotoReady(page, "/v2/login?next=%2Fv2%2Fbooking");
+    await gotoReady(page, "/login?next=%2Fbooking");
 
     await retryInteraction(async () => {
       await page.getByRole("button", { name: "Sign up", exact: true }).click();
-      await expect(page).toHaveURL(/\/v2\/signup\?next=%2Fv2%2Fbooking/, { timeout: 2_000 });
+      await expect(page).toHaveURL(/\/signup\?next=%2Fbooking/, { timeout: 2_000 });
     });
 
     await expect(page.getByRole("heading", { name: "Create account" })).toBeVisible();
@@ -146,19 +146,19 @@ test.describe("the standalone routes", () => {
 
   test("a client who is already signed in is sent on rather than asked again", async ({ page }) => {
     const user = await seedUser({ email: uniqueEmail("v2-already") });
-    await gotoReady(page, "/v2/login");
+    await gotoReady(page, "/login");
     await retryInteraction(async () => {
       await signIn(page.getByRole("main"), user);
-      await expect(page).toHaveURL(/\/v2$/, { timeout: 2_000 });
+      await expect(page).toHaveURL(/\/$/, { timeout: 2_000 });
     });
 
-    await page.goto("/v2/login?next=%2Fv2%2Fgallery");
-    await expect(page).toHaveURL(/\/v2\/gallery/);
+    await page.goto("/login?next=%2Fgallery");
+    await expect(page).toHaveURL(/\/gallery/);
   });
 
   test("the reset page sends a link without revealing whether the account exists", async ({ page }) => {
     const user = await seedUser({ email: uniqueEmail("v2-reset") });
-    await gotoReady(page, "/v2/reset-password");
+    await gotoReady(page, "/reset-password");
 
     await retryInteraction(async () => {
       await page.getByLabel("Email").fill(user.email);
@@ -173,7 +173,7 @@ test.describe("the standalone routes", () => {
   });
 
   test("an unknown address gets the same answer", async ({ page }) => {
-    await gotoReady(page, "/v2/reset-password");
+    await gotoReady(page, "/reset-password");
 
     await retryInteraction(async () => {
       await page.getByLabel("Email").fill("nobody@example.com");
@@ -185,7 +185,7 @@ test.describe("the standalone routes", () => {
 
 test.describe("validation", () => {
   test("every problem is reported at once, under the field it belongs to", async ({ page }) => {
-    await gotoReady(page, "/v2/signup");
+    await gotoReady(page, "/signup");
 
     await retryInteraction(async () => {
       await page.getByRole("button", { name: "Create account", exact: true }).click();
@@ -208,7 +208,7 @@ test.describe("validation", () => {
 
   test("a wrong password says so without saying whether the account exists", async ({ page }) => {
     const user = await seedUser({ email: uniqueEmail("v2-wrong") });
-    await gotoReady(page, "/v2/login");
+    await gotoReady(page, "/login");
 
     await retryInteraction(async () => {
       await signIn(page.getByRole("main"), { email: user.email, password: "WrongPassword1" });

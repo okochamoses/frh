@@ -23,16 +23,16 @@ import { gotoReady } from "../support/hydration.js";
 
 // The pages a client can reach from the nav or a shared link.
 const PAGES = [
-  "/v2",
-  "/v2/services",
-  "/v2/salon",
-  "/v2/about",
-  "/v2/gallery",
-  "/v2/journal",
-  "/v2/shop",
-  "/v2/contact",
-  "/v2/consultation",
-  "/v2/free-guide",
+  "/",
+  "/services",
+  "/salon",
+  "/about",
+  "/gallery",
+  "/journal",
+  "/shop",
+  "/contact",
+  "/consultation",
+  "/free-guide",
 ];
 
 // The layout's fallback, which no page should be left wearing.
@@ -48,8 +48,11 @@ for (const path of PAGES) {
     page.on("pageerror", (err) => pageErrors.push(err.message));
 
     await gotoReady(page, path);
-    // Let client effects and dynamic imports settle.
-    await page.waitForLoadState("networkidle");
+    // Let client effects and dynamic imports settle. Not "networkidle": the
+    // live price list holds a Firestore listen channel open on every page, so
+    // the network never goes quiet.
+    await page.waitForLoadState("load");
+    await page.waitForTimeout(1_000);
 
     expect(pageErrors, `Uncaught errors on ${path}:\n${pageErrors.join("\n")}`).toEqual([]);
 

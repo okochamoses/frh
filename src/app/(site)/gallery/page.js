@@ -107,7 +107,7 @@ export default function GalleryPage() {
         lede="See the style before you book it. Real heads, finished in our chairs in Isolo. If you see something here you want, send it to us — it is the quickest brief you can give a stylist."
         actions={
           <>
-            <Button variant="book" withArrow href="/v2/booking">
+            <Button variant="book" withArrow href="/booking">
               Book a salon visit
             </Button>
             <Button

@@ -23,22 +23,22 @@ const COLUMNS = [
   {
     title: "Visit",
     links: [
-      { label: "Book an appointment", href: "/v2/booking" },
-      { label: "Salon services", href: "/v2/services" },
-      { label: "Hair coaching", href: "/v2/consultation" },
-      { label: "The salon", href: "/v2/salon" },
+      { label: "Book an appointment", href: "/booking" },
+      { label: "Salon services", href: "/services" },
+      { label: "Hair coaching", href: "/consultation" },
+      { label: "The salon", href: "/salon" },
       // A real link, not the header's modal button: somewhere to send a client
       // who asks "where do I log in?", and something a bookmark can hold.
-      { label: "Log in", href: "/v2/login" },
+      { label: "Log in", href: "/login" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About us", href: "/v2/about" },
-      { label: "Gallery", href: "/v2/gallery" },
-      { label: "Contact", href: "/v2/contact" },
-      { label: "Free hair guide", href: "/v2/free-guide" },
+      { label: "About us", href: "/about" },
+      { label: "Gallery", href: "/gallery" },
+      { label: "Contact", href: "/contact" },
+      { label: "Free hair guide", href: "/free-guide" },
     ],
   },
 ];
@@ -79,7 +79,7 @@ export default function Footer() {
               <Button
                 variant="book"
                 withArrow
-                href="/v2/booking"
+                href="/booking"
               >
                 Book a salon visit
               </Button>

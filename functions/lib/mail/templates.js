@@ -471,14 +471,14 @@ const templates = {
         ["With Mariam", "A 1-on-1 session on your routine, your products and your goals."],
     ], {margin: "18px 0 30px"})}
           ${pillStack([
-        {href: `${SITE}/v2/consultation`, label: "Book a hair coaching session", variant: "quiet"},
+        {href: `${SITE}/consultation`, label: "Book a hair coaching session", variant: "quiet"},
     ])}
         `)}
         ${closing({
         kicker: "Isolo, Lagos · By appointment",
         title: "Your hair has been through enough",
         body: "Book a slot and let us get it back.",
-        cta: `${SITE}/v2/booking`,
+        cta: `${SITE}/booking`,
         ctaLabel: "Book a salon visit",
     })}
         ${footer()}
@@ -566,7 +566,7 @@ const templates = {
         ["Previously", `${watDay(previousStartTime)}, ${watTime(previousStartTime)}`, {strike: true}],
         ["Services", esc(servicesText) || "–"],
     ], {margin: "34px 0 26px"})}
-          ${fine(`Need to change it again? You can do that from <a href="${SITE}/v2/bookings" style="color:inherit;">your appointments page</a>, or just reply here.`)}
+          ${fine(`Need to change it again? You can do that from <a href="${SITE}/bookings" style="color:inherit;">your appointments page</a>, or just reply here.`)}
         `)}
         ${footer()}
       `, {preheader: `Now ${watDay(startTime)} at ${watTime(startTime)}.`}),
@@ -592,7 +592,7 @@ const templates = {
         kicker: "Whenever you're ready",
         title: "The chair is still here",
         body: "Pick a new slot when it suits you, or tell us what happened and we'll find one for you.",
-        cta: `${SITE}/v2/booking`,
+        cta: `${SITE}/booking`,
         ctaLabel: "Book a salon visit",
     })}
         ${footer()}
@@ -617,7 +617,7 @@ const templates = {
         kicker: "Keep it flourishing",
         title: "Come back before it needs rescuing",
         body: "Most textures want us every six to eight weeks.",
-        cta: `${SITE}/v2/booking`,
+        cta: `${SITE}/booking`,
         ctaLabel: "Book your next visit",
     })}
         ${footer()}
@@ -645,7 +645,7 @@ const templates = {
         kicker: "Keep it flourishing",
         title: "Come back before it needs rescuing",
         body: "Most textures want us every six to eight weeks.",
-        cta: `${SITE}/v2/booking`,
+        cta: `${SITE}/booking`,
         ctaLabel: "Book your next visit",
     })}
         ${footer()}
@@ -676,7 +676,7 @@ const templates = {
         kicker: "Isolo, Lagos · By appointment",
         title: "Your hair has been through enough",
         body: "Book a slot in Isolo and let us get it back.",
-        cta: `${SITE}/v2/booking`,
+        cta: `${SITE}/booking`,
         ctaLabel: "Book a salon visit",
     })}
         ${footer()}

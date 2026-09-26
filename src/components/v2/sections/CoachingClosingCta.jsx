@@ -61,7 +61,7 @@ export default function CoachingClosingCta() {
               </a>
               . Looking for a style rather than a plan?{" "}
               <a
-                href="/v2/booking"
+                href="/booking"
                 className="font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-ink"
               >
                 Book a salon visit

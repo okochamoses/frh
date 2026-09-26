@@ -68,7 +68,7 @@ export default function HowAVisitGoes() {
         title="What happens when you come in"
         lede="No surprises, no upselling, no five hour mystery."
         action={
-          <Button variant="tertiary" withArrow href="/v2/booking">
+          <Button variant="tertiary" withArrow href="/booking">
             Book a salon visit
           </Button>
         }

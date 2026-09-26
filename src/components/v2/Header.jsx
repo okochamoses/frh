@@ -29,14 +29,14 @@ import Button from "@/components/v2/ui/Button";
 const NAV_LINKS = [
   {
     label: "Services",
-    href: "/v2/services",
+    href: "/services",
     panel: {
       feature: {
         eyebrow: "THE MENU",
         title: "Every texture, cared for",
         copy: "Braids, locs, treatments and cuts — priced up front, no surprises at the chair.",
         image: "/salon.webp",
-        cta: { label: "See all services", href: "/v2/services" },
+        cta: { label: "See all services", href: "/services" },
       },
       columns: [
         {
@@ -45,17 +45,17 @@ const NAV_LINKS = [
             {
               label: "Braids & twists",
               description: "Box braids, barrel twists, cornrows",
-              href: "/v2/services#braids",
+              href: "/services#braids",
             },
             {
               label: "Locs",
               description: "Starter locs, retwists, loc repair",
-              href: "/v2/services#locs",
+              href: "/services#locs",
             },
             {
               label: "Cuts & styling",
               description: "Shape-ups, silk press, blow-outs",
-              href: "/v2/services#styling",
+              href: "/services#styling",
             },
           ],
         },
@@ -65,17 +65,17 @@ const NAV_LINKS = [
             {
               label: "Scalp treatments",
               description: "Exfoliating and ayurvedic care",
-              href: "/v2/services#treatments",
+              href: "/services#treatments",
             },
             {
               label: "Products",
               description: "Take the salon routine home",
-              href: "/v2/shop",
+              href: "/shop",
             },
             {
               label: "Gallery",
               description: "Recent work from the chair",
-              href: "/v2/gallery",
+              href: "/gallery",
             },
           ],
         },
@@ -84,14 +84,14 @@ const NAV_LINKS = [
   },
   {
     label: "The salon",
-    href: "/v2/salon",
+    href: "/salon",
     panel: {
       feature: {
         eyebrow: "VISIT US",
         title: "Lagos, Nigeria",
         copy: "A quiet room, warm light and stylists who know natural hair.",
         image: "/long-hair.webp",
-        cta: { label: "Plan your visit", href: "/v2/salon" },
+        cta: { label: "Plan your visit", href: "/salon" },
       },
       columns: [
         {
@@ -100,12 +100,12 @@ const NAV_LINKS = [
             {
               label: "Opening hours",
               description: "Tuesday to Sunday, by appointment",
-              href: "/v2/salon#hours",
+              href: "/salon#hours",
             },
             {
               label: "Getting here",
               description: "Directions and parking",
-              href: "/v2/salon#directions",
+              href: "/salon#directions",
             },
           ],
         },
@@ -115,12 +115,12 @@ const NAV_LINKS = [
             {
               label: "First visit guide",
               description: "How to prep your hair",
-              href: "/v2/salon#first-visit",
+              href: "/salon#first-visit",
             },
             {
               label: "Booking policy",
               description: "Deposits, changes, cancellations",
-              href: "/v2/salon#policy",
+              href: "/salon#policy",
             },
           ],
         },
@@ -129,14 +129,14 @@ const NAV_LINKS = [
   },
   {
     label: "Hair coaching",
-    href: "/v2/consultation",
+    href: "/consultation",
     panel: {
       feature: {
         eyebrow: "ONE ON ONE",
         title: "A plan for your hair",
         copy: "Sit down with a coach and leave with a routine built for your texture.",
         image: "/coaching.webp",
-        cta: { label: "Book a consultation", href: "/v2/consultation" },
+        cta: { label: "Book a consultation", href: "/consultation" },
       },
       /* Labels and prices match the cards on the coaching page one for one —
          a menu that renames the thing it links to makes the page look like a
@@ -148,40 +148,40 @@ const NAV_LINKS = [
             {
               label: "Build-Your-Routine",
               description: "One session, ₦20,000",
-              href: "/v2/consultation#builder",
+              href: "/consultation#builder",
             },
             {
               label: "Scalp care consultation",
               description: "The cause, not the symptom, ₦30,000",
-              href: "/v2/consultation#scalp",
+              href: "/consultation#scalp",
             },
             {
               label: "1-on-1 hair coaching",
               description: "Full assessment and routine, ₦50,000",
-              href: "/v2/consultation#single",
+              href: "/consultation#single",
             },
             {
               label: "Intensive programme",
               description: "Three months of coaching, ₦150,000",
-              href: "/v2/consultation#plan",
+              href: "/consultation#plan",
             },
             {
               label: "Hair journal",
               description: "Guides from our stylists",
-              href: "/v2/journal",
+              href: "/journal",
             },
           ],
         },
       ],
     },
   },
-  { label: "About", href: "/v2/about" },
-  { label: "Contact", href: "/v2/contact" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const ACCOUNT_LINKS = [
-  { label: "My bookings", href: "/v2/bookings" },
-  { label: "Account settings", href: "/v2/settings" },
+  { label: "My bookings", href: "/bookings" },
+  { label: "Account settings", href: "/settings" },
 ];
 
 function displayName(user) {
@@ -202,7 +202,7 @@ function initials(user) {
 function Wordmark({ className, ...props }) {
   return (
     <Link
-      href="/v2"
+      href="/"
       aria-label="Flourish Roots Hair — home"
       className={cn("flex items-center gap-2.5", className)}
       {...props}
@@ -550,7 +550,7 @@ export default function Header() {
             ) : isAuthenticated ? (
               <AccountMenu compact user={user} onLogout={logout} />
             ) : focus ? null : (
-              <Button variant="book" href="/v2/booking" className="h-11 px-5">
+              <Button variant="book" href="/booking" className="h-11 px-5">
                 Book now
               </Button>
             )}
@@ -646,7 +646,7 @@ export default function Header() {
             <Button
               variant="book"
               withArrow
-              href="/v2/booking"
+              href="/booking"
               className={cn("hidden", !focus && "lg:inline-flex")}
             >
               Book an appointment
@@ -815,7 +815,7 @@ export default function Header() {
           <Button
             variant="book"
             withArrow
-            href="/v2/booking"
+            href="/booking"
             className="w-full"
             tabIndex={drawerOpen ? 0 : -1}
           >

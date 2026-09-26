@@ -13,8 +13,8 @@
  *
  * An account holder who follows their own link lands here as well; nothing
  * about it is guest-only — and they do not need the link at all. The callables
- * take a signed-in owner in place of a token, so `/v2/booking/manage?ref=<id>`
- * with no `t` works for whoever owns the booking. That is how `/v2/bookings`
+ * take a signed-in owner in place of a token, so `/booking/manage?ref=<id>`
+ * with no `t` works for whoever owns the booking. That is how `/bookings`
  * gets here, and it is why moving an appointment is not built twice.
  */
 
@@ -65,7 +65,7 @@ function Problem({ title, message, action = null }) {
           WhatsApp the salon
         </PillButton>
         <a
-          href="/v2/booking"
+          href="/booking"
           className="inline-flex h-12 items-center rounded-full border border-ink px-6 text-sm font-semibold hover:bg-ink/5"
         >
           Book a visit
@@ -236,7 +236,7 @@ export default function ManageBooking() {
           else to do.
         </p>
         <div className="mt-7">
-          <PillButton onClick={() => { window.location.href = "/v2/booking"; }}>
+          <PillButton onClick={() => { window.location.href = "/booking"; }}>
             Book another visit
           </PillButton>
         </div>
