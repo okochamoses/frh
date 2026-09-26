@@ -91,10 +91,51 @@ export function ensureEmulatorsReady() {
       }
     }
 
+    await waitForFunctions(deadline);
     await matchProductionAuthBehaviour();
   })();
 
   return readyPromise;
+}
+
+/**
+ * Blocks until the Functions emulator has actually loaded the codebase.
+ *
+ * Firestore and Auth answering is not enough, and waiting on them was letting
+ * a whole spec file fail for no reason. Functions comes up last, later still
+ * when Hosting is in the set (the `export` target), and Playwright's own
+ * `webServer` probe only watches the Auth port — so under `test:e2e:prod` the
+ * first `callFunction` could land before the callables existed. It arrived as
+ * twelve booking specs reporting `Cannot read properties of undefined`, because
+ * the emulator's 404 is HTML and `callFunction` turned the parse failure into an
+ * empty object. Nothing about it pointed at a startup race.
+ *
+ * Reusing a running emulator hid it locally; CI, which never reuses one, would
+ * have hit it every time.
+ *
+ * The probe is a real callable: the emulator answers 404 for a function it has
+ * not loaded, and 400/401 once it has, so "not a 404" is the ready signal.
+ */
+async function waitForFunctions(deadline) {
+  const url = `${FUNCTIONS_EMULATOR}/${EMULATOR_PROJECT_ID}/${FUNCTIONS_REGION}/createBooking`;
+  let last = "no response";
+  for (;;) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: {} }),
+      });
+      if (res.status !== 404) return;
+      last = "HTTP 404 — codebase not loaded yet";
+    } catch (err) {
+      last = err?.message ?? "unknown";
+    }
+    if (Date.now() > deadline) {
+      throw new Error(`Functions emulator not ready at ${url} — ${last}.`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
 }
 
 /** Wipes both emulators. Call this between tests so each one starts clean. */
@@ -225,7 +266,18 @@ export async function callFunction(name, data, idToken) {
       body: JSON.stringify({ data }),
     }
   );
-  const body = await res.json().catch(() => ({}));
+  const text = await res.text();
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    // Not JSON at all — an emulator that has not loaded the callables answers
+    // with an HTML 404. Swallowing that into `{}` is what made the startup race
+    // above read as "the booking came back undefined".
+    throw new Error(
+      `callFunction(${name}) got a non-JSON response (HTTP ${res.status}): ${text.slice(0, 200)}`
+    );
+  }
   return {status: res.status, result: body.result, error: body.error};
 }
 
@@ -322,6 +374,72 @@ export async function seedUser({
   const uid = await createAuthUser({ email, password });
   await writeUserProfile(uid, { firstName, lastName, email, mobileNumber });
   return { uid, email, password, firstName, lastName, mobileNumber };
+}
+
+/**
+ * Marks an account's email as verified.
+ *
+ * Emulator sign-ups are unverified, and production's own sign-up is too:
+ * `sendEmailVerification` is fire-and-forget at `authService.js:163`, so the
+ * account exists before anyone proves the address. Three things in the server
+ * refuse to act until that changes — `firestore.rules`' `isAdmin()`,
+ * `requireAdminCaller`, and `claimWalkInBookings` — so a spec that forgets
+ * this gets `permission-denied` from all three and reads as a broken callable
+ * rather than an unverified user.
+ *
+ * Any token minted *before* this call still carries the old claim, so sign in
+ * afterwards.
+ */
+export async function verifyEmail(uid) {
+  const res = await fetch(
+    `${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/projects/${EMULATOR_PROJECT_ID}/accounts:update`,
+    {
+      method: "POST",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({ localId: uid, emailVerified: true }),
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to verify ${uid}: ${res.status} ${await res.text()}`);
+  }
+}
+
+/**
+ * Adds an email to the `admins` allowlist.
+ *
+ * `firestore.rules` says `allow list, write: if false` on that collection —
+ * there is deliberately no self-service way in — so this goes through the
+ * owner-token REST path, the same door `writeUserProfile` uses.
+ */
+export async function seedAdminDoc(email) {
+  const id = encodeURIComponent(email.toLowerCase());
+  const res = await fetch(
+    `${FIRESTORE_EMULATOR}/v1/projects/${EMULATOR_PROJECT_ID}` +
+      `/databases/(default)/documents/admins?documentId=${id}`,
+    {
+      method: "POST",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({ fields: { addedAt: { timestampValue: new Date().toISOString() } } }),
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to seed admin ${email}: ${res.status} ${await res.text()}`);
+  }
+}
+
+/**
+ * A ready-to-use admin: account, verified email, allowlist entry, fresh token.
+ *
+ * The order matters. `getIdToken` has to come last, because the token carries
+ * `email_verified` as a claim baked in at sign-in — fetch it before
+ * `verifyEmail` and every admin call fails with a token that says false.
+ */
+export async function seedAdmin({ email = uniqueEmail("admin"), password = "Password123" } = {}) {
+  const uid = await createAuthUser({ email, password });
+  await verifyEmail(uid);
+  await seedAdminDoc(email);
+  const idToken = await getIdToken({ email, password });
+  return { uid, email, password, idToken };
 }
 
 /**

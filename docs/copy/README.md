@@ -29,7 +29,7 @@ about it, kindly, and then she will fix it.
 - Be specific instead of superlative. "We detangle in sections, damp, from the ends up"
   beats "we use premium techniques."
 - Use "your hair," not "the hair." It belongs to a person.
-- Say the price. Say the deposit. Say the grace period. Clarity is a kindness.
+- Say the price. Say the deposit. Say what is free. Clarity is a kindness.
 
 **Don't**
 - No "unlock," "transform," "elevate," "journey," "queen," "hair goals," "slay."
@@ -111,7 +111,7 @@ Open Mon–Sat. Closed Sundays.
 | Email | `Email address` | `you@email.com` | `Your receipt and reminder go here.` |
 | Service | `What are you booking?` | `Choose a service` | `Not sure? Pick "I'm not sure yet" and we'll advise.` |
 | Date | `Preferred date` | `Choose a date` | `We open bookings 6 weeks ahead.` |
-| Time | `Preferred time` | `Choose a time` | `Please arrive at your slot time. 20 minutes grace.` |
+| Time | `Preferred time` | `Choose a time` | `Please arrive at your slot time.` |
 | Hair length | `Current hair length` | `Choose one` | `Helps us set aside the right amount of time.` |
 | Notes | `Anything we should know?` | `Tender scalp, protective style for travel, postpartum shedding — tell us.` | `Optional, but it helps.` |
 

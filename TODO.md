@@ -60,17 +60,11 @@ already promises in public on `/v2/services` and `/v2/salon`.
 
 ### Blockers — the flow contradicts the stated terms
 
-- [ ] **Deposits do not exist in the booking flow.** `BookingTerms.jsx` promises
-      50% on mini twists / mini braids / natural hair braids / Bantu knots /
-      loosening and 70% on micro twists + sister locs, paid to "the salon
-      account shown at checkout", with the slot open to someone else until it
-      lands. `FaqSection.jsx` promises "you will see the amount before you
-      confirm". The flow says `"Pay at the salon. No card needed."`
-      (`BookingFlow.jsx:507`). The word *deposit* appears nowhere in the booking
-      code or in `services.json`.
-      → add `depositPercent` per service, a deposit row on Review, account
-      details + "send proof to the office line" on Success, and an
-      `awaiting-deposit` status until the salon marks the slot held.
+- [x] **Deposits do not exist in the booking flow.** *Done: `src/lib/booking/
+      deposits.js` holds the one list of which styles take 50% and which take
+      70%, matched on the catalogue titles the booking callable prices against.
+      Review shows the amount owed and the percentages in play; a style settled
+      on the day shows nothing. Pinned by `booking-terms.spec.js`.*
 
 - [x] **No notes field, but the FAQ tells people to use one.** "Tell us when you
       book so we plan the gentler approach" (relaxed / transitioning hair) and
@@ -81,14 +75,17 @@ already promises in public on `/v2/services` and `/v2/salon`.
       digest and the client's confirmation. The mail templates gained an `esc()`
       helper at the same time — they interpolated the client's own name raw.*
 
-- [ ] **Late fee is hardcoded wrong.** `Steps.jsx:256` and `ServiceSheet.jsx:185`
-      both say a flat ₦3,000. The terms say ₦5,000 on micro twists, sister locs
-      and SAT with weaves — so the confirm checkbox has people agreeing to a
-      number that is not theirs. Needs a per-service late fee.
-
-- [ ] **Cancellation copy contradicts the terms.** `Steps.jsx:270` says "move or
-      cancel from My bookings any time before your appointment"; the terms say
-      cancelling or moving after paying forfeits 50%. Reconcile both.
+- [x] **Late fee is hardcoded wrong**, and **cancellation copy contradicts the
+      terms**. *Resolved by the business, not by the code: the salon no longer
+      charges a late fee, a caution fee, or anything on a cancellation or a
+      move (2026-09-20). Removed from `BookingTerms.jsx` (the "costs half" card
+      is now "costs nothing"), from the confirm step's deposit note, from
+      twenty-one service descriptions in both `services.json` copies, and from
+      the copy deck. `catalogue.js`'s stripper keeps a re-sync from the salon's
+      export carrying them back in, and `booking-terms.spec.js` walks a real
+      booking asserting none of those words reach a client.*
+      → The deposit is the only money asked for before the day, and it follows
+      the client if they move the booking.
 
 ### High — availability model
 

@@ -144,6 +144,56 @@ function validateSlot(startTime, totalDuration, now = new Date()) {
     };
 }
 
+/**
+ * Floors `date` to the quarter hour, reading the minute in WAT wall-clock
+ * terms rather than the process's own timezone.
+ *
+ * Seconds and milliseconds come off `date` with the UTC getters, not the
+ * local ones: Lagos sits at a fixed whole-hour offset (no DST), so a second
+ * or a millisecond lands on the same instant regardless of which zone reads
+ * it, and using the process's local getters here would silently depend on
+ * where the function happens to run.
+ */
+function floorToQuarterHourWAT(date) {
+    const {minute} = watParts(date);
+    const remainderMinutes = minute % SLOT_MINUTES;
+    const msIntoSlot = remainderMinutes * 60 * 1000 + date.getUTCSeconds() * 1000 + date.getUTCMilliseconds();
+    return new Date(date.getTime() - msIntoSlot);
+}
+
+/**
+ * The slot a walk-in occupies: now, floored to the quarter hour.
+ *
+ * Deliberately not `validateSlot` with a flag. `validateSlot` answers "may a
+ * browser hold this chair?", and every rule in it exists because the client
+ * is free to send any `startTime` it likes. A member of staff recording a
+ * visit that has already happened sends no time at all, so there is nothing
+ * to defend against — and the day and opening-hours checks would only reject
+ * reality: someone was in that chair. Confining every relaxation to this
+ * function (never reachable with an attacker-controlled `startTime`) is what
+ * keeps `validateSlot` — and the public booking flow it guards — byte-identical.
+ *
+ * @param {number} totalDuration  minutes
+ * @param {Date}   [now]          injectable for tests
+ * @returns {{ok: boolean, reason?: string, start?: Date, end?: Date}}
+ */
+function validateWalkInSlot(totalDuration, now = new Date()) {
+    if (!Number.isFinite(totalDuration) || totalDuration <= 0) {
+        return {ok: false, reason: "That appointment has no length."};
+    }
+
+    if (totalDuration > MAX_APPOINTMENT_MINUTES) {
+        return {ok: false, reason: "That appointment is longer than a single day can hold."};
+    }
+
+    const start = floorToQuarterHourWAT(now);
+    return {
+        ok: true,
+        start,
+        end: new Date(start.getTime() + totalDuration * 60 * 1000),
+    };
+}
+
 module.exports = {
     TIME_ZONE,
     OFF_DAYS,
@@ -159,4 +209,5 @@ module.exports = {
     watDateLabel,
     watTimeLabel,
     validateSlot,
+    validateWalkInSlot,
 };

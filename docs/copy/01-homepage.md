@@ -150,7 +150,7 @@ an itchy or flaky scalp, or you simply have never been shown how to care for 4C 
 
 - **We specialise.** 4C hair isn't a category we also handle. It's the only hair we've built the salon around.
 - **We're honest about your hair.** If a style will stress your edges, we say it before we start, not after.
-- **We keep time.** Your slot is your slot. 20 minutes grace, then we talk.
+- **We keep time.** Your slot is your slot, and the day is planned around it.
 - **We're consistent.** Same standard whoever is on your head, because everyone here is trained the same way.
 - **We don't shame anybody.** Relaxed, transitioning, matted, six months under a wig — we've seen it, we can work with it.
 
@@ -214,9 +214,9 @@ Ago Palace Way, Isolo, Lagos
 Yes for the longer styles — 50% for mini twists and mini braids, 70% for micro twists.
 It holds your slot. You'll see the amount before you confirm.
 
-**What if I'm running late?**
-You have 20 minutes' grace. After that we may need to reschedule you, or a late fee
-applies, because someone is booked behind you.
+**What if I have to cancel or move my appointment?**
+Move it or cancel it any time before your appointment, and it costs you nothing
+either way. A deposit you've paid follows you to the new day.
 
 **Can I bring my own extensions?**
 Yes. Bring them clean and pre-stretched if you can.

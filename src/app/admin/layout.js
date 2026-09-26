@@ -10,10 +10,12 @@ import {
   signOutAdmin,
   subscribeAdminSession,
 } from "@/lib/firebase/adminService";
+import { V2PriceSync } from "@/lib/booking/usePriceList";
 
 const NAV = [
   { href: "/admin/bookings", label: "Bookings" },
   { href: "/admin/customers", label: "Customers" },
+  { href: "/admin/prices", label: "Prices" },
 ];
 
 export default function AdminLayout({ children }) {
@@ -108,6 +110,8 @@ export default function AdminLayout({ children }) {
         </div>
       </header>
 
+      {/* Walk-ins are priced from the v2 list; keep the grid showing it. */}
+      <V2PriceSync />
       <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
     </div>
   );

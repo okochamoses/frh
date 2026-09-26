@@ -75,3 +75,23 @@ export async function claimGuestBookings(guestToken) {
     return 0;
   }
 }
+
+/**
+ * Reconciles any walk-in visits recorded at the desk under this account's own
+ * (verified) email onto the account, so a regular who has been coming in
+ * before ever signing up sees that history without having to ask.
+ *
+ * Same swallow-errors contract as `claimGuestBookings`: this is a background
+ * tidy-up, not something the caller asked to see fail. The server itself
+ * returns `{claimed: 0}` for an unverified email rather than an error, so
+ * there is nothing here that ever needs to surface.
+ */
+export async function claimWalkInBookings() {
+  try {
+    const { data } = await httpsCallable(functions, "claimWalkInBookings")({});
+    return data?.claimed ?? 0;
+  } catch (err) {
+    console.warn("Could not claim walk-in bookings:", err);
+    return 0;
+  }
+}

@@ -231,15 +231,14 @@ twist loosening. 70% for micro twists and sister locs. Transfer to the salon
 account shown at checkout and send proof to the office line. Until the deposit lands,
 the slot is still open to others.
 
-**2. Time matters here.**
-Please arrive at your appointment time. There's 20 minutes' grace. After that we may
-have to reschedule you, or a late fee of ₦3,000 applies (₦5,000 on micro twists, sister locs and SAT with weaves),
-because someone is booked behind you.
+**2. Changing a booking costs nothing.**
+Move it or cancel it, as late as you like, and there's no charge for either. A
+deposit you've already paid goes with you to whichever day you move to.
 
-**3. Cancelling or rescheduling.**
-Cancelling or moving an appointment after paying means 50% of what you paid is
-forfeited, whether you paid in part or in full. We know that's firm. It's what lets
-us hold a whole day open for one head.
+**3. The only things that cost more.**
+Attaching beads you bring is ₦500, styling twists once they're in is ₦1,000, and
+badly matted hair takes longer to detangle than the menu allows for. Each one is
+quoted before we start, never added at the end.
 
 **Link:** `Read the full booking policy`
 

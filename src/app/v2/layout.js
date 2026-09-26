@@ -1,9 +1,11 @@
 import "./v2.css";
 import Header from "@/components/v2/Header";
 import Footer from "@/components/v2/Footer";
+import FooterGate from "@/components/v2/FooterGate";
 import { fontVariables } from "./fonts";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import salonSchema from "./salonSchema";
+import { V2PriceSync } from "@/lib/booking/usePriceList";
 
 /*
  * No `title.template` here on purpose: every page in this tree already writes
@@ -57,11 +59,14 @@ export default function V2Layout({ children }) {
         // Static, built from our own constants — no user input reaches it.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(salonSchema) }}
       />
+      <V2PriceSync />
       <Header />
       <div id="v2-main" tabIndex={-1} className="flex-1">
         {children}
       </div>
-      <Footer />
+      <FooterGate>
+        <Footer />
+      </FooterGate>
     </div>
   );
 }

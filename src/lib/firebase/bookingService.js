@@ -73,14 +73,16 @@ async function call(name, payload, fallback) {
  * @param {string} params.startTime                 ISO datetime string
  * @param {{firstName: string, mobileNumber: string, email?: string|null}} [params.guest]
  * @param {string} [params.notes]
+ * @param {"v1"|"v2"} [params.priceList]  Which site's price list the server prices from.
  * @returns {Promise<{bookingId: string, startTime: string, endTime: string, totalAmount: number}>}
  */
-export async function createBooking({ services, startTime, guest, notes }) {
+export async function createBooking({ services, startTime, guest, notes, priceList = "v1" }) {
   return call(
     "createBooking",
     {
       serviceTitles: services.map((s) => s.title),
       startTime,
+      priceList,
       ...(guest ? { guest } : {}),
       ...(notes?.trim() ? { notes: notes.trim() } : {}),
     },
@@ -118,6 +120,42 @@ export async function rescheduleBooking(bookingId, startTime, token) {
     "rescheduleBooking",
     { bookingId, startTime, ...(token ? { token } : {}) },
     "We couldn't move that booking. Please try again."
+  );
+}
+
+/**
+ * Records a booking for someone at the front desk.
+ *
+ * Staff-only: the callable re-checks the `admins` allowlist server-side, so
+ * the admin dashboard's own check is UI and nothing more.
+ *
+ * `served` is the whole distinction. True means the client is already in the
+ * chair or has left, so the server reads the clock and there is no `startTime`
+ * to send; false means staff are taking a future appointment, which is the
+ * ordinary booking with a different typist and goes through the same schedule
+ * rules a customer would meet.
+ *
+ * Like `createBooking`, only titles travel — the server prices the visit from
+ * its own catalogue.
+ *
+ * @param {object} params
+ * @param {Array<{title: string}>} params.services
+ * @param {{firstName: string, mobileNumber: string, email?: string|null}} params.customer
+ * @param {boolean} params.served
+ * @param {string} [params.startTime]  ISO datetime, required when `served` is false
+ * @param {string} [params.notes]
+ */
+export async function createWalkInBooking({ services, customer, served, startTime, notes }) {
+  return call(
+    "adminCreateBooking",
+    {
+      serviceTitles: services.map((s) => s.title),
+      customer,
+      served,
+      ...(served ? {} : { startTime }),
+      ...(notes?.trim() ? { notes: notes.trim() } : {}),
+    },
+    "We couldn't record that booking. Please try again."
   );
 }
 

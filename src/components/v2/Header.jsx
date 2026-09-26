@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useBookingFocus } from "@/lib/booking/focusMode";
 import { ChevronDown, ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/app/contexts/AuthContext";
@@ -179,8 +180,8 @@ const NAV_LINKS = [
 ];
 
 const ACCOUNT_LINKS = [
-  { label: "My bookings", href: "/bookings" },
-  { label: "Account settings", href: "/settings" },
+  { label: "My bookings", href: "/v2/bookings" },
+  { label: "Account settings", href: "/v2/settings" },
 ];
 
 function displayName(user) {
@@ -415,7 +416,7 @@ function AccountMenu({ user, onLogout, compact = false }) {
             }}
             className="mt-1 block w-full rounded-v2-lg border-t border-latte px-3 py-2.5 text-left text-v2-body-sm font-semibold text-ink-soft transition-colors duration-200 ease-out hover:bg-cream-100 hover:text-ink"
           >
-            Sign out
+            Log out
           </button>
         </div>
       )}
@@ -431,6 +432,9 @@ export default function Header() {
   const panelIdBase = useId();
   const closeTimer = useRef(null);
   const { user, isAuthenticated, hydrated, logout, openAuthModal } = useAuth();
+  // Mid-booking the bar is just the mark (home) and the account: no nav, no
+  // menu, no Book button on the booking page itself.
+  const focus = useBookingFocus();
 
   // Close everything on navigation.
   useEffect(() => {
@@ -545,7 +549,7 @@ export default function Header() {
               <span aria-hidden className="h-11 w-11 rounded-full bg-latte" />
             ) : isAuthenticated ? (
               <AccountMenu compact user={user} onLogout={logout} />
-            ) : (
+            ) : focus ? null : (
               <Button variant="book" href="/v2/booking" className="h-11 px-5">
                 Book now
               </Button>
@@ -559,7 +563,7 @@ export default function Header() {
             onMouseEnter={closePanel}
           />
 
-          <nav aria-label="Primary" className="hidden lg:block">
+          <nav aria-label="Primary" className={cn("hidden", !focus && "lg:block")}>
             <ul className="flex items-center gap-7">
               {NAV_LINKS.map((link) => {
                 const active =
@@ -643,7 +647,7 @@ export default function Header() {
               variant="book"
               withArrow
               href="/v2/booking"
-              className="hidden lg:inline-flex"
+              className={cn("hidden", !focus && "lg:inline-flex")}
             >
               Book an appointment
             </Button>
@@ -653,7 +657,10 @@ export default function Header() {
               aria-label={drawerOpen ? "Close menu" : "Open menu"}
               aria-expanded={drawerOpen}
               onClick={() => setDrawerOpen((v) => !v)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-latte text-ink transition-colors duration-200 ease-out hover:bg-latte/70 lg:hidden"
+              className={cn(
+                "h-11 w-11 items-center justify-center rounded-full bg-latte text-ink transition-colors duration-200 ease-out hover:bg-latte/70 lg:hidden",
+                focus ? "hidden" : "flex"
+              )}
             >
               {drawerOpen ? (
                 <X aria-hidden className="h-5 w-5" />
@@ -823,7 +830,7 @@ export default function Header() {
                 onClick={logout}
                 className="mt-3 h-12 w-full rounded-full border border-ink text-v2-body-sm font-semibold text-ink transition-colors duration-200 ease-out hover:bg-ink/5"
               >
-                Sign out
+                Log out
               </button>
             ) : (
               <button

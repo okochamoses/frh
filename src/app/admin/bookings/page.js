@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { merriweather } from "@/app/fonts";
 import { formatWat } from "@/lib/booking/schedule";
 import { BOOKING_STATUS_LABELS, subscribeAllBookings } from "@/lib/firebase/adminService";
@@ -45,6 +46,12 @@ export default function AdminBookingsPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className={`${merriweather.className} text-2xl font-bold text-stone-900`}>Bookings</h1>
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/admin/bookings/new"
+            className="rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+          >
+            New booking
+          </Link>
           <input
             type="search"
             placeholder="Search name, email, phone…"

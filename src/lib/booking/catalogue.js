@@ -19,6 +19,9 @@
  *   pairsWith        string[]       Titles to suggest alongside it.
  *   takeDown         string         Title of the service that removes it.
  *   displayName      string         A shorter name for cards and the summary.
+ *   lookId           string         Groups rows into one look, overriding the
+ *                                   export's "Service ID".
+ *   lookName         string         The look's name when `lookId` grouped it.
  *   variantLabel     string         Label for this row inside its look.
  */
 
@@ -137,20 +140,56 @@ const slugify = (s) =>
  * pages, not images, and would show as broken pictures.
  */
 function usableImage(url) {
-  if (typeof url !== "string" || !/^https?:\/\//.test(url)) return null;
+  if (typeof url !== "string") return null;
+  if (/^\/[^/]/.test(url)) return url; // a photo in `public/`
+  if (!/^https?:\/\//.test(url)) return null;
   if (/^https?:\/\/pin\.it\//.test(url)) return null;
   return url;
 }
 
-/** Splits the catalogue's free-text description from the late policy it often carries. */
+/* Policy the salon's export repeats inside individual service descriptions.
+   It is the same policy every time, it belongs on the booking-terms section
+   once rather than under sixty prices, and two kinds of it must never reach a
+   service card at all:
+
+   - the salon's bank account number and account name, which sat in the
+     description of a dozen services and so was published on every sheet that
+     opened them;
+   - payment instructions, which the booking flow now handles itself — telling
+     a client to transfer to an account and WhatsApp the proof contradicts the
+     checkout they are standing in;
+   - lateness and forfeiture penalties, which the salon no longer charges at
+     all. They have been cleared out of the service data too, but the salon's
+     export is the upstream of that data, so a re-sync could carry them back
+     in and this is the net that catches them.
+
+   What is deliberately NOT stripped is a price condition specific to one
+   service — beads at ₦500, styling twists at ₦1,000, "fuller hair attracts
+   more". Those change what a client pays for that service and have to be on
+   the card they decide from. */
+const POLICY_SENTENCE =
+  /(\d+\s*%\s*payment|payment will be made|moniepoint|microfinance|account\b|proof of payment|office line|forfeit|rescheduling after payment|20\s*mins? grace|appointment (?:later|time)|leads to cancellation|attracts extra charges|late (?:fee|charge))/i;
+
+/**
+ * The description a client should see on a service card: the salon's own words
+ * about the service, minus the policy boilerplate its export mixes in.
+ *
+ * The `Note:` split stays — most rows carry the lateness policy behind it —
+ * but it was never enough on its own: at least a dozen rows state the deposit,
+ * the bank details and the forfeiture rule *before* any `Note:`, and four state
+ * the lateness charge there too. Those all survived into the booking sheet.
+ */
 function splitDescription(text) {
   const raw = String(text ?? "").replace(/\r/g, "");
-  // The salon's export repeats the lateness policy as a "Note:" on most rows.
-  // It belongs on the booking-terms section once, not under sixty prices — and
-  // the split cannot require a leading newline, because at least one row (Finger
-  // Coils) is nothing but the note, which then showed as its whole description.
+  // The split cannot require a leading newline, because at least one row
+  // (Finger Coils) is nothing but the note, which then showed as its whole
+  // description.
   const [main] = raw.split(/\s*Note:/i);
-  return clean(main);
+  const kept = main
+    .split(/(?<=[.!?])\s+|\n+/)
+    .filter((sentence) => sentence.trim() && !POLICY_SENTENCE.test(sentence))
+    .join(" ");
+  return clean(kept);
 }
 
 function rebookDaysFor(service) {
@@ -185,7 +224,19 @@ export const LOOK_BY_SLUG = new Map();
 function buildLooks() {
   const groups = new Map();
   for (const s of bookable) {
-    const key = s["Service ID"] ? `${s.category}|${s["Service ID"]}` : `${s.category}|${s.title}`;
+    /*
+     * The export's shared "Service ID" only groups the sizes the salon's
+     * software already knew were one service (Shuku jumbo/medium/mini). The
+     * rest of the catalogue reads as sixty unrelated rows — "Trimming only"
+     * and "Trimming With Blow Drying" as two services, three deep
+     * conditionings as three. `lookId` in services.json says which rows are
+     * one look regardless of what the export thinks, and wins over it.
+     */
+    const key = s.lookId
+      ? `${s.category}|look:${s.lookId}`
+      : s["Service ID"]
+        ? `${s.category}|${s["Service ID"]}`
+        : `${s.category}|${s.title}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(s);
   }
@@ -207,7 +258,11 @@ function buildLooks() {
     n += 1;
     const first = rows[0];
     const isGroup = rows.length > 1;
-    const rawBase = isGroup ? clean(first.title.split(" - ")[0]) : clean(first.displayName || first.title);
+    // Rows grouped by `lookId` share no common title to borrow a name from, so
+    // they carry `lookName` instead; the " - " suffix convention still covers
+    // the looks the export grouped itself.
+    const lookName = clean(rows.find((s) => s.lookName)?.lookName);
+    const rawBase = lookName || (isGroup ? clean(first.title.split(" - ")[0]) : clean(first.displayName || first.title));
     const baseName = LOOK_NAMES[rawBase] ?? rawBase;
 
     const options = rows.map((s, i) => {
@@ -224,6 +279,7 @@ function buildLooks() {
         name: isGroup ? `${baseName} · ${label}` : baseName,
         label,
         price: Number(s.price) || 0,
+        basePrice: Number(s.price) || 0,
         duration: Number(s.duration) || 0,
         category: s.category,
         rebookAfterDays: rebookDaysFor(s),
@@ -330,4 +386,40 @@ export function suggestionFor(option, selectedTitles) {
     if (match && !taken.has(match.title)) return { ...c, option: match };
   }
   return null;
+}
+
+// ── Live prices ───────────────────────────────────────────────────────────────
+
+/*
+ * The salon edits v2 prices from /admin/prices; they live in Firestore at
+ * `price_lists/v2` and override the export's numbers. The looks above are
+ * built once per bundle, so an override is written onto those same objects
+ * rather than rebuilding them — anything already holding an option (the cart,
+ * an open sheet) sees the new price. `subscribeCatalogue` lets components
+ * re-render when that happens; `useCatalogueVersion` wraps it for React.
+ */
+let catalogueVersion = 0;
+const catalogueListeners = new Set();
+
+export function subscribeCatalogue(listener) {
+  catalogueListeners.add(listener);
+  return () => catalogueListeners.delete(listener);
+}
+
+export function getCatalogueVersion() {
+  return catalogueVersion;
+}
+
+/** Applies `{title: naira}` over the export's prices. A missing title reverts. */
+export function applyPriceList(prices = {}) {
+  for (const look of LOOKS) {
+    for (const o of look.options) {
+      const p = prices[o.title];
+      o.price = Number.isFinite(p) && p >= 0 ? p : o.basePrice;
+    }
+    look.options.sort((a, b) => a.price - b.price || a.duration - b.duration);
+    look.minPrice = Math.min(...look.options.map((o) => o.price));
+  }
+  catalogueVersion += 1;
+  for (const listener of catalogueListeners) listener();
 }

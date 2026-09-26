@@ -4,7 +4,7 @@
  * The v2 booking page: Services → Time → Details → Confirm.
  *
  * No account is needed. At the Details step a guest gives a name and a phone
- * number (email optional); a client with an account can sign in instead. A
+ * number (email optional); a client with an account can log in instead. A
  * guest is signed in anonymously at the moment they confirm, so the booking
  * still has an owner. Either way the booking goes through the `createBooking`
  * callable, which prices the services and re-validates the slot server-side.
@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { AUTH_MODES, VALIDATION } from "@/lib/auth/constants";
 import { ensureGuestSession } from "@/lib/firebase/authService";
+import { MOBILE_HINT, isValidMobile, normaliseMobile } from "@/lib/phone";
 import { createBooking, subscribeUserBookings } from "@/lib/firebase/bookingService";
 import { updateMobileNumber } from "@/lib/firebase/userService";
 import { LOOK_BY_SLUG, SERVICE_BY_TITLE } from "@/lib/booking/catalogue";
@@ -22,9 +23,7 @@ import {
   MAX_APPOINTMENT_MINUTES,
   dayUnavailableReason,
   firstAvailable,
-  formatDuration,
   fromInstant,
-  naira,
   nextOnWeekday,
   parseKey,
   slotsFor,
@@ -41,8 +40,12 @@ import {
   splitBookings,
 } from "@/lib/booking/rebook";
 import ServicesStep from "./ServicesStep";
+import { useServiceCart } from "./useServiceCart";
 import ServiceSheet from "./ServiceSheet";
 import TimeStep from "./TimeStep";
+import { depositForOptions } from "@/lib/booking/deposits";
+import { setBooked } from "@/lib/booking/focusMode";
+import { SALON_WHATSAPP } from "@/lib/booking/calendarLinks";
 import { AppointmentSlip, DetailsStep, MobileBar, ReviewStep, Stepper, SuccessView } from "./Steps";
 import { HEADING, PillButton, Toast, useToast } from "./ui";
 
@@ -50,7 +53,6 @@ const CART_KEY = "frh:v2:booking";
 const VIEW_KEY = "frh:v2:booking-view";
 // A guest's own details, kept on their device so a return visit is prefilled.
 const GUEST_KEY = "frh:v2:guest";
-const NG_MOBILE = /^(?:\+234|0)[789]\d{9}$/;
 // Mirrors MAX_NOTES_LENGTH in functions/lib/notes.js.
 const MAX_NOTES = 500;
 const CLOCK_TICK_MS = 60_000;
@@ -82,22 +84,27 @@ function writeStorage(storage, key, value) {
 
 const EMPTY_GUEST = { firstName: "", phone: "", email: "" };
 
-const normaliseMobile = (value) => {
-  const compact = value.replace(/[\s-]/g, "");
-  return compact.startsWith("0") ? `+234${compact.slice(1)}` : compact;
-};
-
 /** Field errors for a guest's details; an empty object when they're fine. Mirrors functions/lib/guest.js. */
 function guestErrorsFor(guest) {
   const errors = {};
   if (!guest.firstName.trim()) errors.firstName = "Please tell us your name.";
-  if (!NG_MOBILE.test(guest.phone.replace(/[\s-]/g, ""))) {
-    errors.phone = "Enter a full mobile number, e.g. 08031234567 or +2348031234567";
+  if (!isValidMobile(guest.phone)) {
+    errors.phone = MOBILE_HINT;
   }
   if (guest.email.trim() && !VALIDATION.EMAIL_REGEX.test(guest.email.trim())) {
     errors.email = "That email address doesn't look right.";
   }
   return errors;
+}
+
+/** What the bar says on the details step: what's still missing, or that it's ready. */
+function guestMissing(guest) {
+  const name = guest.firstName.trim();
+  const phone = guest.phone.trim();
+  if (!name && !phone) return "Add name and phone";
+  if (!name) return "Add your name";
+  if (!phone) return "Add your phone";
+  return "Ready to review";
 }
 
 const guestIsValid = (guest) => Object.keys(guestErrorsFor(guest)).length === 0;
@@ -124,19 +131,13 @@ export default function BookingFlow() {
   }, []);
 
   const [step, setStep] = useState(1);
-  const [selected, setSelected] = useState([]); // exact service titles
-  // Mirrors `selected` so the stable `toggle` callback can read it without
-  // taking it as a dependency.
-  const selectedRef = useRef(selected);
   const [date, setDate] = useState(null);
   const [time, setTime] = useState(null);
   const [month, setMonth] = useState(null);
   const [view, setView] = useState("grid");
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
-  const [sheetLook, setSheetLook] = useState(null);
   const [dismissedNudges, setDismissedNudges] = useState([]);
-  const [policy, setPolicy] = useState(false);
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState(null);
   const [notes, setNotes] = useState("");
@@ -145,18 +146,37 @@ export default function BookingFlow() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  // The site footer and nav come back once the booking is made.
+  useEffect(() => {
+    setBooked(Boolean(result));
+    return () => setBooked(false);
+  }, [result]);
   const [bookings, setBookings] = useState([]);
   const [snoozed, setSnoozed] = useState(false);
   const [restored, setRestored] = useState(false);
 
-  useEffect(() => {
-    selectedRef.current = selected;
-  }, [selected]);
-
-  // Read by the too-long guard below, for the same reason as selectedRef: it
-  // keeps `toggle` and `applyFromSheet` stable rather than rebuilding them on
-  // every change of total.
-  const durationRef = useRef(0);
+  /*
+   * The cart — what is chosen, what it costs, and the rules for adding to it —
+   * is shared with the admin dashboard's walk-in form, so it lives in its own
+   * hook rather than here. `selectedRef` comes back out of it for the `?look=`
+   * handler below, which must read the live value without re-running.
+   */
+  const clearError = useCallback(() => setError(null), []);
+  const {
+    selected,
+    setSelected,
+    selectedRef,
+    options,
+    duration,
+    total,
+    refuseIfTooLong,
+    toggle,
+    addOption,
+    applyFromSheet,
+    sheetLook,
+    openSheet,
+    closeSheet,
+  } = useServiceCart({ showToast, onChange: clearError });
 
   // Funnel entry. Everything else is measured as a share of this.
   useEffect(() => {
@@ -205,11 +225,6 @@ export default function BookingFlow() {
   }, [ownerUid]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const options = useMemo(() => selected.map((t) => SERVICE_BY_TITLE.get(t)).filter(Boolean), [selected]);
-  const duration = options.reduce((sum, o) => sum + o.duration, 0);
-  durationRef.current = duration;
-  const total = options.reduce((sum, o) => sum + o.price, 0);
-
   const history = useMemo(() => (now ? bookingHistory(bookings, now) : new Map()), [bookings, now]);
   const { upcoming } = useMemo(() => (now ? splitBookings(bookings, now) : { upcoming: [] }), [bookings, now]);
 
@@ -284,91 +299,6 @@ export default function BookingFlow() {
   };
 
   // ── Actions ────────────────────────────────────────────────────────────────
-  /**
-   * Refuses an addition that would run past a single day, and says why.
-   *
-   * The salon closes, so an appointment has a ceiling. Nothing is disabled up
-   * front: a greyed-out card tells a customer they cannot have something
-   * without telling them what to do about it. Instead the tap is accepted,
-   * the service is not added, and the message names both numbers — what this
-   * service needs and what is actually left — so the next move is obvious.
-   */
-  const refuseIfTooLong = useCallback(
-    (option) => {
-      const remaining = MAX_APPOINTMENT_MINUTES - durationRef.current;
-      if (option.duration <= remaining) return false;
-
-      track("service_too_long", {
-        service: option.title,
-        needs: option.duration,
-        remaining,
-      });
-      showToast(
-        remaining > 0
-          ? `${option.name} needs ${formatDuration(option.duration)}, and only ${formatDuration(remaining)} is left in the day.`
-          : `${option.name} needs ${formatDuration(option.duration)}, and the day is already full. Remove something first.`
-      );
-      return true;
-    },
-    [showToast]
-  );
-
-  const toggle = useCallback(
-    (option, { announce = false } = {}) => {
-      // Reported off a ref, not from inside the updater: React may run an
-      // updater twice, which would double-count every add.
-      const had = selectedRef.current.includes(option.title);
-      // Removals always go through; only a new service can overrun the day.
-      if (!had && refuseIfTooLong(option)) return;
-      track(had ? "service_removed" : "service_added", {
-        service: option.title,
-        price: option.price,
-        duration: option.duration,
-      });
-      setSelected((prev) => {
-        const has = prev.includes(option.title);
-        return has ? prev.filter((t) => t !== option.title) : [...prev, option.title];
-      });
-      setError(null);
-      if (announce) {
-        showToast(`Added ${option.name.toLowerCase()} · +${formatDuration(option.duration)} · ${naira(option.price)}`, () =>
-          setSelected((prev) => prev.filter((t) => t !== option.title))
-        );
-      }
-    },
-    [showToast]
-  );
-
-  const addOption = useCallback(
-    (option) => {
-      if (!selected.includes(option.title)) toggle(option, { announce: true });
-    },
-    [selected, toggle]
-  );
-
-  /** From the sheet: `option` null removes the look, otherwise it replaces any other option of that look. */
-  const applyFromSheet = useCallback(
-    (look, option) => {
-      const others = look.options.map((o) => o.title);
-      /*
-       * The sheet is where a longer variant gets chosen, so it needs the same
-       * guard — but only when nothing of this look is swapped out for it.
-       * Switching between two options of the same look frees the old one's time
-       * first, so it cannot be judged against the current total.
-       */
-      const swapping = selectedRef.current.some((t) => others.includes(t));
-      if (option && !swapping && refuseIfTooLong(option)) return;
-      setSelected((prev) => [...prev.filter((t) => !others.includes(t)), ...(option ? [option.title] : [])]);
-      setSheetLook(null);
-      setError(null);
-      if (option) {
-        showToast(`Added ${option.name.toLowerCase()} · +${formatDuration(option.duration)} · ${naira(option.price)}`, () =>
-          setSelected((prev) => prev.filter((t) => t !== option.title))
-        );
-      }
-    },
-    [showToast, refuseIfTooLong]
-  );
 
   /*
    * `?look=<slug>` — the link every row of the public services menu carries.
@@ -413,7 +343,7 @@ export default function BookingFlow() {
 
     if (look.hasVariants) {
       setStep(1);
-      setSheetLook(look.id);
+      openSheet(look.id);
       return;
     }
 
@@ -461,13 +391,12 @@ export default function BookingFlow() {
     setSelected(suggestion.options.map((o) => o.title));
     const target = rebookTarget ?? firstAvailable(rebookDuration, now);
     if (target) pick(target.key, target.time);
-    setPolicy(false);
     goTo(user?.mobileNumber || (!user && guestIsValid(guest)) ? 4 : 3);
   };
 
   const rebookPick = (kind, lookId) => {
     if (kind === "sheet") {
-      setSheetLook(lookId);
+      openSheet(lookId);
       return;
     }
     if (!suggestion) return;
@@ -509,10 +438,17 @@ export default function BookingFlow() {
     if (!user) {
       const errors = guestErrorsFor(guest);
       setGuestErrors(errors);
-      if (Object.keys(errors).length) return;
+      const first = ["firstName", "phone", "email"].find((k) => errors[k]);
+      if (first) {
+        // The button stays tappable so a tap explains itself: it lands on the
+        // first thing to fix instead of doing nothing.
+        const id = { firstName: "guest-name", phone: "guest-phone", email: "guest-email" }[first];
+        requestAnimationFrame(() => document.getElementById(id)?.focus());
+        return;
+      }
       writeStorage("localStorage", GUEST_KEY, {
         firstName: guest.firstName.trim(),
-        phone: guest.phone.trim(),
+        phone: normaliseMobile(guest.phone),
         email: guest.email.trim(),
       });
       goTo(4);
@@ -522,15 +458,14 @@ export default function BookingFlow() {
       goTo(4);
       return;
     }
-    const value = phone.replace(/[\s-]/g, "");
-    if (!NG_MOBILE.test(value)) {
-      setPhoneError("Enter a full mobile number, e.g. 08031234567 or +2348031234567");
+    if (!isValidMobile(phone)) {
+      setPhoneError(MOBILE_HINT);
       return;
     }
     setPhoneError(null);
     setBusy(true);
     try {
-      const normalised = value.startsWith("0") ? `+234${value.slice(1)}` : value;
+      const normalised = normaliseMobile(phone);
       await updateMobileNumber(user.uid, normalised);
       updateUser({ mobileNumber: normalised });
       goTo(4);
@@ -563,6 +498,7 @@ export default function BookingFlow() {
         startTime: toInstant(date, time),
         guest: guestDetails,
         notes,
+        priceList: "v2",
       });
       track("booking_complete", {
         value: options.reduce((sum, o) => sum + o.price, 0),
@@ -577,7 +513,7 @@ export default function BookingFlow() {
     } catch (err) {
       track("booking_error", { reason: err?.code || "unknown", guest: String(!user) });
       if (GUEST_DISABLED_CODES.has(err?.code)) {
-        setError("Booking without an account isn't available right now. Please sign in or create an account to book.");
+        setError("Booking without an account isn't available right now. Please log in or create an account to book.");
       } else {
         setError(err.message || "Booking failed. Please try again.");
       }
@@ -592,7 +528,6 @@ export default function BookingFlow() {
     setDate(null);
     setTime(null);
     setNotes("");
-    setPolicy(false);
     setDismissedNudges([]);
     setStep(1);
     scrollTop();
@@ -626,10 +561,8 @@ export default function BookingFlow() {
         ? Boolean(date && time)
         : step === 3
           ? hydrated &&
-            (user
-              ? Boolean(user.mobileNumber) || phone.trim().length > 0
-              : guest.firstName.trim().length > 0 && guest.phone.trim().length > 0)
-          : Boolean((user || guestIsValid(guest)) && policy && date && time);
+            (user ? Boolean(user.mobileNumber) || phone.trim().length > 0 : true)
+          : Boolean((user || guestIsValid(guest)) && date && time);
 
   const ctaLabel =
     step === 1
@@ -646,11 +579,11 @@ export default function BookingFlow() {
       : step === 1 && duration > MAX_APPOINTMENT_MINUTES
         ? "That's more than one day. Remove a service."
         : step === 2 && !(date && time)
-          ? "Pick a day and a time"
+          ? date ? "Pick a time" : "Pick a day and a time"
           : step === 3 && !user
-            ? "No account needed"
-            : step === 4 && !policy
-              ? "Tick the arrival note to confirm"
+            ? guestMissing(guest)
+            : step === 4 && depositForOptions(options).amount
+              ? "Deposit arranged on WhatsApp"
               : "Pay at the salon. No card needed.";
 
   const onContinue = () => {
@@ -716,7 +649,7 @@ export default function BookingFlow() {
               onDismissNudge={(id) => setDismissedNudges((d) => [...d, id])}
               onToggle={(o) => toggle(o)}
               onAdd={addOption}
-              onOpenSheet={setSheetLook}
+              onOpenSheet={openSheet}
               upcoming={upcoming[0] ?? null}
               rebook={
                 suggestion
@@ -775,8 +708,7 @@ export default function BookingFlow() {
               total={total}
               contact={contact}
               notes={notes}
-              policy={policy}
-              onPolicy={setPolicy}
+              onChangeServices={() => goTo(1)}
               error={error}
               onChangeTime={() => goTo(2)}
               onChangeDetails={() => goTo(3)}
@@ -790,6 +722,24 @@ export default function BookingFlow() {
               </button>
             </div>
           )}
+          {/* The footer is hidden while booking, so the one thing from it
+              someone mid-booking needs — a person to ask — lives here. */}
+          <p className="mt-10 text-[13px] text-ink-soft">
+            Stuck or have a question?{" "}
+            <a
+              href={`https://wa.me/${SALON_WHATSAPP}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-ink underline underline-offset-4"
+            >
+              WhatsApp us
+            </a>{" "}
+            or call{" "}
+            <a href="tel:+2348110215014" className="whitespace-nowrap font-semibold text-ink underline underline-offset-4">
+              +234 811 021 5014
+            </a>
+            .
+          </p>
         </div>
 
         <AppointmentSlip
@@ -815,14 +765,16 @@ export default function BookingFlow() {
         locked={busy || step === 4}
         cta={cta()}
         sheetCta={cta("w-full")}
-        blocked={!canContinue}
+        // On the details step the button stays tappable, but the bar should
+        // still say what's missing until the form is filled in.
+        blocked={!canContinue || (step === 3 && !user && !guestIsValid(guest))}
         hint={hint}
       />
 
       <ServiceSheet
         lookId={sheetLook}
         selected={selected}
-        onClose={() => setSheetLook(null)}
+        onClose={closeSheet}
         onApply={applyFromSheet}
       />
 

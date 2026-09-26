@@ -65,8 +65,8 @@ export default function ContactPage() {
     <main className="mx-auto flex max-w-[var(--v2-container)] flex-col gap-20 px-4 md:gap-28 md:px-8">
       <PageHero
         eyebrow={ADDRESS_ONE_LINE}
-        title="Talk to a person"
-        lede="Booking is quickest online, but you never have to. Message us, call us, or come and find us — Shop 303 is on the third floor of Destiny Plaza."
+        title="Contact us"
+        lede="Talk to a person. Booking is quickest online, but you never have to. Message us, call us, or come and find us — Shop 303 is on the third floor of Destiny Plaza."
         actions={
           <>
             <Button variant="book" withArrow href="/v2/booking">
@@ -89,7 +89,7 @@ export default function ContactPage() {
         <SectionHeader
           id="channels-heading"
           eyebrow="How to reach us"
-          title="Three ways, in order of speed"
+          title="Ways to reach us"
           lede="Sundays we open at 1pm. Mondays the salon is closed and so are the phones — a message sent then is answered Tuesday morning."
         />
 

@@ -1,4 +1,5 @@
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
+const {getAuth} = require("firebase-admin/auth");
 const {watDate} = require("./time");
 
 function db() {
@@ -142,6 +143,87 @@ async function createBooking(data) {
 }
 
 /**
+ * Whether `email` is on the admin allowlist.
+ *
+ * Mirrors `firestore.rules`'s `isAdmin()` predicate for predicate — a single
+ * `admins/{email.toLowerCase()}` existence check through the admin SDK, which
+ * bypasses the rules that block a browser from doing the same read. Callers
+ * are responsible for the `email_verified` half of that predicate first (see
+ * `requireAdminCaller` in `index.js`): this function only answers "is this
+ * address allowlisted", not "has anyone proven they own it".
+ */
+/**
+ * The admin-edited prices for one site's price list — `{title: naira}`, empty
+ * when the salon has never changed anything. v1 and v2 are priced separately.
+ */
+async function getPriceList(list) {
+    const doc = await db().collection("price_lists").doc(list).get();
+    const prices = doc.exists ? doc.data().prices : null;
+    return prices && typeof prices === "object" ? prices : {};
+}
+
+async function isAdminEmail(email) {
+    const doc = await db().collection("admins").doc(email.toLowerCase()).get();
+    return doc.exists;
+}
+
+/**
+ * The verified account that owns this address, or null.
+ *
+ * Deliberately not a `users` query. `firestore.rules` requires only that a
+ * profile's `email` field be a string — never that it match the account's
+ * actual credential — so the collection is a claim, not a fact. Auth owns the
+ * address, and `emailVerified` is the only thing that says someone proved it.
+ * Without this check, a walk-in typed with a stranger's email would attach
+ * that stranger's history to whoever's `users` profile happens to carry it.
+ */
+async function findVerifiedAccount(email) {
+    let user;
+    try {
+        user = await getAuth().getUserByEmail(email);
+    } catch (err) {
+        if (err?.code === "auth/user-not-found") return null;
+        throw err;
+    }
+    if (user.emailVerified !== true) return null;
+    return {uid: user.uid, email: user.email};
+}
+
+/**
+ * Hands every unclaimed walk-in on this address to the account that proved it.
+ *
+ * Queries on the address alone and filters `userId == null` in memory: one
+ * person's history is a handful of rows, a single-field equality needs no
+ * composite index, and `userId == null` is the only state a walk-in can be in
+ * before it is claimed — an online guest booking always has an anonymous uid,
+ * so it can never be swept up by mistake.
+ *
+ * Returns how many bookings were linked.
+ */
+async function linkWalkInBookings(uid, email, profile) {
+    const snapshot = await db().collection("bookings").where("userEmail", "==", email).get();
+    const unclaimed = snapshot.docs.filter((doc) => doc.data().userId == null);
+    if (unclaimed.length === 0) return 0;
+
+    const batch = db().batch();
+    for (const doc of unclaimed) {
+        batch.update(doc.ref, {
+            userId: uid,
+            guest: false,
+            claimedAt: FieldValue.serverTimestamp(),
+            userFirstName: profile?.firstName ?? doc.data().userFirstName,
+        });
+    }
+    await batch.commit();
+    return unclaimed.length;
+}
+
+/** `index.js` has no `FieldValue` import; exported so callers don't need one. */
+function serverTimestamp() {
+    return FieldValue.serverTimestamp();
+}
+
+/**
  * How many live, still-to-come bookings have `field == value`.
  *
  * A single equality filter (no range, no order) so it runs on Firestore's
@@ -192,4 +274,9 @@ module.exports = {
     getUnremindedBookingsInWindow,
     getBookingsInWindow,
     claimAdminDigest,
+    isAdminEmail,
+    getPriceList,
+    findVerifiedAccount,
+    linkWalkInBookings,
+    serverTimestamp,
 };

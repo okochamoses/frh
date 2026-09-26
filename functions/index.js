@@ -24,9 +24,14 @@ const {
     getUnremindedBookingsInWindow,
     getBookingsInWindow,
     claimAdminDigest,
+    isAdminEmail,
+    getPriceList,
+    findVerifiedAccount,
+    linkWalkInBookings,
+    serverTimestamp,
 } = require("./lib/adminBookingService");
 const {watDate, watDateKey} = require("./lib/time");
-const {validateSlot} = require("./lib/bookingRules");
+const {validateSlot, validateWalkInSlot} = require("./lib/bookingRules");
 const {lookup} = require("./lib/serviceCatalogue");
 const {parseGuest, MAX_UPCOMING_PER_GUEST} = require("./lib/guest");
 const {parseNotes} = require("./lib/notes");
@@ -209,6 +214,26 @@ exports.onBookingCreated = onDocumentCreated(
             return;
         }
 
+        if (booking.status === "completed") {
+            // A visit recorded after the fact — the client has already left the
+            // chair, so "your booking is confirmed" would be a lie, and the
+            // owner notification would tell the salon something the salon just
+            // typed in. Branching on status rather than channel matters: a
+            // `served: false` walk-in is still "pending" and must get the
+            // ordinary confirmation below.
+            if (booking.userEmail) {
+                try {
+                    await mailService.sendServiceCompleteWithReview({to: booking.userEmail, booking});
+                    logger.info("Service-complete email sent to client", {to: booking.userEmail});
+                } catch (err) {
+                    logger.error("Failed to send service-complete email", {error: err});
+                }
+            } else {
+                logger.info("No client email on completed walk-in; no mail sent", {bookingId});
+            }
+            return;
+        }
+
         if (!secret) {
             logger.error(
                 "[onBookingCreated] BOOKING_SECRET is unset; omitting manage/complete links.",
@@ -361,15 +386,24 @@ function requireLiveBooking(booking, uid) {
     return booking;
 }
 
+/**
+ * Which site's price list a public booking is priced from. v1 and v2 carry
+ * separate lists; a client too old to say which is the v1 site.
+ */
+function parsePriceList(value) {
+    return value === "v2" ? "v2" : "v1";
+}
+
 exports.createBooking = onCall(
     {cors: true, secrets: ["BOOKING_SECRET"]},
     async (request) => {
         const {uid, email, anonymous} = requireCaller(request);
-        const {serviceTitles, startTime, guest, notes} = request.data ?? {};
+        const {serviceTitles, startTime, guest, notes, priceList} = request.data ?? {};
 
+        const prices = await getPriceList(parsePriceList(priceList));
         let priced;
         try {
-            priced = lookup(serviceTitles);
+            priced = lookup(serviceTitles, prices);
         } catch (err) {
             throw new HttpsError("invalid-argument", err.message);
         }
@@ -435,6 +469,141 @@ exports.createBooking = onCall(
             startTime: slot.start.toISOString(),
             endTime: slot.end.toISOString(),
             totalAmount: priced.totalPrice,
+            manageUrl,
+        };
+    }
+);
+
+/**
+ * The admin caller's identity, or a typed error.
+ *
+ * `requireCaller` cannot be reused here: it *permits* anonymous callers and
+ * returns a null email, which is exactly right for a guest booking and
+ * exactly wrong for a staff-only path. This mirrors `firestore.rules`'s
+ * `isAdmin()` predicate for predicate, including `email_verified` — the rules
+ * comment there explains why that check exists (an allowlisted address could
+ * otherwise be claimed by anyone who registers it first), and dropping it
+ * here would reopen that hole through the callable.
+ */
+async function requireAdminCaller(request) {
+    const auth = request.auth;
+    if (!auth) {
+        throw new HttpsError("unauthenticated", "Please sign in.");
+    }
+    const email = auth.token?.email ?? null;
+    if (!email || auth.token?.email_verified !== true) {
+        throw new HttpsError("permission-denied", "Not authorised.");
+    }
+    if (!(await isAdminEmail(email))) {
+        throw new HttpsError("permission-denied", "Not authorised.");
+    }
+    return {uid: auth.uid, email: email.toLowerCase()};
+}
+
+/**
+ * Records a booking from the admin dashboard — either a future appointment
+ * taken over the phone or at the desk (`served: false`), or a visit that has
+ * already happened (`served: true`).
+ *
+ * The `served` discriminator is the safety mechanism. A future booking is the
+ * public booking with a different typist: `validateSlot` runs completely
+ * unchanged, so that path carries zero new risk. A served visit has no
+ * `startTime` in the payload at all — the server reads the clock instead —
+ * so `validateWalkInSlot`'s relaxed checks have no attacker-controllable input
+ * to relax anything against.
+ *
+ * `parseGuest` is called directly, never through `guestContact`: that helper
+ * couples parsing to `MAX_UPCOMING_PER_GUEST`, which must not apply when the
+ * salon itself is typing — a regular who visits weekly is not an abuse signal.
+ *
+ * `userId` is `null` unless the typed email matches a verified account
+ * (`findVerifiedAccount`). It is deliberately never the admin's own uid or a
+ * shared sentinel: `reassignBookings` moves every booking a uid owns, so
+ * either choice would turn one admin-typed email into a loaded gun aimed at
+ * that uid's entire history. A `null` `userId` is exactly the marker
+ * `claimWalkInBookings` reconciles on later.
+ */
+exports.adminCreateBooking = onCall(
+    {cors: true, secrets: ["BOOKING_SECRET"]},
+    async (request) => {
+        const {email: adminEmail} = await requireAdminCaller(request);
+        const {serviceTitles, customer, served, startTime, notes} = request.data ?? {};
+
+        // Walk-ins are picked from the v2 services grid, so they take v2 prices.
+        const prices = await getPriceList("v2");
+        let priced;
+        try {
+            priced = lookup(serviceTitles, prices);
+        } catch (err) {
+            throw new HttpsError("invalid-argument", err.message);
+        }
+
+        const guest = parseGuest(customer);
+        if (guest.error) {
+            throw new HttpsError("invalid-argument", guest.error);
+        }
+
+        const note = parseNotes(notes);
+        if (note.error) {
+            throw new HttpsError("invalid-argument", note.error);
+        }
+
+        const slot = served ?
+            validateWalkInSlot(priced.totalDuration) :
+            validateSlot(startTime, priced.totalDuration);
+        if (!slot.ok) {
+            throw new HttpsError("out-of-range", slot.reason);
+        }
+
+        const matchedAccount = guest.email ? await findVerifiedAccount(guest.email) : null;
+
+        const bookingId = await writeBooking({
+            userId: matchedAccount?.uid ?? null,
+            ...(matchedAccount ? {} : {guest: true}),
+
+            userEmail: matchedAccount?.email ?? guest.email,
+            userFirstName: guest.firstName,
+            userMobileNumber: guest.mobileNumber,
+
+            services: priced.services,
+            servicesText: priced.servicesText,
+            totalAmount: priced.totalPrice,
+            totalDuration: priced.totalDuration,
+            notes: note.notes,
+
+            startTime: slot.start.toISOString(),
+            endTime: slot.end.toISOString(),
+
+            channel: "walk-in",
+            createdBy: adminEmail,
+
+            ...(served ?
+                {status: "completed", completedAt: serverTimestamp(), reminderSent: true} :
+                {status: "pending", reminderSent: false}),
+        });
+
+        logger.info("Walk-in booking created", {
+            bookingId,
+            adminEmail,
+            served: !!served,
+            matchedUserId: matchedAccount?.uid ?? null,
+        });
+
+        // A served visit is already over; `requireLiveBooking` would reject a
+        // completed booking anyway, so minting a manage link that 404s is
+        // worse than none.
+        const manageUrl = served ? null : makeManageUrl(bookingId, resolveBookingSecret());
+        if (!served && !manageUrl) {
+            logger.error("[adminCreateBooking] BOOKING_SECRET is unset; omitting manage link.", {bookingId});
+        }
+
+        return {
+            bookingId,
+            startTime: slot.start.toISOString(),
+            endTime: slot.end.toISOString(),
+            totalAmount: priced.totalPrice,
+            status: served ? "completed" : "pending",
+            matchedUserId: matchedAccount?.uid ?? null,
             manageUrl,
         };
     }
@@ -593,6 +762,43 @@ exports.claimGuestBookings = onCall(
         }
 
         logger.info("Guest bookings claimed", {uid, from: decoded.uid, claimed});
+        return {claimed};
+    }
+);
+
+/**
+ * Hands every unclaimed walk-in on the caller's own address to their account.
+ *
+ * Mirrors `claimGuestBookings`: same "quiet background tidy-up" contract, a
+ * different proof of identity. A `users/{uid}` trigger cannot do this job —
+ * `firestore.rules` never requires a profile's `email` to match the account's
+ * real credential, so a trigger reading that field would link on a forgeable
+ * claim, and `sendEmailVerification` is fire-and-forget at sign-up
+ * (`src/lib/firebase/authService.js`), so accounts are unverified at the
+ * moment the profile is written and verifying later writes nothing to
+ * Firestore for a trigger to catch. A callable fixes both: `request.auth.token`
+ * is signed by Firebase, carries `email` and `email_verified`, and can be
+ * re-invoked on any later sign-in.
+ *
+ * An unverified caller gets `{claimed: 0}` rather than an error — they are not
+ * doing anything wrong, they just have nothing coming yet.
+ */
+exports.claimWalkInBookings = onCall(
+    {cors: true},
+    async (request) => {
+        const {uid, email, anonymous} = requireCaller(request);
+        if (anonymous) {
+            throw new HttpsError("failed-precondition", "Please sign in to claim your bookings.");
+        }
+
+        if (!email || request.auth.token?.email_verified !== true) {
+            return {claimed: 0};
+        }
+
+        const profile = await getUserProfile(uid);
+        const claimed = await linkWalkInBookings(uid, email.toLowerCase(), profile);
+
+        logger.info("Walk-in bookings claimed", {uid, claimed});
         return {claimed};
     }
 );

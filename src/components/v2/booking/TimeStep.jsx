@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   MAX_APPOINTMENT_MINUTES,
@@ -23,6 +24,10 @@ import {
 import { PillButton } from "./ui";
 
 const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// How many open days the strip offers before "More dates" is the way on.
+const STRIP_DAYS = 14;
+// Below this, the finish-before-closing rule barely trims the list of times.
+const LONG_VISIT_MINUTES = 120;
 
 function groupSlots(slots) {
   const groups = { Morning: [], Afternoon: [], Evening: [] };
@@ -40,6 +45,33 @@ export default function TimeStep({ duration, now, month, onMonth, date, time, on
   const atStart = month.year === ty && month.month === tm;
   const atEnd = month.year === last.year && month.month === last.month;
 
+  const earliest = firstAvailable(duration, now);
+  const usualSlot = usual ?? null;
+  const cells = monthGrid(month.year, month.month);
+  const slots = date ? slotsFor(date, duration, now) : [];
+
+  /*
+   * The strip lists only days that can take this booking. The month grid it
+   * replaces as the default led with a page of crossed-out days — on the 26th
+   * of a month, 26 of them — before the two that were bookable.
+   */
+  const openDays = [];
+  for (let i = 0; i <= BOOKING_HORIZON_DAYS && openDays.length < STRIP_DAYS; i++) {
+    const key = addDays(today, i);
+    if (!dayUnavailableReason(key, duration, now)) openDays.push(key);
+  }
+  // A day picked from the calendar further out still shows as chosen.
+  if (date && !openDays.includes(date)) openDays.push(date);
+
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  // Most people take the first day that works, so it arrives already picked
+  // and its times are on screen without a tap.
+  const earliestKey = earliest?.key;
+  useEffect(() => {
+    if (!date && earliestKey) onDate(earliestKey);
+  }, [date, earliestKey, onDate]);
+
   if (duration > MAX_APPOINTMENT_MINUTES) {
     return (
       <div role="alert" className="rounded-v2-xl bg-gold p-5 text-sm leading-relaxed">
@@ -49,32 +81,73 @@ export default function TimeStep({ duration, now, month, onMonth, date, time, on
     );
   }
 
-  const earliest = firstAvailable(duration, now);
-  const usualSlot = usual ?? null;
-  const cells = monthGrid(month.year, month.month);
-  const slots = date ? slotsFor(date, duration, now) : [];
-
   const step = (delta) => {
     const d = new Date(Date.UTC(month.year, month.month - 1 + delta, 1));
     onMonth({ year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 });
   };
 
+  const openCalendar = () => {
+    if (date) {
+      const { year, month: m } = parseKey(date);
+      onMonth({ year, month: m });
+    }
+    setShowCalendar((v) => !v);
+  };
+
   return (
-    <div className="grid gap-7 md:grid-cols-2">
+    <div className="grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-6">
       <div>
-        <div className="mb-4 flex flex-wrap gap-2">
-          {earliest && (
-            <PillButton size="sm" variant="quiet" onClick={() => onPick(earliest.key, earliest.time)}>
-              Earliest: {earliest.key === today ? "today" : shortDate(earliest.key)}, {earliest.time}
-            </PillButton>
-          )}
-          {usualSlot && (
+        {usualSlot && (
+          <div className="mb-4">
             <PillButton size="sm" variant="quiet" onClick={() => onPick(usualSlot.key, usualSlot.time)}>
               Your usual: {shortDate(usualSlot.key)}, {usualSlot.time}
             </PillButton>
-          )}
+          </div>
+        )}
+
+        <div
+          role="group"
+          aria-label="Choose a day"
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+        >
+          {openDays.map((key) => {
+            const selected = key === date;
+            const { day, month: m } = parseKey(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={selected}
+                aria-label={longDate(key)}
+                onClick={() => onDate(key)}
+                className={cn(
+                  "flex w-[60px] shrink-0 flex-col items-center rounded-v2-xl py-2 text-[11.5px] font-semibold transition-colors",
+                  selected ? "bg-ink text-white" : "bg-cream-100 text-ink-soft hover:bg-latte"
+                )}
+              >
+                <span>{key === today ? "Today" : DOW[(weekdayOf(key) + 6) % 7]}</span>
+                <span className={cn("text-lg font-bold tabular-nums leading-tight", selected ? "text-white" : "text-ink")}>
+                  {day}
+                </span>
+                <span>{MONTHS[m - 1].slice(0, 3)}</span>
+              </button>
+            );
+          })}
         </div>
 
+        <button
+          type="button"
+          aria-expanded={showCalendar}
+          onClick={openCalendar}
+          className="mt-2.5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink underline underline-offset-4"
+        >
+          <CalendarDays className="h-4 w-4" aria-hidden />
+          {showCalendar ? "Hide calendar" : "More dates"}
+        </button>
+      </div>
+
+      {showCalendar && (
+      <div>
         <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
@@ -99,7 +172,7 @@ export default function TimeStep({ duration, now, month, onMonth, date, time, on
           </button>
         </div>
 
-        <div role="group" aria-label="Choose a day" className="grid grid-cols-7 gap-1">
+        <div role="group" aria-label="Calendar" className="grid grid-cols-7 gap-1">
           {DOW.map((d) => (
             <div key={d} aria-hidden="true" className="pb-1.5 pt-1 text-center text-[11px] font-bold tracking-[0.04em] text-ash">
               {d}
@@ -138,31 +211,11 @@ export default function TimeStep({ duration, now, month, onMonth, date, time, on
           })}
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
-          <span className="inline-flex items-center gap-1.5">
-            <i className="inline-block h-3.5 w-3.5 rounded-[5px] bg-cream-100" /> Open
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <i className="inline-block h-3.5 w-3.5 rounded-[5px] bg-ink" /> Selected
-          </span>
-          {usualSlot && (
-            <span className="inline-flex items-center gap-1.5">
-              <i className="inline-block h-3.5 w-3.5 rounded-[5px] ring-[1.5px] ring-inset ring-slat" /> Your usual day
-            </span>
-          )}
-          <span>
-            <s className="text-ash-disabled">12</s> Closed or too short
-          </span>
-        </div>
       </div>
+      )}
 
       <div>
-        {!date ? (
-          <div className="rounded-v2-xl bg-cream-100 p-6 text-sm leading-relaxed text-ink-soft">
-            Pick a day to see times. Days with a line through them are closed or too short for{" "}
-            {formatDuration(duration)}. Hover or focus one to see why.
-          </div>
-        ) : (
+        {date && (
           <>
             <p className="mb-3 text-base font-bold">{longDate(date)}</p>
             <div role="group" aria-label={`Times on ${longDate(date)}`}>
@@ -198,7 +251,12 @@ export default function TimeStep({ duration, now, month, onMonth, date, time, on
             )}
           </>
         )}
-        <p className="mt-4 text-xs text-ink-soft">
+        {duration >= LONG_VISIT_MINUTES && (
+          <p className="mt-4 text-[13px] text-ink-soft">
+            Your visit takes about {formatDuration(duration)}, so these are the times that finish before we close.
+          </p>
+        )}
+        <p className="mt-2 text-xs text-ink-soft">
           All times are Lagos time (WAT). Open Tuesday to Saturday 9am–7pm and Sunday 1–7pm. Closed Mondays.
         </p>
       </div>

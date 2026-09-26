@@ -102,9 +102,9 @@ export default function GalleryPage() {
   return (
     <main className="mx-auto flex max-w-[var(--v2-container)] flex-col gap-20 px-4 md:gap-28 md:px-8">
       <PageHero
-        eyebrow="Our work"
-        title="See the style before you book it"
-        lede="Real heads, finished in our chairs in Isolo. If you see something here you want, send it to us — it is the quickest brief you can give a stylist."
+        eyebrow="Gallery · Isolo, Lagos"
+        title="Our work"
+        lede="See the style before you book it. Real heads, finished in our chairs in Isolo. If you see something here you want, send it to us — it is the quickest brief you can give a stylist."
         actions={
           <>
             <Button variant="book" withArrow href="/v2/booking">

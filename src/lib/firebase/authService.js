@@ -28,9 +28,11 @@ import { createUserProfile, getUserProfile } from "./userService";
 import {
   captureGuestToken,
   claimGuestBookings,
+  claimWalkInBookings,
   stashGuestToken,
   takeStashedGuestToken,
 } from "./guestClaim";
+import { normaliseMobile } from "@/lib/phone";
 
 /**
  * `auth` is deliberately created without a popup/redirect resolver so that no
@@ -39,6 +41,43 @@ import {
  * in itself — that first call is what loads the chain.
  */
 const resolver = browserPopupRedirectResolver;
+
+/*
+ * Set just before a sign-in redirect, read on the way back.
+ *
+ * `getRedirectResult` has to be handed the resolver, and that is the whole
+ * gapi chain — the cost `config.js` deliberately does not pay up front. So the
+ * app only asks for the result when it knows it sent someone away, rather than
+ * on every page load on the off-chance.
+ */
+const REDIRECT_PENDING_KEY = "frh:auth-redirect";
+
+function markRedirectPending() {
+  try {
+    window.sessionStorage.setItem(REDIRECT_PENDING_KEY, "1");
+  } catch {
+    // Storage is blocked. The redirect still works; what is lost is the
+    // profile creation on the way back, which `completeGoogleRedirect` would
+    // have done. Nothing here is worth failing the sign-in over.
+  }
+}
+
+/** True when this tab sent the client off to Google and is now back. */
+export function isGoogleRedirectPending() {
+  try {
+    return window.sessionStorage.getItem(REDIRECT_PENDING_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function clearRedirectPending() {
+  try {
+    window.sessionStorage.removeItem(REDIRECT_PENDING_KEY);
+  } catch {
+    // Nothing to do — the flag only ever causes one extra check.
+  }
+}
 
 const googleProvider = new GoogleAuthProvider();
 // Always let the user pick an account rather than silently reusing the last one.
@@ -67,6 +106,7 @@ export async function signInWithEmail(email, password) {
   const guestToken = await captureGuestToken();
   const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
   await claimGuestBookings(guestToken);
+  await claimWalkInBookings();
   return user;
 }
 
@@ -118,7 +158,7 @@ export async function signUpWithEmail({ firstName, lastName, email, phone, passw
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: normalisedEmail,
-      mobileNumber: phone?.trim() || null,
+      mobileNumber: phone?.trim() ? normaliseMobile(phone) : null,
       provider: "email",
     });
 
@@ -199,6 +239,7 @@ export async function signInWithGoogle() {
     const { user } = await signInWithPopup(auth, googleProvider, resolver);
     const profile = await profileForGoogleUser(user);
     await claimGuestBookings(guestToken);
+    await claimWalkInBookings();
     return profile;
   } catch (error) {
     if (
@@ -207,6 +248,7 @@ export async function signInWithGoogle() {
     ) {
       // The page is about to unload, so the guest token has to survive the trip.
       stashGuestToken(guestToken);
+      markRedirectPending();
       await signInWithRedirect(auth, googleProvider, resolver);
       return null; // navigating away
     }
@@ -215,10 +257,18 @@ export async function signInWithGoogle() {
 }
 
 /**
- * Completes a redirect-based Google sign-in. Call once on app start.
+ * Completes a redirect-based Google sign-in.
+ *
+ * Called by `AuthProvider` on mount, but only when `isGoogleRedirectPending()`
+ * says this tab actually sent someone to Google — see the note on
+ * `REDIRECT_PENDING_KEY` for why it is not simply run every time.
+ *
  * Returns the profile when the page was reached via a redirect, else null.
  */
 export async function completeGoogleRedirect() {
+  // Cleared first: a result that throws must not leave the flag behind for
+  // every later page view in this tab to retry.
+  clearRedirectPending();
   const result = await getRedirectResult(auth, resolver);
   if (!result?.user) {
     // No redirect happened, but a stale stash would otherwise outlive the tab.
@@ -227,6 +277,7 @@ export async function completeGoogleRedirect() {
   }
   const profile = await profileForGoogleUser(result.user);
   await claimGuestBookings(takeStashedGuestToken());
+  await claimWalkInBookings();
   return profile;
 }
 

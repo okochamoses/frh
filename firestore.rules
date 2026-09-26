@@ -73,6 +73,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ── Price lists ───────────────────────────────────────────────────────────
+    // One document per site (`v1`, `v2`), each `{prices: {title: naira}}`,
+    // edited from /admin/prices. Prices are public — every site shows them —
+    // but only an admin can change one. The server reads the same document to
+    // price a booking, so the browser still never names its own price.
+    match /price_lists/{list} {
+      allow read: if list in ['v1', 'v2'];
+      allow write: if isAdmin()
+                   && list in ['v1', 'v2']
+                   && request.resource.data.keys().hasOnly(['prices', 'updatedAt', 'updatedBy'])
+                   && request.resource.data.prices is map;
+    }
+
     // ── Bookings ──────────────────────────────────────────────────────────────
     // Read-only from the client. Every write goes through the createBooking,
     // cancelBooking and rescheduleBooking callables, which run as admin.

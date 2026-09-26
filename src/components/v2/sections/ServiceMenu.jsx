@@ -5,6 +5,7 @@ import Link from "next/link";
 import Arrow from "@/components/v2/ui/Arrow";
 import Reveal from "@/components/v2/ui/Reveal";
 import { ACTIVE_CATEGORIES, LOOKS } from "@/lib/booking/catalogue";
+import { useCatalogueVersion } from "@/lib/booking/usePriceList";
 import { formatDuration, naira } from "@/lib/booking/schedule";
 
 /**
@@ -65,6 +66,7 @@ function CategoryRail({ categories, active }) {
 }
 
 export default function ServiceMenu() {
+  useCatalogueVersion(); // re-render when the salon changes a price
   const [active, setActive] = useState(ACTIVE_CATEGORIES[0]?.slug ?? null);
   const sections = useRef(new Map());
 

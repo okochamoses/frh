@@ -15,7 +15,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,875,308",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/b6/20/40/b62040a3139316de9af251bc3991f494.jpg"
+    "imageUrl": "/services/barrel-twist.webp"
   },
   {
     "title": "All Twists",
@@ -23,7 +23,7 @@
     "duration": 135,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "All Twists on Natural Hair, styling your twists comes with extra 1,000.\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "All Twists on Natural Hair, styling your twists comes with extra 1,000.",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -33,7 +33,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,327",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/webp/1200x/c0/a4/bf/c0a4bff486f179b6f1cafc1a30eb429c.webp"
+    "imageUrl": "/services/twists-two-strand.webp",
+    "lookId": "twists-two-strand",
+    "lookName": "Twists",
+    "variantLabel": "Plain"
   },
   {
     "title": "Twists with any combo (twists with weaves or styling)",
@@ -41,7 +44,7 @@
     "duration": 135,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Twists with Weaving , Flat twists, inverted braid and our specials.\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Twists with Weaving , Flat twists, inverted braid and our specials.",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -51,7 +54,11 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,310",
     "SKU": "",
-    "imageUrl": "https://i1.wp.com/www.hadviser.com/wp-content/uploads/2023/12/1-asymmetric-short-strand-twist-CrNpVN-Ihk1.jpeg?resize=1440%2C1440&ssl=1"
+    "imageUrl": "/services/twists-two-strand-2.webp",
+    "lookId": "twists-two-strand",
+    "lookName": "Twists",
+    "variantLabel": "With combo",
+    "displayName": "Twists"
   },
   {
     "title": "Flat twists (All back)",
@@ -59,7 +66,7 @@
     "duration": 120,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "All Flat twists \n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "All Flat twists",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -69,7 +76,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,287",
     "SKU": "",
-    "imageUrl": "https://www.coilsandglory.com/wp-content/uploads/2022/10/1.-Large-Flat-Twists-With-Curved-Part.jpg"
+    "imageUrl": "/services/twists-flat.webp",
+    "lookId": "twists-flat",
+    "lookName": "Flat twists",
+    "variantLabel": "All back"
   },
   {
     "title": "Finger Coils",
@@ -77,7 +87,7 @@
     "duration": 225,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Note: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -87,7 +97,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,238",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/564x/4d/6c/c3/4d6cc30ebe7fbd0557adf2ad5a25da52.jpg"
+    "imageUrl": "/services/finger-coils.webp"
   },
   {
     "title": "Mini twists",
@@ -95,7 +105,7 @@
     "duration": 300,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Mini twists \n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nCancellation/Rescheduling leads to forfeiture of  50% of amount paid, whether in full or part.\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Mini twists\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -105,7 +115,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,008",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/2b/e1/6a/2be16a9f671b390a4b6587f07b1df239.jpg"
+    "imageUrl": "/services/mini-twists.webp"
   },
   {
     "title": "Micro Twists",
@@ -113,7 +123,7 @@
     "duration": 450,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Micro twists are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (5,000)\n\nCancellation/Rescheduling leads to forfeiture of 50% of amount paid, whether in full or part.",
+    "Description": "Micro twists are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -123,7 +133,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,147",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/86/d6/cc/86d6ccb84eb004b3e523b5e655f497cd.jpg"
+    "imageUrl": "/services/micro-twists.webp"
   },
   {
     "title": "Twists with mini weaves",
@@ -131,7 +141,7 @@
     "duration": 270,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -140,7 +150,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,274,471",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "twists-with-weaves",
+    "lookName": "Twists with weaves",
+    "variantLabel": "Mini weaves"
   },
   {
     "title": "Twists with micro weaves",
@@ -148,7 +161,7 @@
     "duration": 480,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -157,7 +170,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,274,441",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "twists-with-weaves",
+    "lookName": "Twists with weaves",
+    "variantLabel": "Micro weaves"
   },
   {
     "title": "Flatwists (with combo)",
@@ -165,7 +181,7 @@
     "duration": 150,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Flattwists with twists\nYou are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Flattwists with twists",
     "category": "Twists and Coils",
     "Treatment Type": "Hair Twists",
     "Resource": "Not required",
@@ -175,7 +191,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,274,422",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/4f/74/b9/4f74b95b75c696505e3b1a6df5315805.jpg"
+    "imageUrl": "/services/twists-flat-2.webp",
+    "lookId": "twists-flat",
+    "lookName": "Flat twists",
+    "variantLabel": "With combo"
   },
   {
     "title": "Loose Braids",
@@ -193,7 +212,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,810,387",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/ac/19/97/ac1997d7c98a6d1de2ed4e25260a8cbc.jpg"
+    "imageUrl": "/services/loose-braids.webp"
   },
   {
     "title": "Natural Hair Braids",
@@ -201,7 +220,7 @@
     "duration": 180,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Braid your natural hair. \nMedium Size\nNo extensions added\n\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Braid your natural hair.\nMedium Size\nNo extensions added\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Braids",
     "Treatment Type": "Hair Braiding",
     "Resource": "Not required",
@@ -211,7 +230,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,059",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/07/84/a8/0784a88655c02c5d145b6eea61868da1.jpg"
+    "imageUrl": "/services/braids-natural.webp",
+    "lookId": "braids-natural",
+    "lookName": "Natural hair braids",
+    "variantLabel": "Medium"
   },
   {
     "title": "Mini braids",
@@ -219,7 +241,7 @@
     "duration": 390,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Moisturizing and Detangling comes with extra fee\n\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Moisturizing and Detangling comes with extra fee\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Braids",
     "Treatment Type": "Hair Braiding",
     "Resource": "Not required",
@@ -229,7 +251,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,274,932",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/1200x/94/42/18/9442181b4e1bef7d661f755bf2df89d0.jpg"
+    "imageUrl": "/services/braids-natural-2.webp",
+    "lookId": "braids-natural",
+    "lookName": "Natural hair braids",
+    "variantLabel": "Mini"
   },
   {
     "title": "African Threading / KiKo",
@@ -247,7 +272,8 @@
     "Commissions": "Enabled",
     "Service ID": "21,086,354",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/45/89/e6/4589e61667d487c0a7d0bbfc4f9599a6.jpg"
+    "imageUrl": "/services/african-threading-kiko.webp",
+    "displayName": "African threading / Kiko"
   },
   {
     "title": "Some gaps threading (Usual/big cuts)",
@@ -255,7 +281,7 @@
     "duration": 150,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Hair threading (with gaps)\n\nWe don't sell beads\nAttaching of clients beads attracts extra 500\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Hair threading (with gaps)\nWe don't sell beads\nAttaching of clients beads attracts extra 500",
     "category": "Threading",
     "Treatment Type": "Threading",
     "Resource": "Not required",
@@ -265,7 +291,11 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,182",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/e2/04/39/e20439c874733cacc3ad78f7fc866aa0.jpg"
+    "imageUrl": "/services/threading-gaps.webp",
+    "lookId": "threading-gaps",
+    "lookName": "Gaps threading",
+    "variantLabel": "Big cuts",
+    "displayName": "Gaps threading"
   },
   {
     "title": "Some gaps threading SAT(Small Cutting)",
@@ -273,7 +303,7 @@
     "duration": 180,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Small cuts\n\nWe don't sell beads, attaching of clients beads attracts extra 500\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Small cuts\nWe don't sell beads, attaching of clients beads attracts extra 500",
     "category": "Threading",
     "Treatment Type": "Threading",
     "Resource": "Not required",
@@ -283,7 +313,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,274,865",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/ee/90/80/ee908000bcfbb86371dc28bc0de9c986.jpg"
+    "imageUrl": "/services/threading-gaps-2.webp",
+    "lookId": "threading-gaps",
+    "lookName": "Gaps threading",
+    "variantLabel": "Small cuts (SAT)"
   },
   {
     "title": "SAT with weaves",
@@ -291,7 +324,7 @@
     "duration": 240,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Threading with weaves (cornrows)\nYou are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (5,000)",
+    "Description": "Threading with weaves (cornrows)",
     "category": "Threading",
     "Treatment Type": "Threading",
     "Resource": "Not required",
@@ -308,7 +341,7 @@
     "duration": 90,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Medium sized twists, only available Tuesdays, Wednesdays, Thursdays and Fridays NOT Saturdays and Sundays please.  You won't be attended to if defaulted. Fuller and longer hair attracts more by our discretion. ",
+    "Description": "Medium sized twists, only available Tuesdays, Wednesdays, Thursdays and Fridays NOT Saturdays and Sundays please. You won't be attended to if defaulted. Fuller and longer hair attracts more by our discretion.",
     "category": "Take-down",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -318,7 +351,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,273,369",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/05/80/f7/0580f7356ffe68636e3cd2f6f8b3bb7f.jpg"
+    "imageUrl": "/services/takedown-twists.webp",
+    "lookId": "takedown-twists",
+    "lookName": "Twist take-down",
+    "variantLabel": "Natural twists"
   },
   {
     "title": "Mini twists loosening",
@@ -326,7 +362,7 @@
     "duration": 195,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Mini sized twists, only available Tuesdays, Wednesdays, Thursdays and Fridays, NOT Saturdays and Sundays please.  You won't be attended to if defaulted. Fuller and longer hair attracts more at our discretion. \n\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nRescheduling after payment without prior notice leads to forfeiture of 50% of amount paid, whether in full or part",
+    "Description": "Mini sized twists, only available Tuesdays, Wednesdays, Thursdays and Fridays, NOT Saturdays and Sundays please. You won't be attended to if defaulted. Fuller and longer hair attracts more at our discretion.\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Take-down",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -336,7 +372,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,273,352",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/c9/4e/1b/c94e1bc1511ce9c7593b0d019205a2bf.jpg"
+    "imageUrl": "/services/takedown-twists-2.webp",
+    "lookId": "takedown-twists",
+    "lookName": "Twist take-down",
+    "variantLabel": "Mini twists"
   },
   {
     "title": "Micro twists loosening",
@@ -344,7 +383,7 @@
     "duration": 360,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Micro sized twists, (this comes with washing and moisturising) only available Tuesdays, Wednesdays and Thursdays and  Fridays, NOT Saturdays and Sundays please.  You won't be attended to if defaulted. Fuller and longer hair attracts more at our discretion.\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\n\nRescheduling after payment without prior notice leads to forfeiture of 50% of amount paid, whether in full or part.",
+    "Description": "Micro sized twists, (this comes with washing and moisturising) only available Tuesdays, Wednesdays and Thursdays and  Fridays, NOT Saturdays and Sundays please. You won't be attended to if defaulted. Fuller and longer hair attracts more at our discretion.\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Take-down",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -353,8 +392,11 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,340",
-    "imageUrl": "https://i.pinimg.com/736x/16/ff/7a/16ff7a0fd74e53546bcc657863364fae.jpg",
-    "SKU": ""
+    "imageUrl": "/services/takedown-twists-3.webp",
+    "SKU": "",
+    "lookId": "takedown-twists",
+    "lookName": "Twist take-down",
+    "variantLabel": "Micro twists"
   },
   {
     "title": "Cornrows loosening (10 pieces)",
@@ -372,7 +414,8 @@
     "Commissions": "Enabled",
     "Service ID": "19,273,241",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/2d/16/c1/2d16c122699d86df01aedfe5be20d4a9.jpg"
+    "imageUrl": "/services/cornrows-loosening-10-pieces.webp",
+    "displayName": "Cornrow take-down"
   },
   {
     "title": "Extension loosening",
@@ -389,7 +432,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,195",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "takedown-braids",
+    "lookName": "Braid take-down",
+    "variantLabel": "Extensions"
   },
   {
     "title": "Loosening(Natural Braids)",
@@ -406,7 +452,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,145",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "takedown-braids",
+    "lookName": "Braid take-down",
+    "variantLabel": "Natural braids"
   },
   {
     "title": "Natural mini braids loosening",
@@ -423,7 +472,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,125",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "takedown-braids",
+    "lookName": "Braid take-down",
+    "variantLabel": "Natural mini braids"
   },
   {
     "title": "SAT(Small Cutting)loosening",
@@ -440,7 +492,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,083",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "SAT take-down"
   },
   {
     "title": "Pony Tail (Packing gel) - Kids ",
@@ -448,7 +501,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "This is a simple style , where you put a ponytail where the hair is packed together. \nThis mostly comes with blow drying to straighten the hair. ",
+    "Description": "This is a simple style , where you put a ponytail where the hair is packed together.\nThis mostly comes with blow drying to straighten the hair.",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -458,7 +511,7 @@
     "Commissions": "Enabled",
     "Service ID": "20,941,957",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/39/3c/97/393c9740fffe042b7526a76fcd3d1688.jpg"
+    "imageUrl": "/services/pony-tail-packing-gel-kids.webp"
   },
   {
     "title": "Pony Tail (Packing gel)",
@@ -466,7 +519,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "This is a simple style , where you put a ponytail where the hair is packed together. \nThis mostly comes with blow drying to straighten the hair. ",
+    "Description": "This is a simple style , where you put a ponytail where the hair is packed together.\nThis mostly comes with blow drying to straighten the hair.",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -476,7 +529,7 @@
     "Commissions": "Enabled",
     "Service ID": "20,941,957",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/e6/dd/86/e6dd86e0c1616ace01a4c452f05ad267.jpg"
+    "imageUrl": "/services/pony-tail-packing-gel.webp"
   },
   {
     "title": "Shuku - Jumbo sized Shuku",
@@ -484,7 +537,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Shuku as a protective hairstyle ",
+    "Description": "Shuku as a protective hairstyle",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -494,7 +547,7 @@
     "Commissions": "Enabled",
     "Service ID": "20,639,708",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/55/9b/34/559b3477ca338747e9e9a1498978be41.jpg"
+    "imageUrl": "/services/shuku-jumbo-sized-shuku.webp"
   },
   {
     "title": "Shuku - Medium sized Shuku",
@@ -502,7 +555,7 @@
     "duration": 150,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Shuku as a protective hairstyle ",
+    "Description": "Shuku as a protective hairstyle",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -512,7 +565,7 @@
     "Commissions": "Enabled",
     "Service ID": "20,639,708",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/83/ac/3e/83ac3e956f52d8bd37512f7b47f7cc04.jpg"
+    "imageUrl": "/services/shuku-medium-sized-shuku.webp"
   },
   {
     "title": "Shuku - Mini sized Shuku",
@@ -520,7 +573,7 @@
     "duration": 180,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Shuku as a protective hairstyle ",
+    "Description": "Shuku as a protective hairstyle",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -530,7 +583,7 @@
     "Commissions": "Enabled",
     "Service ID": "20,639,708",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/9a/41/6a/9a416a42e34764b0fa070eca2ccfc717.jpg"
+    "imageUrl": "/services/shuku-mini-sized-shuku.webp"
   },
   {
     "title": "African Fluffy Style",
@@ -548,7 +601,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,810,479",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/82/35/92/823592ae0e5fa5d8a0a30b5df3e40787.jpg"
+    "imageUrl": ""
   },
   {
     "title": "Stylish Cornrows For Men",
@@ -566,7 +619,8 @@
     "Commissions": "Enabled",
     "Service ID": "19,810,409",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/1d/56/cd/1d56cd0cdadc005757e46c264e3165c8.jpg"
+    "imageUrl": "/services/stylish-cornrows-for-men.webp",
+    "displayName": "Men's stylish cornrows"
   },
   {
     "title": "Natural hair Updos (Roll & Tuck)",
@@ -574,7 +628,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Natural hair roll and tuck\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Natural hair roll and tuck",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -584,7 +638,10 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,210",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/79/20/5e/79205e3cf00142f7e43b35f357db4740.jpg"
+    "imageUrl": "/services/updo-natural.webp",
+    "lookId": "updo-natural",
+    "lookName": "Natural hair updo",
+    "variantLabel": "Roll & tuck"
   },
   {
     "title": "Bantu knots",
@@ -592,7 +649,7 @@
     "duration": 120,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Beautiful African hairstyle \n\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "Beautiful African hairstyle\n50% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -602,7 +659,7 @@
     "Commissions": "Enabled",
     "Service ID": "19,275,114",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/736x/c6/5b/9d/c65b9d58f0f0b2e106bae2ba102491b2.jpg"
+    "imageUrl": "/services/bantu-knots.webp"
   },
   {
     "title": "Cornrows (weaves)",
@@ -610,7 +667,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "All back weaves(not more than 10)\nBuns\nGel packing \nLow bun\n\nNote: Appointment later than 20mins of arrival leads to cancellation ",
+    "Description": "All back weaves(not more than 10)\nBuns\nGel packing\nLow bun",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -627,7 +684,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "All back weaves(not more than 10)\nBuns\nGel packing \nLow bun\n\nNote: Appointment later than 20mins of arrival leads to cancellation ",
+    "Description": "All back weaves(not more than 10)\nBuns\nGel packing\nLow bun",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -644,7 +701,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "All back weaves(not more than 10)\nBuns\nGel packing \nLow bun\n\nNote: Appointment later than 20mins of arrival leads to cancellation ",
+    "Description": "All back weaves(not more than 10)\nBuns\nGel packing\nLow bun",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -661,7 +718,7 @@
     "duration": 165,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "To blow dry before styling\n\nNote: You are expected to come in by your appointment time. We give 20mins grace\nAny appointment later than this leads to cancellation or attracts extra charges (3,000)",
+    "Description": "To blow dry before styling",
     "category": "Hairstyling (Protective and Everyday Styles)",
     "Treatment Type": "Hair Styling",
     "Resource": "Not required",
@@ -670,7 +727,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,274,832",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "updo-natural",
+    "lookName": "Natural hair updo",
+    "variantLabel": "With blow drying"
   },
   {
     "title": "Washing, Moisturizing, Detangling with Dandruff Treatments ",
@@ -687,7 +747,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,919,888",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "Wash + dandruff treatment"
   },
   {
     "title": "Washing, Ayurvedic with Deep Conditioning (Treatment), Moisturizing and Detangling ",
@@ -695,7 +756,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Washing,deep conditioning with Ayurvedic and moisturising& Detangling \nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "Washing,deep conditioning with Ayurvedic and moisturising& Detangling\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -704,7 +765,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,274,792",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "wash-deep-conditioning",
+    "lookName": "Wash + deep conditioning",
+    "variantLabel": "Ayurvedic"
   },
   {
     "title": "Washing, Moisturizing, Detangling with Intense Deep Conditioning (Moisturizing Treatment)",
@@ -722,8 +786,11 @@
     "Commissions": "Enabled",
     "Service ID": "19,274,745",
     "SKU": "",
-    "imageUrl": "https://i.pinimg.com/1200x/5e/d3/49/5ed3496165903b919724ab41147f82b2.jpg",
-    "featured": true
+    "imageUrl": "/services/wash-deep-conditioning.webp",
+    "featured": true,
+    "lookId": "wash-deep-conditioning",
+    "lookName": "Wash + deep conditioning",
+    "variantLabel": "Intense"
   },
   {
     "title": "Trimming only",
@@ -731,7 +798,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Trimming weak ends\n\nNote:Appointment later than 20mins of arrival leads to cancellation \nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "Trimming weak ends\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -740,7 +807,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,274,678",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "trimming",
+    "lookName": "Trimming",
+    "variantLabel": "Trim only"
   },
   {
     "title": "Blow Drying",
@@ -765,7 +835,7 @@
     "duration": 40,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Shampooing and proper detangling \n\nNote:Appointment later than 20mins of arrival leads to cancellation \nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "Shampooing and proper detangling\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -774,7 +844,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,621",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "Wash & detangle"
   },
   {
     "title": "Trimming With Blow Drying ",
@@ -782,7 +853,7 @@
     "duration": 120,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Trimming weak ends\n\nNote: Appointment later than 20mins of arrival leads to cancellation \nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "Trimming weak ends\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Blow Dry",
     "Resource": "Not required",
@@ -791,7 +862,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,603",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "trimming",
+    "lookName": "Trimming",
+    "variantLabel": "With blow drying"
   },
   {
     "title": "Hot oil Treatments",
@@ -799,7 +873,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Mixing of oils for scalp treatment \n\nNote: Appointment later than 20mins of arrival leads to cancellation ",
+    "Description": "Mixing of oils for scalp treatment",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -808,7 +882,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,591",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "Hot oil treatment"
   },
   {
     "title": "Moisturizing and Detangling",
@@ -816,7 +891,7 @@
     "duration": 30,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Detangling of hair alone or In addition to all services \nNote: Kindly select this option to enable your hair process without obstacles \nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "Detangling of hair alone or In addition to all services\nNote: Kindly select this option to enable your hair process without obstacles\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -825,7 +900,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,575",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "Moisturize & detangle"
   },
   {
     "title": "Washing, Exfoliating, Moisturizing and Detangling",
@@ -833,7 +909,7 @@
     "duration": 60,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Shampooing, scalp scrub then moisturizing and Detangling. \n\nNote: Appointment later than 20mins of arrival leads to cancellation \n\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "Shampooing, scalp scrub then moisturizing and Detangling.\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -842,7 +918,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,555",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "Wash + exfoliating"
   },
   {
     "title": "After wash cornrows",
@@ -859,7 +936,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,530",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "After-wash cornrows"
   },
   {
     "title": "Washing ,Moisturizing, deep conditioning with client full kit package.",
@@ -867,7 +945,7 @@
     "duration": 85,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "This service requires the client complete product package such as shampoo, leave-in conditioner, hair butter \n, deep conditioner and oil .\n\nIncomplete product package will lead to the full payment of the salon price.\n\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
+    "Description": "This service requires the client complete product package such as shampoo, leave-in conditioner, hair butter\n, deep conditioner and oil .\nIncomplete product package will lead to the full payment of the salon price.\nWhen Detangling and the hair is very tangled it attracts an extra fee.",
     "category": "Treatments, Hair Care & Washing",
     "Treatment Type": "Hair Treatment",
     "Resource": "Not required",
@@ -876,7 +954,8 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,482",
-    "SKU": ""
+    "SKU": "",
+    "displayName": "Wash with your own kit"
   },
   {
     "title": "Washing, protein deep conditioning treatment, moisturizing and detangling",
@@ -893,7 +972,10 @@
     "Voucher Sales": "Enabled",
     "Commissions": "Enabled",
     "Service ID": "19,273,414",
-    "SKU": ""
+    "SKU": "",
+    "lookId": "wash-deep-conditioning",
+    "lookName": "Wash + deep conditioning",
+    "variantLabel": "Protein"
   },
   {
     "title": "Starter loc - Short Hair (Medium/Regular)",
@@ -969,7 +1051,7 @@
     "duration": 120,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Interlocking or Relocking any style of Locs  \nThis is for Mini Locs, which are smaller cuts or sessions of Locs.\nNote: This service does not include washing or conditioning of the hair. ",
+    "Description": "Interlocking or Relocking any style of Locs\nThis is for Mini Locs, which are smaller cuts or sessions of Locs.\nNote: This service does not include washing or conditioning of the hair.",
     "category": "Locs Hairstyling",
     "Treatment Type": "Locs",
     "Resource": "Not required",
@@ -986,7 +1068,7 @@
     "duration": 150,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Interlocking or Relocking any style of Locs  \nThis is for Mini Locs, which are smaller cuts or sessions of Locs.\nNote: This service does not include washing or conditioning of the hair. ",
+    "Description": "Interlocking or Relocking any style of Locs\nThis is for Mini Locs, which are smaller cuts or sessions of Locs.\nNote: This service does not include washing or conditioning of the hair.",
     "category": "Locs Hairstyling",
     "Treatment Type": "Locs",
     "Resource": "Not required",
@@ -1003,7 +1085,7 @@
     "duration": 180,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Interlocking or Relocking any style of Locs  \nThis is for Mini Locs, which are smaller cuts or sessions of Locs.\nNote: This service does not include washing or conditioning of the hair. ",
+    "Description": "Interlocking or Relocking any style of Locs\nThis is for Mini Locs, which are smaller cuts or sessions of Locs.\nNote: This service does not include washing or conditioning of the hair.",
     "category": "Locs Hairstyling",
     "Treatment Type": "Locs",
     "Resource": "Not required",
@@ -1020,7 +1102,7 @@
     "duration": 480,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Sister Locs are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you. This comes with washing and blowdrying.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (5,000)\n\nCancellation/Rescheduling leads to forfeiture of 50% of amount paid, whether in full or part.",
+    "Description": "Sister Locs are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you. This comes with washing and blowdrying.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Locs Hairstyling",
     "Treatment Type": "Locs",
     "Resource": "Not required",
@@ -1037,7 +1119,7 @@
     "duration": 540,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Sister Locs are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you. This comes with washing and blowdrying.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014\nNote: You are expected to come in by your appointment time. We give 20mins grace\n Any appointment later than this leads to cancellation or attracts extra charges (5,000)\n\nCancellation/Rescheduling leads to forfeiture of 50% of amount paid, whether in full or part.",
+    "Description": "Sister Locs are only available during week days, weekends are no longer convenient. Please book for weekdays only, thank you. This comes with washing and blowdrying.\n70% payment will be made to (6924798521) Moniepoint Microfinance Bank, Flourishrootshair Salon. Secure slot with proof of payment send to the office line 08110215014",
     "category": "Locs Hairstyling",
     "Treatment Type": "Locs",
     "Resource": "Not required",
@@ -1054,7 +1136,7 @@
     "duration": 75,
     "Extra Time": "",
     "Tax": "No tax",
-    "Description": "Bridal Hair consultations and services, Consultations may require treatments and Trial sessions before the Wedding day.(these are included in the charge) ",
+    "Description": "Bridal Hair consultations and services, Consultations may require treatments and Trial sessions before the Wedding day.(these are included in the charge)",
     "category": "Bridal Hair",
     "Treatment Type": "Bridal Hair",
     "Resource": "Not required",

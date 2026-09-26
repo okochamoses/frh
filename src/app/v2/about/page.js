@@ -25,9 +25,9 @@ export default function AboutPage() {
   return (
     <main className="mx-auto flex max-w-[var(--v2-container)] flex-col gap-20 px-4 md:gap-28 md:px-8">
       <PageHero
-        eyebrow="Our story"
-        title="We started because too many women were losing hair in salon chairs"
-        lede="Flourish Roots Hair Co. is a natural hair salon in Isolo, Lagos, built around one stubborn idea: a style is only good if the hair underneath it is still healthy when the style comes down."
+        eyebrow="About us · Isolo, Lagos"
+        title="Our story"
+        lede="Flourish Roots Hair Co. is a natural hair salon in Isolo, Lagos. We started because too many women were losing hair in salon chairs, and we are built around one stubborn idea: a style is only good if the hair underneath it is still healthy when the style comes down."
         actions={
           <>
             <Button variant="book" withArrow href="/v2/booking">

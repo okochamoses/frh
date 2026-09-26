@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { Camera, ArrowRight, Search } from "lucide-react";
+import { Camera, ArrowRight, ChevronRight, Maximize2, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   ACTIVE_CATEGORIES,
@@ -10,6 +10,7 @@ import {
   searchLooks,
   suggestionFor,
 } from "@/lib/booking/catalogue";
+import { useCatalogueVersion } from "@/lib/booking/usePriceList";
 import { formatDuration, naira, shortDate, fromInstant } from "@/lib/booking/schedule";
 import { sinceLabel } from "@/lib/booking/rebook";
 import { whatsappUrl } from "@/lib/booking/calendarLinks";
@@ -38,18 +39,31 @@ function lookTags(look, history) {
   );
 }
 
+/*
+ * The photo is the only hint that there is more to see, so it says so: a
+ * small expand mark sits on every photo, grid and list alike. A cursor-zoom-in
+ * alone meant nothing on a phone, where nearly everyone books.
+ */
+const EXPAND_MARK = (
+  <span
+    aria-hidden="true"
+    className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-ink shadow-sm"
+  >
+    <Maximize2 className="h-3.5 w-3.5" />
+  </span>
+);
+
+/**
+ * One tap target for "tell me more" (photo, name and meta, all opening the
+ * sheet) and a separate one for "put it in my booking". Before, the name and
+ * price did nothing in the grid and toggled the service in the list, so the
+ * same tap meant different things depending on the view.
+ */
 function LookCard({ look, selected, history, onToggle, onOpenSheet }) {
   const chosen = selectedIn(look, selected);
   const on = chosen.length > 0;
   const tags = lookTags(look, history);
-
-  const addLabel = on
-    ? look.hasVariants
-      ? `✓ ${chosen[0].label}`
-      : "✓ Added"
-    : look.hasVariants
-      ? "Choose option"
-      : "Add";
+  const current = chosen[0];
 
   return (
     <article
@@ -58,43 +72,93 @@ function LookCard({ look, selected, history, onToggle, onOpenSheet }) {
         on ? "border-ink bg-white" : "border-transparent bg-cream-100"
       )}
     >
-      <ServicePhoto
-        look={look}
-        as="button"
+      <button
         type="button"
         onClick={() => onOpenSheet(look.id)}
         aria-label={`See photo and details: ${look.name}`}
-        className="aspect-[4/5] w-full cursor-zoom-in text-[28px] transition-[filter] hover:brightness-95"
+        className="group flex flex-1 flex-col text-left"
       >
-        {tags && <span className="absolute left-2 top-2 flex flex-wrap gap-1">{tags}</span>}
-        {on && (
-          <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-white">
-            {CHECK_ICON}
-          </span>
-        )}
-      </ServicePhoto>
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <h3 className="line-clamp-2 min-h-[2.6em] text-sm font-semibold leading-[1.3] text-ink">{look.name}</h3>
-        <div className="flex justify-between gap-2 text-[12.5px] text-ink-soft">
-          <span>{durationLabel(look)}</span>
-          <span className="font-bold tabular-nums text-ink">{priceLabel(look)}</span>
-        </div>
-        <button
-          type="button"
-          aria-pressed={on}
-          aria-label={
-            look.hasVariants ? `Choose an option for ${look.name}` : `${on ? "Remove" : "Add"} ${look.name}`
-          }
-          onClick={() => (look.hasVariants ? onOpenSheet(look.id) : onToggle(look.options[0]))}
-          className={cn(
-            "mt-2 h-9 rounded-full text-[12.5px] font-bold transition-colors",
-            on ? "bg-ink text-white hover:bg-ink/90" : "bg-white text-ink hover:bg-latte"
-          )}
+        <ServicePhoto
+          look={look}
+          sizes="(min-width: 1024px) 220px, (min-width: 640px) 30vw, 50vw"
+          className="aspect-[4/5] w-full text-[28px] transition-[filter] group-hover:brightness-95"
         >
-          {addLabel}
-        </button>
+          {tags && <span className="absolute left-2 top-2 flex flex-wrap gap-1">{tags}</span>}
+          {on && (
+            <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-white">
+              {CHECK_ICON}
+            </span>
+          )}
+          {EXPAND_MARK}
+        </ServicePhoto>
+        <span className="flex flex-col gap-0.5 px-3 pt-3">
+          <span className="line-clamp-2 text-sm font-semibold leading-[1.3] text-ink">{look.name}</span>
+          <span className="text-[12.5px] text-ink-soft">
+            {current && look.hasVariants ? (
+              `${current.label} · ${formatDuration(current.duration)}`
+            ) : look.hasVariants ? (
+              <>
+                {durationLabel(look)} · <b className="font-bold tabular-nums text-ink">{priceLabel(look)}</b>
+              </>
+            ) : (
+              durationLabel(look)
+            )}
+          </span>
+        </span>
+      </button>
+      <div className="px-3 pb-3 pt-2.5">
+        <AddButton look={look} current={current} onToggle={onToggle} onOpenSheet={onOpenSheet} />
       </div>
     </article>
+  );
+}
+
+/**
+ * The price lives on the button, so what you're agreeing to is on the thing
+ * you tap. Once picked it flips to a light "Added" state with the way back
+ * (Remove, or Change for a style with options) spelt out.
+ */
+function AddButton({ look, current, onToggle, onOpenSheet }) {
+  const variants = look.hasVariants;
+  const on = Boolean(current);
+  const act = () => (variants ? onOpenSheet(look.id) : onToggle(look.options[0]));
+
+  return (
+    <button
+      type="button"
+      aria-pressed={variants ? undefined : on}
+      aria-label={
+        variants
+          ? `Choose an option for ${look.name}`
+          : `${on ? "Remove" : "Add"} ${look.name}`
+      }
+      onClick={act}
+      className={cn(
+        "flex h-10 w-full items-center justify-between gap-1.5 whitespace-nowrap rounded-full px-3 text-[12.5px] font-bold transition-colors",
+        on ? "border border-ink bg-white text-ink hover:bg-cream-100" : "bg-ink text-white hover:bg-ink/90"
+      )}
+    >
+      {on ? (
+        <>
+          <span className="flex items-center gap-1.5">
+            {CHECK_ICON}
+            {variants ? naira(current.price) : "Added"}
+          </span>
+          <span className="font-semibold underline underline-offset-2">{variants ? "Change" : "Remove"}</span>
+        </>
+      ) : (
+        <>
+          {/* "Choose" and "from ₦7,000" don't both fit a phone-width card, so
+              a style with options carries its price on the line above. */}
+          <span>{variants ? "Choose option" : "Add"}</span>
+          {variants ? (
+            <ChevronRight aria-hidden className="h-4 w-4 shrink-0" />
+          ) : (
+            <span className="tabular-nums">{priceLabel(look)}</span>
+          )}
+        </>
+      )}
+    </button>
   );
 }
 
@@ -103,61 +167,61 @@ function LookRow({ look, selected, history, onToggle, onOpenSheet }) {
   const on = chosen.length > 0;
   const tags = lookTags(look, history);
   const current = on && look.hasVariants ? chosen[0] : null;
-  const activate = () => (look.hasVariants ? onOpenSheet(look.id) : onToggle(look.options[0]));
+  const variants = look.hasVariants;
 
-  /*
-   * The row used to be a `role="checkbox"` div with a real <button> (the
-   * photo) nested inside it — invalid ARIA (a button can't live inside a
-   * checkbox) and two ambiguous tab stops per row. The photo is now a
-   * sibling, not a child, so there is nothing to nest, and the row's own
-   * activation target is a real <button>: `aria-pressed` when it's a plain
-   * toggle, and no checkbox/pressed semantics at all when it opens the
-   * variant-picker dialog instead of toggling anything.
-   */
   return (
     <div
       className={cn(
-        "flex items-start gap-3.5 rounded-v2-xl border p-4 transition-colors",
+        "flex items-center gap-3 rounded-v2-xl border p-2.5 pr-3 transition-colors",
         on ? "border-ink bg-white" : "border-transparent bg-cream-100 hover:border-latte"
       )}
     >
-      <ServicePhoto
-        look={look}
-        as="button"
-        type="button"
-        onClick={() => onOpenSheet(look.id)}
-        aria-label={`See photo: ${look.name}`}
-        className="h-[70px] w-14 shrink-0 cursor-zoom-in rounded-v2-lg text-[13px]"
-      />
       <button
         type="button"
-        aria-pressed={look.hasVariants ? undefined : on}
-        aria-label={look.hasVariants ? `Choose an option for ${look.name}` : look.name}
-        onClick={activate}
-        className="grid w-full flex-1 cursor-pointer grid-cols-[22px_minmax(0,1fr)_auto] items-start gap-3.5 text-left"
+        onClick={() => onOpenSheet(look.id)}
+        aria-label={`See photo and details: ${look.name}`}
+        className="group flex min-w-0 flex-1 items-center gap-3 text-left"
       >
-        <span
-          aria-hidden="true"
-          className={cn(
-            "mt-0.5 flex h-[22px] w-[22px] items-center justify-center rounded-[7px] border-[1.5px]",
-            on ? "border-ink bg-ink text-white" : "border-ash bg-white text-transparent"
-          )}
+        <ServicePhoto
+          look={look}
+          className="h-[72px] w-[58px] shrink-0 rounded-v2-lg text-[13px] transition-[filter] group-hover:brightness-95"
         >
-          {CHECK_ICON}
-        </span>
-        <div className="min-w-0">
-          <p className="font-body text-[15px] font-semibold leading-snug text-ink">
+          <span
+            aria-hidden="true"
+            className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-ink"
+          >
+            <Maximize2 className="h-2.5 w-2.5" />
+          </span>
+        </ServicePhoto>
+        <span className="min-w-0">
+          <span className="block font-body text-[15px] font-semibold leading-snug text-ink">
             {look.name}
             {current && <span className="text-ink-soft"> · {current.label}</span>}
-          </p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-ink-soft">
-            <span>{current ? formatDuration(current.duration) : durationLabel(look)}</span>
+          </span>
+          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-soft">
+            <span>
+              {current ? formatDuration(current.duration) : durationLabel(look)} ·{" "}
+              <b className="font-bold tabular-nums text-ink">{current ? naira(current.price) : priceLabel(look)}</b>
+            </span>
             {tags}
-          </div>
-        </div>
-        <p className="font-body text-[15px] font-bold tabular-nums text-ink">
-          {current ? naira(current.price) : priceLabel(look)}
-        </p>
+          </span>
+        </span>
+      </button>
+      <button
+        type="button"
+        aria-pressed={variants ? undefined : on}
+        aria-label={
+          variants
+            ? `Choose an option for ${look.name}`
+            : `${on ? "Remove" : "Add"} ${look.name}`
+        }
+        onClick={() => (variants ? onOpenSheet(look.id) : onToggle(look.options[0]))}
+        className={cn(
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors",
+          on ? "border-ink bg-ink text-white" : "border-ash bg-white text-ink hover:border-ink"
+        )}
+      >
+        {on ? CHECK_ICON : variants ? <ChevronRight aria-hidden className="h-4 w-4" /> : <Plus aria-hidden className="h-4 w-4" />}
       </button>
     </div>
   );
@@ -268,7 +332,7 @@ function UpcomingNote({ booking }) {
       <span>
         <b>Your next visit:</b> {shortDate(when.key)} at {when.time} · {booking.servicesText ?? "your appointment"}
       </span>
-      <a href="/bookings" className="font-semibold text-ink underline underline-offset-4">
+      <a href="/v2/bookings" className="font-semibold text-ink underline underline-offset-4">
         Manage it
       </a>
     </div>
@@ -291,7 +355,14 @@ export default function ServicesStep({
   onOpenSheet,
   rebook,
   upcoming,
+  // The front desk reuses this grid. Defaults keep the public page identical.
+  showHelpCard = true,
+  // The public page sticks the strip below the 64px v2 site header; the admin
+  // route has a different header, so the offset travels with the caller.
+  stickyTop = "top-16",
+  surface = "public",
 }) {
+  useCatalogueVersion(); // re-render when the salon changes a price
   // A search typed earlier (or restored) must not hide behind the icon.
   const [searchOpen, setSearchOpen] = useState(() => Boolean(query.trim()));
   const searchRef = useRef(null);
@@ -311,9 +382,9 @@ export default function ServicesStep({
   const trimmedQuery = query.trim();
   useEffect(() => {
     if (!noResults || !trimmedQuery) return;
-    const id = setTimeout(() => track("search_empty", { query: trimmedQuery, category }), 900);
+    const id = setTimeout(() => track("search_empty", { query: trimmedQuery, category, surface }), 900);
     return () => clearTimeout(id);
-  }, [noResults, trimmedQuery, category]);
+  }, [noResults, trimmedQuery, category, surface]);
   const grouped = category === "all" && !query.trim();
   const bookedBefore = grouped
     ? results.filter((look) => look.options.some((o) => history.has(o.title)))
@@ -342,7 +413,7 @@ export default function ServicesStep({
       </div>
     );
 
-  const whatsappCard = (
+  const whatsappCard = !showHelpCard ? null : (
     <a
       href={whatsappUrl("Hi! I'd like to book a style but I'm not sure what it's called. Here's a photo:")}
       target="_blank"
@@ -473,7 +544,12 @@ export default function ServicesStep({
         to scroll to — without it the last chip ended flush and the remaining
         six were invisible.
       */}
-      <div className="sticky top-16 z-20 -mx-4 mb-4 bg-sand/95 px-4 py-1.5 backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
+      <div
+        className={cn(
+          "sticky z-20 -mx-4 mb-4 bg-sand/95 px-4 py-1.5 backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none",
+          stickyTop
+        )}
+      >
         <div className="relative">
           <div
             role="group"
@@ -508,7 +584,7 @@ export default function ServicesStep({
             Nothing called &ldquo;{query}&rdquo; yet. Try &ldquo;twist&rdquo;, &ldquo;updo&rdquo; or &ldquo;locs&rdquo;, or send us
             a photo of the look instead.
           </div>
-          <div className="mt-3">{whatsappCard}</div>
+          {whatsappCard && <div className="mt-3">{whatsappCard}</div>}
         </>
       ) : (
         sections.map((section, i) => (
@@ -516,7 +592,7 @@ export default function ServicesStep({
             {section}
             {/* After the first group, not before it: showing the way out before
                 anyone has seen the catalogue frames it as the hard path. */}
-            {i === 0 && <div className="mt-5">{whatsappCard}</div>}
+            {i === 0 && whatsappCard && <div className="mt-5">{whatsappCard}</div>}
           </Fragment>
         ))
       )}

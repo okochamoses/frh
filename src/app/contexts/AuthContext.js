@@ -12,16 +12,38 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import dynamic from "next/dynamic";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
 import { getUserProfile } from "@/lib/firebase/userService";
-import { logOut } from "@/lib/firebase/authService";
-import AuthModal from "@/components/auth/AuthModal";
+import { completeGoogleRedirect, isGoogleRedirectPending, logOut } from "@/lib/firebase/authService";
+import { claimWalkInBookings } from "@/lib/firebase/guestClaim";
 import { AUTH_MODES } from "@/lib/auth/constants";
+
+/*
+ * The two auth surfaces, each in its own chunk.
+ *
+ * V1 and V2 share this provider — the same session, the same actions, the same
+ * `openAuthModal` — but not the same modal: V1's is shadcn on stone and blue,
+ * V2's is the Wood & Glow sheet that matches the pages around it. Loading them
+ * statically would put both in every bundle, so a V2 page downloaded V1's
+ * dialog, forms and validation for markup it can never show.
+ *
+ * `ssr: false` because neither is ever open on first paint. Nothing is missing
+ * from the prerendered HTML; the chunk arrives when someone asks to sign in.
+ */
+const AuthModal = dynamic(() => import("@/components/auth/AuthModal"), { ssr: false });
+const V2AuthDialog = dynamic(() => import("@/components/v2/auth/AuthDialog"), { ssr: false });
+
+const SURFACES = { v1: AuthModal, v2: V2AuthDialog };
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+/**
+ * @param {"v1"|"v2"} surface  Which auth modal this tree gets. The session and
+ *   every action are identical either way; only the chrome differs.
+ */
+export function AuthProvider({ children, surface = "v1" }) {
   // The merged user object: Firebase Auth UID + Firestore profile fields
   const [user, setUser]               = useState(null);
   const [hydrated, setHydrated]       = useState(false); // true once the initial auth check completes
@@ -44,8 +66,19 @@ export function AuthProvider({ children }) {
   // bare { uid, email } fallback. See the comment in the listener below.
   const hasProfileRef = useRef(false);
 
+  // Someone can sign up, leave, click the verification link in their email
+  // days later, and come straight back to a session restored by
+  // `onAuthStateChanged` — a path that never touches sign-in, so the
+  // `claimWalkInBookings` calls in `authService.js` never run for them. This
+  // guards the once-per-session call below so a session that fires the
+  // listener more than once does not repeat a query that will keep coming
+  // back empty anyway.
+  const walkInsClaimedRef = useRef(false);
+
   // Derived — recomputed on every render so it's never stale
   const isAuthenticated = hydrated && user !== null;
+
+  const Surface = SURFACES[surface] ?? AuthModal;
 
   // ── Session restoration ───────────────────────────────────────────────────
   useEffect(() => {
@@ -62,6 +95,13 @@ export function AuthProvider({ children }) {
       setGuestUid(null);
 
       if (firebaseUser) {
+        // A cheap, idempotent equality query — worth firing on every restored
+        // session rather than trying to detect "just verified".
+        if (!walkInsClaimedRef.current && firebaseUser.emailVerified) {
+          walkInsClaimedRef.current = true;
+          claimWalkInBookings();
+        }
+
         // Merge the Firestore profile (name, phone, etc.) with the UID
         const profile = await getUserProfile(firebaseUser.uid);
 
@@ -83,6 +123,37 @@ export function AuthProvider({ children }) {
     });
 
     return unsubscribe; // remove listener on unmount
+  }, []);
+
+  // ── Google, when the popup was blocked ────────────────────────────────────
+  // `signInWithGoogle` falls back to a full-page redirect on mobile Safari and
+  // in in-app browsers. Coming back, `onAuthStateChanged` alone is not enough:
+  // it hands us a Firebase user, but the Firestore profile for a first-time
+  // Google client is created by `completeGoogleRedirect`, and so is the claim
+  // of any bookings they made as a guest. Without this the client returned
+  // signed in, nameless and with their bookings left behind on the anonymous
+  // id — which is what happened, because nothing called it.
+  //
+  // Guarded on the pending flag rather than run unconditionally: the call
+  // needs the popup/redirect resolver, and loading that on every page visit is
+  // exactly the gapi cost `config.js` goes out of its way to avoid.
+  useEffect(() => {
+    if (!isGoogleRedirectPending()) return;
+    let cancelled = false;
+    completeGoogleRedirect()
+      .then((profile) => {
+        if (profile && !cancelled) {
+          hasProfileRef.current = true;
+          setUser(profile);
+        }
+      })
+      .catch(() => {
+        // The listener above has already restored whatever session exists;
+        // there is nothing useful to say to a client who is now signed in.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ── Actions ───────────────────────────────────────────────────────────────
@@ -168,7 +239,7 @@ export function AuthProvider({ children }) {
       }}
     >
       {children}
-      <AuthModal />
+      <Surface />
     </AuthContext.Provider>
   );
 }

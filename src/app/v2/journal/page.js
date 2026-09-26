@@ -28,9 +28,9 @@ export default function JournalPage() {
   return (
     <main className="mx-auto flex max-w-[var(--v2-container)] flex-col gap-20 px-4 md:gap-28 md:px-8">
       <PageHero
-        eyebrow="The hair journal"
-        title="What we would tell you in the chair"
-        lede="The things that come up in every appointment, written down so you have them at home. No miracle routines and no promises about inches — just the handling that decides how much hair you keep."
+        eyebrow="Hair care notes"
+        title="The hair journal"
+        lede="What we would tell you in the chair — the things that come up in every appointment, written down so you have them at home. No miracle routines and no promises about inches — just the handling that decides how much hair you keep."
         actions={
           <Button variant="tertiary" withArrow href="/v2/free-guide">
             Get the full guide by email

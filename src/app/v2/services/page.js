@@ -25,8 +25,8 @@ export default function ServicesPage() {
     <main className="mx-auto flex max-w-[var(--v2-container)] flex-col gap-20 px-4 md:gap-28 md:px-8">
       <PageHero
         eyebrow="Salon services · Isolo, Lagos"
-        title="Every style here is chosen for what it does for your hair"
-        lede="Twists, braids, threading, locs, treatments and take-down — priced in full below, done at a tension you can sleep in, and finished with a plan for keeping the results."
+        title="Our services"
+        lede="Twists, braids, threading, locs, treatments and take-down — every style chosen for what it does for your hair, priced in full below, done at a tension you can sleep in, and finished with a plan for keeping the results."
         actions={
           <>
             <Button variant="book" withArrow href="/v2/booking">
@@ -40,7 +40,7 @@ export default function ServicesPage() {
         meta={[
           `${LOOKS.length} styles, from ${naira(LOWEST)}`,
           HOURS_SUMMARY,
-          "Deposit only on the longest styles",
+          "Deposit on eight styles, shown before you book",
         ]}
       />
 

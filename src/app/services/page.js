@@ -4,6 +4,8 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { merriweather, Bagelan } from "@/app/fonts";
 import services from "../salon/services.json";
+import { usePriceList } from "@/lib/booking/usePriceList";
+import { withV1Prices } from "@/lib/booking/v1Prices";
 import { useBooking } from "@/app/contexts/BookingContext";
 import { ExpandableBookingBar } from "@/components/ExpandableBookingBar";
 import { BookingDrawer } from "@/components/booking/BookingDrawer";
@@ -22,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateMobileNumber } from "@/lib/firebase/userService";
+import { MOBILE_HINT, isValidMobile, normaliseMobile } from "@/lib/phone";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -114,14 +117,6 @@ function ServiceCard({ service, onClickImage }) {
 }
 
 // ── Phone collection dialog ───────────────────────────────────────────────────
-// Nigerian mobile numbers: 0803… locally, +234803… internationally.
-const NG_MOBILE = /^(?:\+234|0)[789]\d{9}$/;
-
-/** Stores every number the same way, so the salon can dial straight from an email. */
-function normaliseNgMobile(value) {
-  return value.startsWith("0") ? `+234${value.slice(1)}` : value;
-}
-
 function PhoneDialog({ open, onClose, onSuccess }) {
   const { user, updateUser } = useAuth();
   const [phone, setPhone]   = useState("");
@@ -129,10 +124,10 @@ function PhoneDialog({ open, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
-    if (!NG_MOBILE.test(phone)) {
+    if (!isValidMobile(phone)) {
       // The old check only looked at the prefix, so a bare "0" passed and was
       // written to the profile — and then onto every booking.
-      setError("Enter a full mobile number, e.g. 08031234567 or +2348031234567");
+      setError(MOBILE_HINT);
       return false;
     }
     setError("");
@@ -140,8 +135,9 @@ function PhoneDialog({ open, onClose, onSuccess }) {
   };
 
   const handleChange = (e) => {
-    const val = e.target.value.trim();
-    if (/^\+?[0-9]*$/.test(val)) setPhone(val);
+    // Spaces, dashes and brackets are allowed as typed; they're stripped on save.
+    const val = e.target.value;
+    if (/^[+0-9\s\-()]*$/.test(val)) setPhone(val);
   };
 
   const handleSubmit = async () => {
@@ -149,7 +145,7 @@ function PhoneDialog({ open, onClose, onSuccess }) {
     setLoading(true);
     try {
       // Write directly to Firestore — no API route needed
-      const normalised = normaliseNgMobile(phone);
+      const normalised = normaliseMobile(phone);
       await updateMobileNumber(user.uid, normalised);
       updateUser({ mobileNumber: normalised });
       onSuccess();
@@ -303,17 +299,17 @@ function ServicesPageContent() {
   // BookingDrawer is open when step = 'datetime'
   const drawerOpen = step === "datetime";
 
+  const v1Prices = usePriceList("v1");
   const filtered = useMemo(
     () =>
-      services
-        .filter((s) => !s.header)
+      withV1Prices(services.filter((s) => !s.header), v1Prices)
         .filter((s) => category === "All" || s.category === category)
         .filter(
           (s) =>
             !search.trim() ||
             s.title.toLowerCase().includes(search.toLowerCase().trim())
         ),
-    [search, category]
+    [search, category, v1Prices]
   );
 
   const featured = useMemo(() => filtered.filter((s) => s.featured), [filtered]);

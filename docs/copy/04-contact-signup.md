@@ -36,7 +36,7 @@ no payment on this page.
 **Secondary CTA:** `Chat on WhatsApp`
 
 **Reassurance strip**
-`Open Mon–Sat · 20 minutes' grace on arrival · Deposit only on longer styles`
+`Open Mon–Sat · No cancellation or rescheduling fees · Deposit only on longer styles`
 
 ---
 
@@ -57,7 +57,7 @@ no payment on this page.
 - Label: `Preferred date`
 - Label: `Preferred time`
 - Helper: `Mon–Sat. Micro twists are weekdays only.`
-- Helper under time: `Please arrive at your slot time. There's 20 minutes' grace.`
+- Helper under time: `Please arrive at your slot time.`
 
 **Step 3 — About your hair**
 - Label: `Current hair length` → `Choose one` (Ear length · Shoulder · Bra strap · Waist · Not sure)
@@ -180,13 +180,11 @@ about a flaky scalp. Written for Lagos weather and Lagos products.
 Transfer to the salon account we send you and forward proof to the office line.
 Your slot isn't confirmed until that lands.
 
-**Arrival.** Come at your appointment time. You have 20 minutes' grace. After that
-we may need to reschedule you, or a late fee applies — ₦3,000 on most services,
-₦5,000 on micro twists — because another client is booked behind you.
+**Arrival.** Come at your appointment time, so the day runs the way it was planned.
 
-**Cancelling or rescheduling.** After payment, cancelling or moving your appointment
-means 50% of what you paid is forfeited, whether you paid in part or in full.
-Rescheduling without prior notice is treated the same way.
+**Cancelling or rescheduling.** Free, both of them, right up to your appointment.
+Nothing is withheld and no fee is charged. A deposit you've already paid moves to
+whichever day you move to.
 
 **Micro twists** are weekdays only. Weekends are no longer workable for that service.
 

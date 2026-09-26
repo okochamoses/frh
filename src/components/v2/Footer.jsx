@@ -27,6 +27,9 @@ const COLUMNS = [
       { label: "Salon services", href: "/v2/services" },
       { label: "Hair coaching", href: "/v2/consultation" },
       { label: "The salon", href: "/v2/salon" },
+      // A real link, not the header's modal button: somewhere to send a client
+      // who asks "where do I log in?", and something a bookmark can hold.
+      { label: "Log in", href: "/v2/login" },
     ],
   },
   {

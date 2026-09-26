@@ -199,6 +199,15 @@
     828,
     1080
   ],
+  "/og-image.jpg": [
+    128,
+    256,
+    384,
+    640,
+    750,
+    828,
+    1080
+  ],
   "/placeholder.png": [
     128,
     256,
@@ -230,6 +239,175 @@
     828,
     1080,
     1920
+  ],
+  "/services/african-threading-kiko.webp": [
+    128,
+    256,
+    384
+  ],
+  "/services/bantu-knots.webp": [
+    128,
+    256,
+    384
+  ],
+  "/services/barrel-twist.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/braids-natural-2.webp": [
+    128,
+    256,
+    384,
+    640,
+    750
+  ],
+  "/services/braids-natural.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/cornrows-loosening-10-pieces.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/finger-coils.webp": [
+    128,
+    256,
+    384
+  ],
+  "/services/loose-braids.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/micro-twists.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/mini-twists.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/pony-tail-packing-gel-kids.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/pony-tail-packing-gel.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/shuku-jumbo-sized-shuku.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/shuku-medium-sized-shuku.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/shuku-mini-sized-shuku.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/stylish-cornrows-for-men.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/takedown-twists-2.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/takedown-twists-3.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/takedown-twists.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/threading-gaps-2.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/threading-gaps.webp": [
+    128,
+    256,
+    384
+  ],
+  "/services/twists-flat-2.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/twists-flat.webp": [
+    128,
+    256,
+    384,
+    640,
+    750,
+    828
+  ],
+  "/services/twists-two-strand-2.webp": [
+    128,
+    256,
+    384,
+    640,
+    750,
+    828,
+    1080
+  ],
+  "/services/twists-two-strand.webp": [
+    128,
+    256,
+    384,
+    640,
+    750,
+    828
+  ],
+  "/services/updo-natural.webp": [
+    128,
+    256,
+    384,
+    640
+  ],
+  "/services/wash-deep-conditioning.webp": [
+    128,
+    256,
+    384,
+    640,
+    750,
+    828,
+    1080
   ],
   "/starter.webp": [
     128,

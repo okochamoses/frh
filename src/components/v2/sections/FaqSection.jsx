@@ -4,11 +4,15 @@ import Reveal from "@/components/v2/ui/Reveal";
 const FAQS = [
   {
     q: "Do I need to pay a deposit?",
-    a: "For the longer styles, yes. Mini twists and mini braids need 50% upfront, micro twists need 70%. It holds your slot, and you will see the amount before you confirm.",
+    a: "For eight of them, yes. Mini twists, mini braids, natural hair braids, Bantu knots and mini or micro twist loosening need 50% up front; micro twists and sister locs need 70%. Everything else is settled on the day. Whichever applies, the amount is on the confirmation step before you book.",
+  },
+  {
+    q: "What if I have to cancel or move my appointment?",
+    a: "Move it or cancel it from My bookings, any time before your appointment, and it costs you nothing either way. If you already paid a deposit, it follows you to the new day.",
   },
   {
     q: "Can I bring my own extensions?",
-    a: "Yes. Bring them clean and pre-stretched if you can. We do not sell beads, and attaching beads you bring is an extra ₦500.",
+    a: "Yes. Bring them clean and pre-stretched if you can. We do not sell beads, and attaching beads you bring is an extra ₦500. Anything else that adds to the price — styling twists after they are in, or detangling hair that has matted — is quoted to you before we start, never added at the end.",
   },
   {
     q: "My hair is relaxed or transitioning. Can you still work on it?",

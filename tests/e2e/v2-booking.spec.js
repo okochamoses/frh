@@ -8,7 +8,7 @@ import {
   readUserProfile,
   uniqueEmail,
 } from "../support/emulator.js";
-import { AuthModal } from "../support/auth-modal.js";
+import { V2AuthModal } from "../support/v2-auth-modal.js";
 
 /**
  * The v2 booking page (/v2/booking), end to end against the emulators.
@@ -94,7 +94,7 @@ const toast = (page) => page.getByTestId("booking-toast");
 
 async function signInFromHeader(page, user) {
   await page.getByRole("button", { name: "Log in" }).first().click();
-  const modal = new AuthModal(page);
+  const modal = new V2AuthModal(page);
   await expect(modal.dialog).toBeVisible();
   await modal.signIn(user);
   await modal.expectClosed();
@@ -102,7 +102,15 @@ async function signInFromHeader(page, user) {
 
 /** Clicks a calendar day, paging forward a month if it isn't showing yet. */
 async function pickDay(page, d) {
-  const day = page.getByRole("button", { name: dayLabel(d), exact: true });
+  // The next open days sit in a strip; anything further out is in the calendar.
+  const strip = page.getByRole("group", { name: "Choose a day" }).getByRole("button", { name: dayLabel(d), exact: true });
+  if (await strip.isVisible()) {
+    await strip.click();
+    await expect(strip).toHaveAttribute("aria-pressed", "true");
+    return;
+  }
+  await page.getByRole("button", { name: "More dates" }).click();
+  const day = page.getByRole("group", { name: "Calendar" }).getByRole("button", { name: dayLabel(d), exact: true });
   for (let i = 0; i < 3 && !(await day.isVisible()); i++) {
     await page.getByRole("button", { name: "Next month" }).click();
   }
@@ -127,7 +135,6 @@ async function addBarrelTwistAndPickTime(page, d) {
 }
 
 async function acceptPolicyAndConfirm(page) {
-  await page.getByRole("checkbox", { name: /I'll arrive by/ }).check();
   await slip(page).getByRole("button", { name: "Confirm booking" }).click();
   await expect(page.getByRole("heading", { name: /^See you/ })).toBeVisible({ timeout: 15_000 });
 }
@@ -148,7 +155,7 @@ test.describe("browsing services", () => {
 
     await page.getByRole("searchbox", { name: "Search services" }).fill("updo");
     const results = page.getByRole("region", { name: "Search results" });
-    await expect(results.getByRole("heading", { level: 3 }).first()).toHaveText("Natural hair Updos (Roll & Tuck)");
+    await expect(results.getByRole("heading", { level: 3 }).first()).toHaveText("Natural hair updo");
 
     await page.getByRole("searchbox", { name: "Search services" }).fill("zzzz");
     await expect(page.getByText(/Nothing called .zzzz. yet/)).toBeVisible();
@@ -170,19 +177,17 @@ test.describe("browsing services", () => {
     await expect(page.getByRole("button", { name: "List", exact: true })).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("the list view toggles services from the whole row", async ({ page }) => {
+  test("the list view adds from the round button and opens details from the row", async ({ page }) => {
     await openBooking(page);
     await page.getByRole("button", { name: "List", exact: true }).click();
 
-    // The row is a real button with `aria-pressed`, not a checkbox: it sits
-    // beside the photo button rather than wrapping it, so neither nests inside
-    // the other. `exact` keeps this off the photo's "See photo: …" button.
-    const row = page.getByRole("button", { name: "Barrel Twist", exact: true });
+    // Tapping the row body opens the sheet; the round button beside it adds.
+    const row = page.getByRole("button", { name: "Add Barrel Twist" });
     await row.click();
-    await expect(row).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("button", { name: "Remove Barrel Twist" })).toHaveAttribute("aria-pressed", "true");
     await expect(slip(page).getByText("Barrel Twist")).toBeVisible();
 
-    await row.press(" ");
+    await page.getByRole("button", { name: "Remove Barrel Twist" }).press(" ");
     await expect(row).toHaveAttribute("aria-pressed", "false");
     await expect(slip(page).getByText("Services you pick appear here.")).toBeVisible();
   });
@@ -242,13 +247,13 @@ test.describe("browsing services", () => {
     await page.getByRole("button", { name: "Add Mini twists", exact: true }).click();
 
     await expect(page.getByText("Coming in with an old style?")).toBeVisible();
-    await page.getByRole("button", { name: "Add Mini twists loosening" }).first().click();
+    await page.getByRole("button", { name: "Add Twist take-down · Mini twists" }).first().click();
 
-    await expect(slip(page).getByText("Mini twists loosening")).toBeVisible();
+    await expect(slip(page).getByText("Twist take-down · Mini twists")).toBeVisible();
     await expect(slip(page).getByText("₦20,000")).toBeVisible();
 
     await toast(page).getByRole("button", { name: "Undo" }).click();
-    await expect(slip(page).getByText("Mini twists loosening")).toHaveCount(0);
+    await expect(slip(page).getByText("Twist take-down · Mini twists")).toHaveCount(0);
     await expect(slip(page).getByText("₦15,000").last()).toBeVisible();
   });
 
@@ -279,7 +284,8 @@ test.describe("choosing a time", () => {
     await page.getByRole("dialog").getByRole("button", { name: /^Add long hair/ }).click();
     await slip(page).getByRole("button", { name: "Choose a time" }).click();
 
-    const days = page.getByRole("group", { name: "Choose a day" });
+    await page.getByRole("button", { name: "More dates" }).click();
+    const days = page.getByRole("group", { name: "Calendar" });
     await expect(days.getByRole("button", { name: /Sunday .*unavailable: Sundays run 1–7pm/ }).first()).toBeDisabled();
     await expect(days.getByRole("button", { name: /Monday .*unavailable: The salon is closed on Mondays/ }).first()).toBeDisabled();
 
@@ -338,7 +344,7 @@ test.describe("booking", () => {
     // Nothing asks them to sign in, at any step.
     const d = openWeekday(2);
     await addBarrelTwistAndPickTime(page, d);
-    await expect(new AuthModal(page).dialog).toBeHidden();
+    await expect(new V2AuthModal(page).dialog).toBeHidden();
     await expect(main(page).getByText("No account needed.", { exact: false })).toBeVisible();
 
     await page.getByLabel("Your name").fill("Chioma");
@@ -391,8 +397,13 @@ test.describe("booking", () => {
     await openBooking(page);
     await addBarrelTwistAndPickTime(page, openWeekday(2));
 
+    // The button stays live: tapping it empty says what's missing and lands
+    // on the first field to fill.
     const review = slip(page).getByRole("button", { name: "Review booking" });
-    await expect(review).toBeDisabled();
+    await expect(slip(page).getByText("Add name and phone")).toBeVisible();
+    await review.click();
+    await expect(main(page).getByRole("alert").filter({ hasText: "tell us your name" })).toBeVisible();
+    await expect(page.getByLabel("Your name")).toBeFocused();
 
     await page.getByLabel("Your name").fill("Ada");
     await page.getByLabel("Phone number").fill("0803");
@@ -433,8 +444,8 @@ test.describe("booking", () => {
 
     const d = openWeekday(2);
     await addBarrelTwistAndPickTime(page, d);
-    await main(page).getByRole("button", { name: "Sign in", exact: true }).click();
-    const modal = new AuthModal(page);
+    await main(page).getByRole("button", { name: "Log in", exact: true }).click();
+    const modal = new V2AuthModal(page);
     await modal.signIn(user);
     await modal.expectClosed();
 
@@ -459,7 +470,7 @@ test.describe("booking", () => {
 
     await page.getByRole("button", { name: "Back", exact: true }).click();
     await expect(page.getByRole("heading", { name: "When suits you?" })).toBeVisible();
-    await expect(page.getByRole("button", { name: dayLabel(d), exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("group", { name: "Choose a day" }).getByRole("button", { name: dayLabel(d), exact: true })).toHaveAttribute("aria-pressed", "true");
 
     await page.getByRole("navigation", { name: "Booking steps" }).getByRole("button", { name: /Services/ }).click();
     await expect(page.getByRole("heading", { name: "Book a visit" })).toBeVisible();
@@ -538,7 +549,6 @@ test.describe("booking", () => {
       await route.continue({ postData: JSON.stringify(body) });
     });
 
-    await page.getByRole("checkbox", { name: /I'll arrive by/ }).check();
     await slip(page).getByRole("button", { name: "Confirm booking" }).click();
     await expect(main(page).getByRole("alert")).toContainText("That time has already passed");
     expect(await listBookingsFor(user.uid)).toHaveLength(0);
@@ -825,7 +835,7 @@ test.describe("a guest who makes an account", () => {
     const [before] = await listBookingsWhere("userMobileNumber", "+2348031234567");
 
     const email = uniqueEmail("guest-signup");
-    const modal = new AuthModal(page);
+    const modal = new V2AuthModal(page);
     await page.getByRole("button", { name: "Log in" }).first().click();
     await expect(modal.dialog).toBeVisible();
     await page.getByRole("button", { name: "Sign up" }).click();

@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useV2PortalContainer } from "@/components/v2/ui/portal";
+
+// Re-exported so the booking components can keep importing it from one place.
+export { useV2PortalContainer };
 
 /** Heading face for the booking flow: Barlow Condensed, set bold and tight. */
 export const HEADING = "font-display font-bold uppercase leading-[0.95] tracking-[-0.01em] text-balance";
@@ -43,22 +47,6 @@ export function PillButton({ variant = "primary", size = "md", className, childr
       {children}
     </button>
   );
-}
-
-/**
- * Where the booking page's sheets mount.
- *
- * Radix portals to <body> by default, which is outside `.v2-root` — so the v2
- * fonts, eyebrow style and paragraph face would all be lost inside a sheet.
- * Mounting into the v2 wrapper keeps them. Fixed positioning still resolves
- * against the viewport, and the wrapper sets no transform that would change it.
- */
-export function useV2PortalContainer() {
-  const [container, setContainer] = useState(null);
-  useEffect(() => {
-    setContainer(document.querySelector(".v2-root"));
-  }, []);
-  return container ?? undefined;
 }
 
 /** A transient message with an optional Undo, announced politely. */

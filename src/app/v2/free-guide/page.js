@@ -101,8 +101,8 @@ export default function FreeGuidePage() {
         <SectionHeader
           id="chapters-heading"
           eyebrow="What is in it"
-          title="Six chapters, no filler"
-          lede="Short enough to read on a bus, specific enough to use on your next wash day."
+          title="What is in the guide"
+          lede="Six chapters. Short enough to read on a bus, specific enough to use on your next wash day."
         />
 
         <ol className="mt-12 grid gap-x-10 border-t border-ink/15 md:mt-16 md:grid-cols-2">

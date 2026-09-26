@@ -91,6 +91,11 @@ tests/
     signup.spec.js        Account creation, validation, duplicate handling
     session.spec.js       Persistence, sign-out, gated pages, accessibility
     booking-gate.spec.js  The /services booking flow's auth and phone gates
+    v2-smoke.spec.js        The ten public /v2 pages render, in v2's shell, with their own titles
+    booking-hours.spec.js   Opening, closing, the 90-day horizon and the lead time
+    booking-notes.spec.js   The note's 500-character cap, and its escaping in mail
+    booking-tokens.spec.js  Manage vs complete: each signed link opens only its own door
+    booking-terms.spec.js   @known-bug — where the flow contradicts the published terms
 ```
 
 Every spec calls `resetEmulators()` in `beforeEach`, so tests never inherit each

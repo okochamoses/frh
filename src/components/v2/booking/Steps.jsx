@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { CalendarDays, ChevronUp, Clock, MapPin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LOOK_BY_ID } from "@/lib/booking/catalogue";
+import { depositForOptions } from "@/lib/booking/deposits";
 import {
   addDays,
   formatDuration,
@@ -21,8 +22,9 @@ import {
   icsDataUrl,
   whatsappUrl,
 } from "@/lib/booking/calendarLinks";
+import { displayMobile } from "@/lib/phone";
 import ServicePhoto from "./ServicePhoto";
-import { CHECK_ICON, HEADING, PillButton, useV2PortalContainer } from "./ui";
+import { HEADING, PillButton, useV2PortalContainer } from "./ui";
 
 const STEP_LABELS = ["Services", "Time", "Details", "Confirm"];
 
@@ -63,7 +65,7 @@ function initials(user) {
   return (a + b || (user?.email ?? "?").charAt(0)).toUpperCase();
 }
 
-function Field({ id, label, optional, required, hint, error, ...input }) {
+export function Field({ id, label, optional, required, hint, error, ...input }) {
   // The hint/error <p> only renders when there's an error or a hint, so
   // aria-describedby must not point at it otherwise — a dangling reference
   // to nothing. The error case still needs to describe the field once it
@@ -74,7 +76,6 @@ function Field({ id, label, optional, required, hint, error, ...input }) {
       <label htmlFor={id} className="mb-1.5 block text-xs font-semibold">
         {label}
         {optional && <span className="font-medium text-ink-soft"> (optional)</span>}
-        {required && <span className="font-medium text-ink-soft"> (required)</span>}
       </label>
       <input
         id={id}
@@ -83,8 +84,8 @@ function Field({ id, label, optional, required, hint, error, ...input }) {
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          "h-12 w-full rounded-v2-lg border bg-cream-100 px-3.5 text-sm font-medium text-ink outline-none focus:border-ink",
-          error ? "border-red-600" : "border-latte"
+          "h-12 w-full rounded-v2-lg border bg-white px-3.5 text-sm font-medium text-ink outline-none placeholder:text-ash focus:border-ink",
+          error ? "border-red-600" : "border-ash/60"
         )}
         {...input}
       />
@@ -111,7 +112,7 @@ function Field({ id, label, optional, required, hint, error, ...input }) {
  * booking notes" for a child's hair — so the examples below are the FAQ's own,
  * and the field sits on the same step for a guest and an account holder alike.
  */
-function NotesField({ value, onChange, max }) {
+export function NotesField({ value, onChange, max }) {
   const left = max - value.length;
   return (
     <div>
@@ -127,7 +128,7 @@ function NotesField({ value, onChange, max }) {
         onChange={(e) => onChange(e.target.value)}
         aria-describedby="booking-notes-hint"
         placeholder="Relaxed or transitioning hair, a child coming in, extensions you're bringing…"
-        className="w-full resize-y rounded-v2-lg border border-latte bg-cream-100 px-3.5 py-3 text-sm font-medium leading-relaxed text-ink outline-none placeholder:text-ink-soft focus:border-ink"
+        className="w-full resize-y rounded-v2-lg border border-ash/60 bg-white px-3.5 py-3 text-sm font-medium leading-relaxed text-ink outline-none placeholder:text-ash focus:border-ink"
       />
       <p id="booking-notes-hint" className="mt-1.5 flex justify-between gap-4 text-xs text-ink-soft">
         <span>It reaches your stylist before the day, so the right amount of time is set aside.</span>
@@ -143,7 +144,7 @@ function NotesField({ value, onChange, max }) {
  *
  * No account is needed: a guest gives a name and a phone number (email is
  * optional, for the confirmation). Clients who already have an account can
- * sign in instead and skip the form. Either way they can leave a note.
+ * log in instead and skip the form. Either way they can leave a note.
  */
 export function DetailsStep({
   hydrated,
@@ -169,12 +170,28 @@ export function DetailsStep({
         <p className="max-w-[56ch] text-[15px] leading-relaxed text-ink-soft">
           No account needed. Tell us who&apos;s coming and how to reach you. The salon confirms by phone or WhatsApp.
         </p>
+        {/* Before the form, not after it: a returning client shouldn't type it
+            all out only to find they could have skipped it. */}
+        <p className="-mt-2 text-sm text-ink-soft">
+          Booked with us before?{" "}
+          <button
+            type="button"
+            onClick={() => onSignIn("signin")}
+            className="font-semibold text-ink underline underline-offset-4"
+          >
+            Log in
+          </button>{" "}
+          to use your saved details.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
             id="guest-name"
             label="Your name"
             required
+            name="given-name"
             autoComplete="given-name"
+            autoCapitalize="words"
+            enterKeyHint="next"
             value={guest.firstName}
             onChange={(e) => onGuest({ firstName: e.target.value })}
             placeholder="Chioma"
@@ -185,8 +202,10 @@ export function DetailsStep({
             label="Phone number"
             required
             type="tel"
+            name="tel"
             inputMode="tel"
             autoComplete="tel"
+            enterKeyHint="next"
             value={guest.phone}
             onChange={(e) => onGuest({ phone: e.target.value })}
             placeholder="08031234567"
@@ -199,8 +218,10 @@ export function DetailsStep({
               label="Email"
               optional
               type="email"
+              name="email"
               inputMode="email"
               autoComplete="email"
+              autoCapitalize="none"
               value={guest.email}
               onChange={(e) => onGuest({ email: e.target.value })}
               placeholder="you@example.com"
@@ -212,17 +233,6 @@ export function DetailsStep({
             <NotesField value={notes} onChange={onNotes} max={maxNotes} />
           </div>
         </div>
-        <p className="text-sm text-ink-soft">
-          Booked with us before?{" "}
-          <button
-            type="button"
-            onClick={() => onSignIn("signin")}
-            className="font-semibold text-ink underline underline-offset-4"
-          >
-            Sign in
-          </button>{" "}
-          to use your saved details.
-        </p>
       </div>
     );
   }
@@ -273,26 +283,81 @@ export function DetailsStep({
   );
 }
 
-export function ReviewStep({ options, date, time, duration, total, contact, notes, policy, onPolicy, error, onChangeTime, onChangeDetails }) {
+export function ReviewStep({ options, date, time, duration, total, contact, notes, error, onChangeTime, onChangeDetails, onChangeServices }) {
   const end = fromMinutes(toMinutes(time) + duration);
-  const rows = [
-    ["When", `${longDate(date)}, ${time}–${end}`],
-    ["Where", SALON_ADDRESS],
-    ["Who", [contact.name, contact.phone].filter(Boolean).join(" · ") || "—"],
-    ["Services", options.map((o) => o.name).join(", ")],
-    ["Pay", `${naira(total)} at the salon`],
-  ];
+  // Arrive five minutes early — the same ask the time step makes.
+  const arriveBy = fromMinutes(toMinutes(time) - 5);
+  // Some styles are only held against a deposit. This step used to say "pay at
+  // the salon" for every basket, including those — so a client booking mini
+  // twists was told the opposite of the salon's own terms and could arrive to
+  // find the slot had not been held.
+  const { amount: deposit, pcts } = depositForOptions(options);
   const note = notes.trim();
+  const who = [contact.name, contact.phone && displayMobile(contact.phone)].filter(Boolean).join(" · ") || "—";
+
+  const edit = (label, onClick) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="shrink-0 text-[13px] font-semibold text-ink underline underline-offset-4"
+    >
+      Edit
+    </button>
+  );
+
+  const Row = ({ label, action, className, children }) => (
+    <div className={cn("bg-cream-100 px-4 py-3.5 text-sm", className)}>
+      <div className="flex items-baseline justify-between gap-4">
+        <dt className="text-ink-soft">{label}</dt>
+        {action}
+      </div>
+      <dd className="mt-1 font-semibold">{children}</dd>
+    </div>
+  );
 
   return (
     <div className="grid gap-4">
       <dl className="grid gap-0.5 overflow-hidden rounded-v2-xl">
-        {rows.map(([k, v]) => (
-          <div key={k} className="flex justify-between gap-4 bg-cream-100 px-4 py-3.5 text-sm">
-            <dt className="shrink-0 text-ink-soft">{k}</dt>
-            <dd className="text-right font-semibold">{v}</dd>
-          </div>
-        ))}
+        <Row label="When" action={edit("Edit time", onChangeTime)}>
+          {longDate(date)}, {time}–{end}
+          <span className="block text-[13px] font-normal text-ink-soft">About {formatDuration(duration)}</span>
+        </Row>
+        <Row label="Where">
+          <a
+            href={SALON_MAPS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-start gap-1.5 underline decoration-latte underline-offset-4 hover:decoration-ink"
+          >
+            <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
+            {SALON_ADDRESS}
+          </a>
+        </Row>
+        <Row label="Who" action={edit("Edit your details", onChangeDetails)}>
+          {who}
+        </Row>
+        {/* From lg the appointment slip beside this lists the same services
+            with prices, so the row would say it all twice. */}
+        <Row label="Services" action={edit("Edit services", onChangeServices)} className="lg:hidden">
+          <ul className="grid gap-1.5">
+            {options.map((o) => (
+              <li key={o.title} className="flex justify-between gap-4">
+                <span>{o.name}</span>
+                <span className="shrink-0 tabular-nums">{naira(o.price)}</span>
+              </li>
+            ))}
+          </ul>
+        </Row>
+        <div className="flex items-baseline justify-between gap-4 bg-cream-100 px-4 py-3.5">
+          <dt className="text-sm text-ink-soft">Total</dt>
+          <dd className="text-right">
+            <span className="block text-base font-bold tabular-nums">{naira(total)}</span>
+            <span className="block text-[13px] text-ink-soft">
+              {deposit ? `About ${naira(deposit)} of it as a deposit` : "Pay at the salon. No card needed."}
+            </span>
+          </dd>
+        </div>
       </dl>
 
       {/* A note runs to sentences, so it gets its own block rather than a row
@@ -301,42 +366,20 @@ export function ReviewStep({ options, date, time, duration, total, contact, note
         <div className="rounded-v2-xl bg-cream-100 px-4 py-3.5 text-sm">
           <div className="flex justify-between gap-4">
             <p className="text-ink-soft">Your note</p>
-            <button
-              type="button"
-              onClick={onChangeDetails}
-              className="shrink-0 text-[13px] font-semibold text-ink underline underline-offset-4"
-            >
-              Change
-            </button>
+            {edit("Edit your note", onChangeDetails)}
           </div>
           <p className="mt-1.5 whitespace-pre-line leading-relaxed">{note}</p>
         </div>
       )}
 
-      <label
-        className={cn(
-          "flex cursor-pointer items-start gap-3 rounded-v2-xl border p-4 text-sm leading-relaxed transition-colors",
-          policy ? "border-ink" : "border-latte"
-        )}
-      >
-        <span className="relative mt-0.5 h-[22px] w-[22px] shrink-0">
-          <input
-            type="checkbox"
-            checked={policy}
-            onChange={(e) => onPolicy(e.target.checked)}
-            className="peer absolute inset-0 m-0 h-full w-full cursor-pointer appearance-none rounded-[7px] border-[1.5px] border-ash bg-white checked:border-ink checked:bg-ink"
-          />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 flex items-center justify-center text-white opacity-0 peer-checked:opacity-100"
-          >
-            {CHECK_ICON}
-          </span>
-        </span>
+      {/* Was a checkbox the client had to tick before Confirm would work. It
+          gated nothing the server checks, so it was a hurdle, not a promise. */}
+      <p className="flex items-start gap-2.5 rounded-v2-xl border border-latte p-4 text-sm leading-relaxed">
+        <Clock aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          I&apos;ll arrive by {time} for my appointment.
+          Please arrive by <b>{arriveBy}</b>. We hold your chair for 20 minutes.
         </span>
-      </label>
+      </p>
 
       {error && (
         <div role="alert" className="rounded-v2-xl bg-red-50 p-4 text-sm text-red-800">
@@ -347,8 +390,18 @@ export function ReviewStep({ options, date, time, duration, total, contact, note
         </div>
       )}
 
+      {/* Deposits are arranged by the salon directly, not taken here, so
+          this only sets the expectation. */}
+      {deposit > 0 && (
+        <p className="rounded-v2-xl bg-gold/40 p-4 text-sm leading-relaxed">
+          <b>This style needs a deposit</b> of about {naira(deposit)} ({pcts.join(" and ")}%) to hold your slot. After
+          you book, the salon will message you on WhatsApp to arrange it. The rest is paid at the salon.
+        </p>
+      )}
+
       <p className="text-[13px] text-ink-soft">
-        Plans change. You can move or cancel from My bookings any time before your appointment.
+        Plans change. You can move or cancel from My bookings any time before
+        your appointment, and neither costs you anything.
       </p>
     </div>
   );
@@ -479,7 +532,7 @@ export function SuccessView({ result, options, contact, onAgain }) {
           </a>
         ) : (
           <a
-            href="/bookings"
+            href="/v2/bookings"
             className="inline-flex h-12 items-center rounded-full border border-ink px-6 text-sm font-semibold hover:bg-ink/5"
           >
             Manage my bookings

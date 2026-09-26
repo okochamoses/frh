@@ -47,9 +47,9 @@ export default function ShopPage() {
   return (
     <main className="mx-auto flex max-w-[var(--v2-container)] flex-col gap-20 px-4 md:gap-28 md:px-8">
       <PageHero
-        eyebrow="Products"
-        title="Take the salon routine home"
-        lede="The mask range we make in Lagos, plus whatever else your hair actually needs. Sold at Shop 303 and by WhatsApp order — we would rather talk to you for a minute than sell you the wrong bottle."
+        eyebrow="Products · Isolo, Lagos"
+        title="Our products"
+        lede="Take the salon routine home. The mask range we make in Lagos, plus whatever else your hair actually needs. Sold at Shop 303 and by WhatsApp order — we would rather talk to you for a minute than sell you the wrong bottle."
         actions={
           <>
             <Button
@@ -131,8 +131,8 @@ export default function ShopPage() {
       <section aria-labelledby="principles-heading">
         <SectionHeader
           id="principles-heading"
-          eyebrow="How we sell"
-          title="Three things we will not do"
+          eyebrow="Our promise"
+          title="How we sell"
           lede="Selling products is the easiest place for a salon to lose a client's trust, so these are worth saying out loud."
         />
 

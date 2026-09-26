@@ -29,8 +29,10 @@ export default function Root({ children }) {
   const isAdmin = pathname?.startsWith("/admin");
 
   if (isV2 || isAdmin) {
+    // V2 gets its own auth modal — same session and actions, chrome that
+    // matches the pages it opens over. Admin keeps V1's.
     return (
-      <AuthProvider>
+      <AuthProvider surface={isV2 ? "v2" : "v1"}>
         <BookingProvider>{children}</BookingProvider>
       </AuthProvider>
     );

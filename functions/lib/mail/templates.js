@@ -56,6 +56,14 @@ const HOURS = "Tue to Sun, by appointment";
 const PHONE = "0811 021 5014";
 const PHONE_TEL = "+2348110215014";
 const MAIL = "flourishnaturalsinfo@gmail.com";
+// Every path built on this — the closing CTAs, the coaching pill, the link to
+// a client's appointments — is a v2 route. They 404 until the v2 tree is
+// deployed to this host, which TODO.md still lists as outstanding.
+//
+// Note this is NOT the host `index.js` builds manage links on: that one is
+// `SITE_BASE` (flourish-roots.web.app, or localhost under the emulator). One
+// email can therefore carry links to two different origins. Worth settling on
+// one before the next deploy.
 const SITE = "https://flourishrootshair.com";
 
 /**
@@ -463,14 +471,14 @@ const templates = {
         ["With Mariam", "A 1-on-1 session on your routine, your products and your goals."],
     ], {margin: "18px 0 30px"})}
           ${pillStack([
-        {href: `${SITE}/consultation`, label: "Book a hair coaching session", variant: "quiet"},
+        {href: `${SITE}/v2/consultation`, label: "Book a hair coaching session", variant: "quiet"},
     ])}
         `)}
         ${closing({
         kicker: "Isolo, Lagos · By appointment",
         title: "Your hair has been through enough",
-        body: "Book a slot in Isolo and let us get it back.",
-        cta: `${SITE}/bookings`,
+        body: "Book a slot and let us get it back.",
+        cta: `${SITE}/v2/booking`,
         ctaLabel: "Book a salon visit",
     })}
         ${footer()}
@@ -558,7 +566,7 @@ const templates = {
         ["Previously", `${watDay(previousStartTime)}, ${watTime(previousStartTime)}`, {strike: true}],
         ["Services", esc(servicesText) || "–"],
     ], {margin: "34px 0 26px"})}
-          ${fine("Need to change it again? You can do that from your appointments page, or just reply here.")}
+          ${fine(`Need to change it again? You can do that from <a href="${SITE}/v2/bookings" style="color:inherit;">your appointments page</a>, or just reply here.`)}
         `)}
         ${footer()}
       `, {preheader: `Now ${watDay(startTime)} at ${watTime(startTime)}.`}),
@@ -584,7 +592,7 @@ const templates = {
         kicker: "Whenever you're ready",
         title: "The chair is still here",
         body: "Pick a new slot when it suits you, or tell us what happened and we'll find one for you.",
-        cta: `${SITE}/bookings`,
+        cta: `${SITE}/v2/booking`,
         ctaLabel: "Book a salon visit",
     })}
         ${footer()}
@@ -609,7 +617,7 @@ const templates = {
         kicker: "Keep it flourishing",
         title: "Come back before it needs rescuing",
         body: "Most textures want us every six to eight weeks.",
-        cta: `${SITE}/bookings`,
+        cta: `${SITE}/v2/booking`,
         ctaLabel: "Book your next visit",
     })}
         ${footer()}
@@ -637,7 +645,7 @@ const templates = {
         kicker: "Keep it flourishing",
         title: "Come back before it needs rescuing",
         body: "Most textures want us every six to eight weeks.",
-        cta: `${SITE}/bookings`,
+        cta: `${SITE}/v2/booking`,
         ctaLabel: "Book your next visit",
     })}
         ${footer()}
@@ -668,7 +676,7 @@ const templates = {
         kicker: "Isolo, Lagos · By appointment",
         title: "Your hair has been through enough",
         body: "Book a slot in Isolo and let us get it back.",
-        cta: `${SITE}/bookings`,
+        cta: `${SITE}/v2/booking`,
         ctaLabel: "Book a salon visit",
     })}
         ${footer()}

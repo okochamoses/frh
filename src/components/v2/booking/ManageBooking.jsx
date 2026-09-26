@@ -12,11 +12,16 @@
  * `/bookings` work here too.
  *
  * An account holder who follows their own link lands here as well; nothing
- * about it is guest-only.
+ * about it is guest-only — and they do not need the link at all. The callables
+ * take a signed-in owner in place of a token, so `/v2/booking/manage?ref=<id>`
+ * with no `t` works for whoever owns the booking. That is how `/v2/bookings`
+ * gets here, and it is why moving an appointment is not built twice.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { AUTH_MODES } from "@/lib/auth/constants";
 import { getBooking, cancelBooking, rescheduleBooking } from "@/lib/firebase/bookingService";
 import {
   daysBetween,
@@ -44,13 +49,14 @@ function Shell({ children }) {
 }
 
 /** The dead ends: a link that was mistyped, expired, or already acted on. */
-function Problem({ title, message }) {
+function Problem({ title, message, action = null }) {
   return (
     <Shell>
       <p className="type-eyebrow">Your booking</p>
       <h1 className={`${HEADING} mt-2 text-[clamp(2rem,3.4vw,2.75rem)]`}>{title}</h1>
       <p className="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-ink-soft">{message}</p>
       <div className="mt-7 flex flex-wrap gap-2.5">
+        {action}
         <PillButton
           onClick={() => {
             window.location.href = whatsappUrl("Hi! I'd like to change a booking.");
@@ -69,7 +75,13 @@ function Problem({ title, message }) {
   );
 }
 
+const INCOMPLETE_LINK =
+  "That link is incomplete. Please open it straight from your confirmation email.";
+const NEEDS_ACCOUNT =
+  "This link has no pass in it, so we can only open the booking for the account that made it. Log in, or use the link from your confirmation email.";
+
 export default function ManageBooking() {
+  const { hydrated, isAuthenticated, openAuthModal } = useAuth();
   const [link, setLink] = useState(null); // { ref, token } once the URL is read
   const [booking, setBooking] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -96,18 +108,30 @@ export default function ManageBooking() {
 
   useEffect(() => {
     if (!link) return;
-    if (!link.ref || !link.token) {
-      setLoadError("That link is incomplete. Please open it straight from your confirmation email.");
-      return;
+    if (!link.ref) {
+      setLoadError(INCOMPLETE_LINK);
+      return undefined;
+    }
+    // A token is one of two ways to prove the booking is yours; owning the
+    // account that made it is the other. Wait for the auth check before
+    // deciding — telling a signed-in client to go and find an email, only to
+    // load their booking a moment later, is worse than a beat of nothing.
+    if (!link.token) {
+      if (!hydrated) return undefined;
+      if (!isAuthenticated) {
+        setLoadError(NEEDS_ACCOUNT);
+        return undefined;
+      }
     }
     let live = true;
+    setLoadError(null);
     getBooking(link.ref, link.token)
       .then((row) => live && setBooking(row))
       .catch((err) => live && setLoadError(err.message));
     return () => {
       live = false;
     };
-  }, [link]);
+  }, [link, hydrated, isAuthenticated]);
 
   const start = useMemo(() => (booking ? fromInstant(booking.startTime) : null), [booking]);
   const end = useMemo(() => (booking ? fromInstant(booking.endTime) : null), [booking]);
@@ -178,7 +202,19 @@ export default function ManageBooking() {
   };
 
   if (loadError) {
-    return <Problem title="We couldn't open that booking" message={loadError} />;
+    return (
+      <Problem
+        title="We couldn't open that booking"
+        message={loadError}
+        action={
+          loadError === NEEDS_ACCOUNT ? (
+            <PillButton onClick={() => openAuthModal({ mode: AUTH_MODES.SIGN_IN })}>
+              Log in
+            </PillButton>
+          ) : null
+        }
+      />
+    );
   }
 
   if (!booking || !now || !month) {

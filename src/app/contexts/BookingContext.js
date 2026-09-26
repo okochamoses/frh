@@ -16,6 +16,8 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import dayjs from "dayjs";
+import { usePriceList } from "@/lib/booking/usePriceList";
+import { withV1Prices } from "@/lib/booking/v1Prices";
 import utc from "dayjs/plugin/utc";
 import {
   createBooking,
@@ -99,7 +101,11 @@ const BookingContext = createContext();
 
 export function BookingProvider({ children }) {
   // Core booking state
-  const [selectedServices, setSelectedServices] = useState([]);
+  const [cart, setSelectedServices] = useState([]);
+  // The cart holds titles and whatever price was showing when they were
+  // added; the displayed price is always the current v1 one.
+  const v1Prices = usePriceList("v1");
+  const selectedServices = useMemo(() => withV1Prices(cart, v1Prices), [cart, v1Prices]);
   const [selectedTime, setSelectedTime]         = useState(null); // a dayjs datetime
   const [step, setStep]                         = useState("services"); // "services" | "datetime"
 
@@ -144,12 +150,12 @@ export function BookingProvider({ children }) {
 
   useEffect(() => {
     try {
-      if (selectedServices.length === 0) window.sessionStorage.removeItem(CART_STORAGE_KEY);
-      else window.sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(selectedServices));
+      if (cart.length === 0) window.sessionStorage.removeItem(CART_STORAGE_KEY);
+      else window.sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     } catch {
       // Ignore — persistence is a convenience, not part of the flow.
     }
-  }, [selectedServices]);
+  }, [cart]);
 
   // ── Derived values (stable, recomputed only when inputs change) ────────────
 
@@ -274,6 +280,7 @@ export function BookingProvider({ children }) {
       await createBooking({
         services: selectedServices,
         startTime: selectedTime.utc().toISOString(),
+        priceList: "v1",
       });
 
       setBookingSuccess(true);

@@ -21,11 +21,16 @@ const byTitle = new Map(
 /**
  * Resolves service titles to the trimmed records stored on a booking.
  *
+ * `prices` is the admin-edited price list for the site the booking came from
+ * (`price_lists/{v1|v2}` in Firestore): a map of title → naira. A title it
+ * doesn't mention keeps the catalogue's own price.
+ *
  * @param {string[]} titles
+ * @param {Object<string, number>} [prices]
  * @returns {{services: Array, servicesText: string, totalPrice: number, totalDuration: number}}
  * @throws {Error} with `.unknownTitles` when a title is not in the catalogue
  */
-function lookup(titles) {
+function lookup(titles, prices = {}) {
     if (!Array.isArray(titles) || titles.length === 0) {
         throw new Error("No services selected.");
     }
@@ -41,7 +46,7 @@ function lookup(titles) {
         const s = byTitle.get(title);
         return {
             title: s.title,
-            price: s.price,
+            price: validPrice(prices?.[s.title]) ?? s.price,
             duration: s.duration,
             category: s.category ?? null,
         };
@@ -53,6 +58,10 @@ function lookup(titles) {
         totalPrice: services.reduce((sum, s) => sum + s.price, 0),
         totalDuration: services.reduce((sum, s) => sum + s.duration, 0),
     };
+}
+
+function validPrice(value) {
+    return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
 module.exports = {lookup, byTitle};

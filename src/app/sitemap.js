@@ -13,8 +13,10 @@ export const dynamic = "force-static";
  * When v2 takes over the root, change the paths here and drop the `/v2` prefix.
  *
  * Deliberately absent: `/v2/booking/manage`, which is only reachable with a
- * signed token, `/v2/design-system`, which is for us, and `/admin`. Those are
- * disallowed in robots.js as well.
+ * signed token, `/v2/design-system`, which is for us, `/admin`, and the auth
+ * routes (`/v2/login`, `/v2/signup`, `/v2/reset-password`) and the two account
+ * pages (`/v2/settings`, `/v2/bookings`), which are deep-link targets rather than pages anyone should arrive at from a
+ * search. All are disallowed in robots.js as well.
  */
 const PAGES = [
   { path: "/v2", priority: 1.0, changeFrequency: "monthly" },
