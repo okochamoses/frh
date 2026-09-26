@@ -27,16 +27,16 @@ const FAMILIES = [
     price: "₦5,000",
     body: "Barrel, mini, micro, flat and finger coils, on their own or combined with weaving. Sectioned by hand at a tension you can sleep in.",
     href: "/services#twists",
-    image: "/no-scalp-issues.webp",
-    alt: "Client with a soft twist-out, smiling, in the salon",
+    image: "/services/twists-two-strand.webp",
+    alt: "Two-strand twists on natural hair, seen from the back",
   },
   {
     title: "Braids",
     price: "₦7,000",
     body: "Natural hair braids and mini braids, with or without extensions, sized to your density rather than to the clock.",
     href: "/services#braids",
-    image: "/story.webp",
-    alt: "Sculpted braided updo photographed in hard afternoon light",
+    image: "/services/braids-natural.webp",
+    alt: "Natural hair box braids, seen from the back",
   },
   {
     title: "Locs",
@@ -51,8 +51,8 @@ const FAMILIES = [
     price: "₦1,500",
     body: "Deep conditioning, scalp care and careful take-down, because most breakage happens on the way out of a style rather than in it.",
     href: "/services#treatments",
-    image: "/scalp-issues.webp",
-    alt: "Stylist checking a client's scalp and roots in the salon",
+    image: "/services/wash-deep-conditioning.webp",
+    alt: "Client at the wash basin having a deep-conditioning treatment",
   },
 ];
 

@@ -7,8 +7,8 @@ const TRACKS = [
     kicker: "Salon",
     title: "Book a salon visit",
     body: "Pick your style and an available time.",
-    image: "/hair-wash.webp",
-    alt: "Stylist washing a client's hair at the salon",
+    image: "/scalp-issues.webp",
+    alt: "Stylist shaping a client's curls in the salon chair",
     href: "/booking",
   },
   {
@@ -23,8 +23,8 @@ const TRACKS = [
     kicker: "Our work",
     title: "Gallery",
     body: "Real results from our chairs, so you can see a style before you book it.",
-    image: "/story.webp",
-    alt: "Finished 4C natural hair style from the Flourish Roots salon",
+    image: "/gallery/IMG_7317.webp",
+    alt: "Client's finished cornrows, photographed in the Flourish Roots salon",
     href: "/gallery",
   },
 ];
