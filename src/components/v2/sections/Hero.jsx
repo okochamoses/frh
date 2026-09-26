@@ -4,7 +4,7 @@ import { MAPS_URL } from "@/components/v2/location";
 
 export default function Hero() {
   return (
-    <section className="v2-hero-bg v2-topband relative left-1/2 right-1/2 -mx-[50vw] flex w-screen min-h-[80dvh] flex-col justify-center px-4 pt-20 pb-[calc(var(--collage-inset)+2.5rem)] md:min-h-[150dvh] md:px-8 md:pt-28 md:pb-[calc(var(--collage-inset)+4rem)] lg:pt-36">
+    <section className="v2-hero-bg v2-topband relative left-1/2 right-1/2 -mx-[50vw] flex w-screen min-h-[62dvh] flex-col justify-center px-4 pt-14 pb-[calc(var(--collage-inset)+2.5rem)] md:min-h-[150dvh] md:px-8 md:pt-28 md:pb-[calc(var(--collage-inset)+4rem)] lg:pt-36">
       <div className="relative z-10 mx-auto flex max-w-[var(--v2-container)] flex-col items-center text-center">
         {/* Sized by a single clamp rather than breakpoint steps, which each
             shrank the title as the viewport grew. Icarus Nocturne sets ~4.80x
@@ -28,31 +28,38 @@ export default function Hero() {
           Flourish Roots Hair Co., a 4C natural hair salon in Isolo, Lagos
         </h1>
 
+        {/* Smaller than it was: the wordmark used to fill ~40% of a phone's
+            first screen, pushing the photos (the thing that sells) below the
+            fold. The logo in the header already carries the name. */}
         <div
           aria-hidden="true"
-          className="type-display text-[clamp(3.25rem,17.5vw,9.6rem)] uppercase leading-[0.9] text-ink"
+          className="type-display text-[clamp(2.5rem,11vw,6.5rem)] uppercase leading-[0.9] text-ink"
         >
-          Flourish<br/> Roots <br/> Hair
+          Flourish Roots
         </div>
 
-        <p className="mt-6 text-v2-body font-semibold uppercase tracking-[0.14em] text-ink/75">
-          4C natural hair salon
+        <p className="mt-4 text-v2-body-sm font-semibold uppercase tracking-[0.14em] text-ink/75">
+          4C natural hair salon &middot; Isolo, Lagos
+        </p>
+
+        <p className="mt-3 max-w-[34ch] text-balance text-v2-body text-ink/80">
+          Twists, braids, threading and locs, with every price listed before you book.
         </p>
 
         <Button
           variant="book"
           withArrow
           href="/v2/booking"
-          className="mt-9"
+          className="mt-7"
         >
-          Book a salon visit
+          Book a visit
         </Button>
 
         <a
           href={MAPS_URL}
           target="_blank"
           rel="noreferrer"
-          className="mt-6 inline-block max-w-[34ch] text-balance text-v2-body-sm text-ink/70 underline decoration-ink/25 underline-offset-4 transition-colors duration-200 ease-out hover:text-ink hover:decoration-ink"
+          className="mt-5 inline-block max-w-[34ch] text-balance text-v2-body-sm text-ink/70 underline decoration-ink/25 underline-offset-4 transition-colors duration-200 ease-out hover:text-ink hover:decoration-ink"
         >
           <MapPin aria-hidden className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px align-middle" />
           Shop 303, Destiny Plaza, Ago Palace Way &middot; Open Tue to Sun
