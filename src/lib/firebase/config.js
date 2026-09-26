@@ -9,6 +9,7 @@ import {
   connectAuthEmulator,
 } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 
 /**
  * Set NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true to run against the local
@@ -79,6 +80,34 @@ if (!USE_EMULATOR) {
 
 // getApps() guard keeps Next.js fast-refresh from re-initialising the app.
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
+/*
+ * App Check: every request to Firestore, Auth and the callables carries a
+ * token proving it came from this site, not a script holding the public config.
+ * reCAPTCHA Enterprise in score mode runs invisibly — no puzzle.
+ *
+ * The site key is public by design (it ships in every page), so a default here
+ * is fine; the env var lets a staging project use its own. Registered against
+ * the web app in the Firebase console, with the site's domains and localhost
+ * allowed. Enforcement is switched on in the console, not here — and only once
+ * the App Check dashboard shows nearly all traffic verified.
+ *
+ * Browser only (reCAPTCHA needs a window), and never under the emulator.
+ */
+const RECAPTCHA_SITE_KEY =
+  process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6Ld2vNAtAAAAAHSiUufgsAJAN8LJX8bL1hfLp_sB";
+
+if (typeof window !== "undefined" && !USE_EMULATOR && !app.__appCheck) {
+  try {
+    app.__appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (err) {
+    // Fast refresh re-runs this module against an app that already has it.
+    console.warn("[firebase] App Check not initialised:", err?.message);
+  }
+}
 
 export const db = getFirestore(app);
 
