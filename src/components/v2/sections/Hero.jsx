@@ -1,10 +1,12 @@
-import { MapPin } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import Button from "@/components/v2/ui/Button";
-import { MAPS_URL } from "@/components/v2/location";
+import { GOOGLE_RATING, GOOGLE_REVIEWS_URL, MAPS_URL } from "@/components/v2/location";
+import HeroFloat from "./HeroFloat";
 
 export default function Hero() {
   return (
-    <section className="v2-hero-bg v2-topband relative left-1/2 right-1/2 -mx-[50vw] flex w-screen min-h-[80dvh] flex-col justify-center px-4 pt-20 pb-[calc(var(--collage-inset)+2.5rem)] md:min-h-[150dvh] md:px-8 md:pt-28 md:pb-[calc(var(--collage-inset)+4rem)] lg:pt-36">
+    <section className="v2-hero-bg v2-topband relative left-1/2 right-1/2 -mx-[50vw] flex w-screen min-h-[92dvh] flex-col justify-center overflow-hidden px-4 pt-36 pb-40 md:min-h-[110dvh] md:px-8 md:pt-28 md:pb-24 lg:pt-36">
+      <HeroFloat />
       <div className="relative z-10 mx-auto flex max-w-[var(--v2-container)] flex-col items-center text-center">
         {/* Sized by a single clamp rather than breakpoint steps, which each
             shrank the title as the viewport grew. Icarus Nocturne sets ~4.80x
@@ -47,6 +49,24 @@ export default function Hero() {
         >
           Book a salon visit
         </Button>
+
+        {/* Proof beside the ask: the first thing a new client checks. */}
+        <a
+          href={GOOGLE_REVIEWS_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-v2-body-sm font-semibold text-ink shadow-sm backdrop-blur-sm transition-colors duration-200 hover:bg-white"
+        >
+          <span className="flex text-[#F5A623]" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star key={i} className="h-4 w-4 fill-current" strokeWidth={0} />
+            ))}
+          </span>
+          <span>
+            {GOOGLE_RATING.toFixed(1)} on Google
+          </span>
+          <span className="sr-only"> — rated {GOOGLE_RATING} out of 5, read the reviews (opens Google)</span>
+        </a>
 
         <a
           href={MAPS_URL}

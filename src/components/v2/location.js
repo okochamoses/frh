@@ -16,3 +16,9 @@ export const MAPS_URL =
    would open the reviews directly — worth doing, but a place ID that goes
    stale silently is worse than one extra tap, so it is not guessed at here. */
 export const GOOGLE_REVIEWS_URL = MAPS_URL;
+
+/* The salon's Google rating, shown on the homepage and linked to the reviews.
+   Typed in by hand from the Google Business profile — update it when it moves.
+   Deliberately not in the JSON-LD: Google ignores self-published star ratings
+   for a business's own site and can flag them. */
+export const GOOGLE_RATING = 4.9;

@@ -1,5 +1,5 @@
 import Hero from "@/components/v2/sections/Hero";
-import HeroCollage from "@/components/v2/sections/HeroCollage";
+import PhotoRiver from "@/components/v2/sections/PhotoRiver";
 import TopBandFade from "@/components/v2/TopBandFade";
 import SectionIntro from "@/components/v2/sections/SectionIntro";
 import ThreeCardSplit from "@/components/v2/sections/ThreeCardSplit";
@@ -29,11 +29,13 @@ export default function V2HomePage() {
           hero and the collage that overlaps it. */}
       <div>
         <Hero />
-        <HeroCollage />
-        {/* Sits on the collage's bottom edge: crossing it behind the sticky
+        {/* Sits on the hero's bottom edge: crossing it behind the sticky
             bar is what fades the hero and nav from glow to the wall colour. */}
         <TopBandFade />
       </div>
+
+      {/* The work itself, and a way into booking from every photo. */}
+      <PhotoRiver />
 
       {/* Name the problem, then hand over the three ways in. */}
       <div className="flex flex-col gap-[clamp(3.5rem,6vw,7rem)]">

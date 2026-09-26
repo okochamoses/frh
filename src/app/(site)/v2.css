@@ -313,3 +313,45 @@
 details[open] > .v2-faq-panel {
   grid-template-rows: 1fr;
 }
+
+/* ── Photo river ────────────────────────────────────────────────────────────
+   Two rows of looks sliding in opposite directions (PhotoRiver.jsx). Same
+   trick as the marquee: the track holds its list twice and moves by -50%.
+   A pointer or keyboard focus on a card pauses its row. */
+.v2-river {
+  overflow: hidden;
+}
+
+.v2-river-track {
+  animation: v2-marquee var(--v2-river-duration, 70s) linear infinite;
+  will-change: transform;
+}
+
+.v2-river-reverse {
+  animation-direction: reverse;
+}
+
+.v2-river:hover .v2-river-track,
+.v2-river:focus-within .v2-river-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-river { overflow-x: auto; }
+  .v2-river-track { animation: none; }
+}
+
+/* Hero photos fade and settle in just after the wordmark paints. */
+.v2-float-in {
+  animation: v2-float-in 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: 150ms;
+}
+
+@keyframes v2-float-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-float-in { animation: none; }
+}
