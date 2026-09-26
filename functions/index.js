@@ -54,7 +54,7 @@ const FUNCTION_BASE = "https://us-central1-flourish-roots.cloudfunctions.net";
 const DEV_SITE_BASE = `http://localhost:${process.env.SITE_PORT || 3000}`;
 const SITE_BASE =
     process.env.SITE_BASE ||
-    (process.env.FUNCTIONS_EMULATOR === "true" ? DEV_SITE_BASE : "https://flourish-roots.web.app");
+    (process.env.FUNCTIONS_EMULATOR === "true" ? DEV_SITE_BASE : "https://www.flourishrootshair.com");
 
 // A fixed, published-in-source key used only under the emulator, so local
 // dev keeps working without anyone having to set a secret by hand. It must

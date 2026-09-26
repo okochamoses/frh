@@ -9,7 +9,7 @@
  * `SITE_BASE` there, and keep the two in step.
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://flourish-roots.web.app"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.flourishrootshair.com"
 ).replace(/\/$/, "");
 
 export const SITE_NAME = "Flourish Roots Hair Co.";

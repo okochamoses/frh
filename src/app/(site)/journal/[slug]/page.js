@@ -18,8 +18,10 @@ export function generateStaticParams() {
   return ARTICLES.map(({ slug }) => ({ slug }));
 }
 
-export function generateMetadata({ params }) {
-  const article = ARTICLE_BY_SLUG.get(params.slug);
+// Next 15 hands `params` over as a promise.
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const article = ARTICLE_BY_SLUG.get(slug);
   if (!article) return {};
   return {
     title: `${article.title} — Flourish Roots Hair`,
@@ -36,8 +38,9 @@ export function generateMetadata({ params }) {
  * The measure is capped near 64 characters, which is where long-form stops
  * costing the reader their place on each line return.
  */
-export default function JournalArticlePage({ params }) {
-  const article = ARTICLE_BY_SLUG.get(params.slug);
+export default async function JournalArticlePage({ params }) {
+  const { slug } = await params;
+  const article = ARTICLE_BY_SLUG.get(slug);
   if (!article) notFound();
 
   const others = ARTICLES_NEWEST_FIRST.filter((a) => a.slug !== article.slug);

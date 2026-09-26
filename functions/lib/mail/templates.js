@@ -61,7 +61,7 @@ const MAIL = "flourishnaturalsinfo@gmail.com";
 // deployed to this host, which TODO.md still lists as outstanding.
 //
 // Note this is NOT the host `index.js` builds manage links on: that one is
-// `SITE_BASE` (flourish-roots.web.app, or localhost under the emulator). One
+// `SITE_BASE` (www.flourishrootshair.com, or localhost under the emulator). One
 // email can therefore carry links to two different origins. Worth settling on
 // one before the next deploy.
 const SITE = "https://flourishrootshair.com";
