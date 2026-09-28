@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ export default function ServiceSheet({ lookId, selected, onClose, onApply }) {
   const look = lookId ? LOOK_BY_ID.get(lookId) : null;
   const chosen = look ? look.options.find((o) => selected.includes(o.title)) : null;
   const [picked, setPicked] = useState(null);
+  const optionsRef = useRef(null);
   const container = useV2PortalContainer();
 
   // Reset the size choice whenever a different look is shown.
@@ -70,7 +71,16 @@ export default function ServiceSheet({ lookId, selected, onClose, onApply }) {
     );
   } else if (!option) {
     action = (
-      <PillButton className="w-full" disabled>
+      // Not disabled: on a short screen the options can sit below the fold, and
+      // a dead button gave no clue where they were. Clicking takes you there.
+      <PillButton
+        className="w-full"
+        onClick={() => {
+          const el = optionsRef.current;
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          el?.querySelector('[role="radio"]')?.focus({ preventScroll: true });
+        }}
+      >
         Choose an option first
       </PillButton>
     );
@@ -133,7 +143,7 @@ export default function ServiceSheet({ lookId, selected, onClose, onApply }) {
             alt={look.image ? `Example of ${look.name}` : ""}
             sizes="(min-width: 640px) 480px, 100vw"
             fit="contain"
-            className="h-[40vh] max-h-[360px] min-h-[200px] shrink-0 rounded-t-[28px] text-[64px]"
+            className="h-[40vh] max-h-[360px] min-h-[200px] shrink-0 sm:h-[32dvh] sm:min-h-[120px] rounded-t-[28px] text-[64px]"
           >
             <span
               aria-hidden="true"
@@ -147,28 +157,14 @@ export default function ServiceSheet({ lookId, selected, onClose, onApply }) {
           </ServicePhoto>
 
           <div className="grid min-h-0 flex-1 auto-rows-max gap-4 overflow-y-auto overscroll-contain p-5 sm:p-6">
-            <p className="text-[12.5px] text-ink-soft">
-              {look.image
-                ? "Reference photo. Your stylist will match it to your hair's length and texture."
-                : "We don't have a photo of this one yet."}
-            </p>
-
             <Dialog.Title className="pr-10 text-[22px] font-bold leading-tight tracking-[-0.01em] text-balance">
               {look.name}
             </Dialog.Title>
 
-            <dl className="grid grid-cols-2 gap-0.5 overflow-hidden rounded-v2-lg">
-              {facts.map(([k, v]) => (
-                <div key={k} className="bg-cream-100 px-3 py-2.5 text-[13px]">
-                  <dt className="text-xs text-ink-soft">{k}</dt>
-                  <dd className="font-semibold tabular-nums">{v}</dd>
-                </div>
-              ))}
-              {facts.length % 2 === 1 && <div className="bg-cream-100" aria-hidden="true" />}
-            </dl>
-
+            {/* Options straight under the title: on a short laptop screen anything
+                lower sat below the fold, and people never thought to scroll. */}
             {look.hasVariants && (
-              <fieldset>
+              <fieldset ref={optionsRef} className="scroll-mt-4">
                 <legend className="type-eyebrow mb-2">Choose an option</legend>
                 <div role="radiogroup" aria-label={`${look.name} options`} className="grid gap-1.5">
                   {look.options.map((o) => (
@@ -192,6 +188,22 @@ export default function ServiceSheet({ lookId, selected, onClose, onApply }) {
                 </div>
               </fieldset>
             )}
+
+            <dl className="grid grid-cols-2 gap-0.5 overflow-hidden rounded-v2-lg">
+              {facts.map(([k, v]) => (
+                <div key={k} className="bg-cream-100 px-3 py-2.5 text-[13px]">
+                  <dt className="text-xs text-ink-soft">{k}</dt>
+                  <dd className="font-semibold tabular-nums">{v}</dd>
+                </div>
+              ))}
+              {facts.length % 2 === 1 && <div className="bg-cream-100" aria-hidden="true" />}
+            </dl>
+
+            <p className="text-[12.5px] text-ink-soft">
+              {look.image
+                ? "Reference photo. Your stylist will match it to your hair's length and texture."
+                : "We don't have a photo of this one yet."}
+            </p>
 
             {look.description && <p className="text-[15px] leading-relaxed text-ink-soft">{look.description}</p>}
           </div>
