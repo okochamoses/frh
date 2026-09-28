@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "deploy:hosting": "next build && node scripts/keep-old-assets.mjs && firebase deploy --only hosting",
     "start": "next start",
     "lint": "next lint",
     "export": "next export",

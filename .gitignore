@@ -58,3 +58,6 @@ firebase.e2e.json.local
 
 # Before/after recordings kept for rollback reference, not source.
 /.cap-video/
+
+# old build assets kept for Clarity replays (scripts/keep-old-assets.mjs)
+/.hosting-archive/
