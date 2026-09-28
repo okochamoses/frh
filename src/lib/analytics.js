@@ -50,9 +50,28 @@ export function isLocalHostname(host) {
  * environment is *not* a safeguard — it still reaches the live property. The
  * hostname is.
  */
+const OPT_OUT_KEY = "frh:notrack";
+
+/**
+ * Lets the team's own browsers opt out, so testing on the live site stays out
+ * of the salon's numbers. Visit any page with `?notrack=1` once to switch it
+ * off for that browser; `?notrack=0` switches it back on. Remembered in
+ * localStorage, so it survives until site data is cleared.
+ */
+function optedOut() {
+  try {
+    const flag = new URLSearchParams(window.location.search).get("notrack");
+    if (flag === "1") localStorage.setItem(OPT_OUT_KEY, "1");
+    if (flag === "0") localStorage.removeItem(OPT_OUT_KEY);
+    return localStorage.getItem(OPT_OUT_KEY) === "1";
+  } catch {
+    return false; // storage blocked: nothing to remember, so report as normal
+  }
+}
+
 function reportingAllowed() {
   if (!ANALYTICS_ENABLED || typeof window === "undefined") return false;
-  return !isLocalHostname(window.location.hostname);
+  return !isLocalHostname(window.location.hostname) && !optedOut();
 }
 
 /**
